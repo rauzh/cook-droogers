@@ -1,18 +1,10 @@
 package service
 
-type UserType int
+import "cookdroogers/internal/models"
 
-const (
-	NewUser       UserType = iota
-	NonMemberUser UserType = iota
-	ManagerUser   UserType = iota
-	ArtistUser    UserType = iota
-)
-
-type User struct {
-	UserID   uint64
-	Name     string
-	Email    string
-	Password string
-	Type     UserType
+type IUserService interface {
+	Create(*models.User) error
+	GetByEmail(string) (*models.User, error)
+	Get(uint64) (*models.User, error)
+	Update(*models.User) error
 }
