@@ -23,7 +23,7 @@ type Application struct {
 	Type          ApplicationType
 	Status        ApplicationStatus
 	Date          time.Time
-	Meta          string
+	Meta          map[string]string
 	ApplierID     uint64
 	ManagerID     uint64
 }

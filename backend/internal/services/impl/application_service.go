@@ -16,6 +16,20 @@ func NewApplicationServiceImpl(repo repo.ApplicationRepo) *ApplicationService {
 	}
 }
 
+func (as *ApplicationService) Create(application *models.Application) error {
+	if err := as.repo.Create(application); err != nil {
+		return fmt.Errorf("can't create application info with error %w", err)
+	}
+	return nil
+}
+
+func (as *ApplicationService) Update(application *models.Application) error {
+	if err := as.repo.Update(application); err != nil {
+		return fmt.Errorf("can't update application info with error %w", err)
+	}
+	return nil
+}
+
 func (as *ApplicationService) Get(id uint64) (*models.Application, error) {
 	app, err := as.repo.Get(id)
 	if err != nil {

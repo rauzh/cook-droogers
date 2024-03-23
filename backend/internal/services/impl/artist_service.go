@@ -66,7 +66,7 @@ func (ars *ArtistService) CreateSignApplication(userID uint64, nickname string) 
 
 	application := models.Application{
 		Type:      models.SignApplication,
-		Meta:      nickname,
+		Meta:      map[string]string{"nickname": nickname},
 		ApplierID: userID,
 	}
 
@@ -79,12 +79,12 @@ func (ars *ArtistService) CreateSignApplication(userID uint64, nickname string) 
 		application.Status = models.OnApprovalApplication
 
 		managerID, err := managerService.GetRandomManagerID()
-		if err != nil {
+		if err == nil {
+			application.ManagerID = managerID
+		} else {
 			application.Status = models.ClosedApplication
-			application.Meta = "Can't find manager"
+			application.Meta["descr"] = "Can't find manager"
 		}
-
-		application.ManagerID = managerID
 
 		applicationService.Update(&application)
 
@@ -102,7 +102,7 @@ func (ars *ArtistService) ApplySignApplication(applicationID uint64) error {
 
 	artist := models.Artist{
 		UserID:       application.ApplierID,
-		Nickname:     application.Meta,
+		Nickname:     application.Meta["nickname"],
 		ContractTerm: time.Now().AddDate(1, 0, 0),
 		Activity:     true,
 		ManagerID:    application.ManagerID,
@@ -134,7 +134,7 @@ func (ars *ArtistService) DeclineSignApplication(applicationID uint64) error {
 	}
 
 	application.Status = models.ClosedApplication
-	application.Meta = "The application is declined."
+	application.Meta["descr"] = "The application is declined."
 	ars.applicationService.Update(application)
 
 	return nil
