@@ -1,10 +1,8 @@
 package service
 
-type Track struct {
-	TrackID  uint64
-	Ttile    string
-	Duration uint64
-	Genre    string
-	Type     string
-	Artists  []uint64
+import "cookdroogers/internal/models"
+
+type ITrackService interface {
+	Create(*models.Track) error
+	Get(uint64) (*models.Track, error)
 }
