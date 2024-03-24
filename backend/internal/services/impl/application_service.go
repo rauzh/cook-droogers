@@ -4,6 +4,7 @@ import (
 	"cookdroogers/internal/models"
 	"cookdroogers/internal/repo"
 	"fmt"
+	"time"
 )
 
 type ApplicationService struct {
@@ -17,6 +18,10 @@ func NewApplicationServiceImpl(repo repo.ApplicationRepo) *ApplicationService {
 }
 
 func (as *ApplicationService) Create(application *models.Application) error {
+
+	application.Status = models.NewApplication
+	application.Date = time.Now()
+
 	if err := as.repo.Create(application); err != nil {
 		return fmt.Errorf("can't create application info with error %w", err)
 	}
