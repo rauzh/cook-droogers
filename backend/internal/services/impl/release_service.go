@@ -5,6 +5,8 @@ import (
 	"cookdroogers/internal/repo"
 	service "cookdroogers/internal/services"
 	"fmt"
+	"runtime"
+	"sync"
 )
 
 type ReleaseService struct {
@@ -12,8 +14,40 @@ type ReleaseService struct {
 	repo         repo.ReleaseRepo
 }
 
-func (rs *ReleaseService) Create(artist *models.Release) error {
-	if err := rs.repo.Create(artist); err != nil {
+func (rs *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
+
+	release.Status = models.UnpublishedRelease
+
+	wg := new(sync.WaitGroup)
+	workersNum := runtime.NumCPU()
+	tracksLen := len(tracks)
+	mu := new(sync.Mutex)
+
+	for worker := 0; worker < workersNum; worker++ {
+		start, end := tracksLen/workersNum*worker, tracksLen/workersNum*(worker+1)
+		if worker == workersNum-1 {
+			end = tracksLen - 1
+		}
+
+		wg.Add(1)
+		go func(start, end int, mu *sync.Mutex) {
+			defer wg.Done()
+
+			for i := start; start < end; i++ {
+				trackID, err := rs.trackService.Create(&tracks[i])
+				if err != nil {
+					continue
+				}
+
+				mu.Lock()
+				release.Tracks = append(release.Tracks, trackID)
+				mu.Unlock()
+			}
+		}(start, end, mu)
+	}
+	wg.Wait()
+
+	if err := rs.repo.Create(release); err != nil {
 		return fmt.Errorf("can't create release with err %w", err)
 	}
 	return nil
@@ -27,8 +61,8 @@ func (rs *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
 	return release, nil
 }
 
-func (rs *ReleaseService) Update(artist *models.Release) error {
-	if err := rs.repo.Update(artist); err != nil {
+func (rs *ReleaseService) Update(release *models.Release) error {
+	if err := rs.repo.Update(release); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
@@ -40,7 +74,7 @@ func (rs *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
 		return "", fmt.Errorf("can't get release with err %w", err)
 	}
 
-	genres := map[string]int{}
+	genres := make(map[string]int)
 	for _, trackID := range release.Tracks {
 		track, err := rs.trackService.Get(trackID)
 		if err != nil {
