@@ -14,6 +14,13 @@ type ReleaseService struct {
 	repo         repo.ReleaseRepo
 }
 
+func NewReleaseService(
+	ts service.ITrackService,
+	r repo.ReleaseRepo) *ReleaseService {
+	return &ReleaseService{trackService: ts, repo: r}
+}
+
+// Upload new release and its tracks to DB
 func (rs *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
 
 	release.Status = models.UnpublishedRelease

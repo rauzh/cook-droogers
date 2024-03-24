@@ -10,6 +10,10 @@ type TrackService struct {
 	repo repo.TrackRepo
 }
 
+func NewTrackService(r repo.TrackRepo) *TrackService {
+	return &TrackService{repo: r}
+}
+
 func (ts *TrackService) Create(track *models.Track) (uint64, error) {
 	trackID, err := ts.repo.Create(track)
 	if err != nil {

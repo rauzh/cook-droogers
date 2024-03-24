@@ -10,6 +10,10 @@ type ManagerService struct {
 	repo repo.ManagerRepo
 }
 
+func NewManagerService(r repo.ManagerRepo) *ManagerService {
+	return &ManagerService{repo: r}
+}
+
 func (ms *ManagerService) Create(artist *models.Manager) error {
 	if err := ms.repo.Create(artist); err != nil {
 		return fmt.Errorf("can't create manager with err %w", err)

@@ -65,8 +65,11 @@ func (ars *ArtistService) CreateSignApplication(userID uint64, nickname string) 
 	}
 
 	application := models.Application{
-		Type:      models.SignApplication,
-		Meta:      map[string]string{"nickname": nickname},
+		Type: models.SignApplication,
+		Meta: map[string]string{
+			"nickname": nickname,
+			"descr":    "",
+		},
 		ApplierID: userID,
 	}
 

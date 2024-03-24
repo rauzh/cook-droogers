@@ -16,6 +16,17 @@ type StatisticsService struct {
 	repo         repo.StatisticsRepo
 }
 
+func NewStatisticsService(
+	ts service.ITrackService,
+	f fetcher.StatFetcher,
+	r repo.StatisticsRepo) *StatisticsService {
+	return &StatisticsService{
+		trackService: ts,
+		fetcher:      f,
+		repo:         r,
+	}
+}
+
 func (ss *StatisticsService) Create(stat *models.Statistics) error {
 
 	stat.Date = time.Now()
@@ -68,16 +79,13 @@ func (ss *StatisticsService) GetRelevantGenre() (string, error) {
 	/*  По-хорошему надо конечно выгружать из БД только пачками по 100,
 	и распараллелить по данным, но мне влом, а если прям надо, то сделаю */
 
-	var err error
-	var stats map[uint64][]models.Statistics
-
-	stats, err = ss.repo.GetAllGroupByTracksSince(time.Now().AddDate(0, -3, 0))
+	stats, err := ss.repo.GetAllGroupByTracksSince(time.Now().AddDate(0, -3, 0))
 	if err != nil {
 		return "", fmt.Errorf("can't get stats with err %w", err)
 	}
 
-	genres := map[string]uint64{}
-	for trackID, statsPerTrack := range stats {
+	genres := make(map[string]uint64)
+	for trackID, statsPerTrack := range *stats {
 		track, err := ss.trackService.Get(trackID)
 		if err != nil {
 			return "", fmt.Errorf("can't get track %d with err %w", trackID, err)

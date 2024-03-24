@@ -3,7 +3,6 @@ package models
 type UserType int
 
 const (
-	NewUser       UserType = iota
 	NonMemberUser UserType = iota
 	ManagerUser   UserType = iota
 	ArtistUser    UserType = iota
