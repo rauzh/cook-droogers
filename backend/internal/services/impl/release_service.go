@@ -51,13 +51,13 @@ func (rs *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
 	}
 
 	var maxAmount int
-	var relevantGenre string
+	var mainGenre string
 	for genre, amount := range genres {
 		if amount > maxAmount {
 			maxAmount = amount
-			relevantGenre = genre
+			mainGenre = genre
 		}
 	}
 
-	return relevantGenre, nil
+	return mainGenre, nil
 }

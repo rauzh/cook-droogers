@@ -3,6 +3,7 @@ package service
 import (
 	"cookdroogers/internal/models"
 	"cookdroogers/internal/repo"
+	service "cookdroogers/internal/services"
 	fetcher "cookdroogers/internal/stat_fetcher"
 	"errors"
 	"fmt"
@@ -10,8 +11,9 @@ import (
 )
 
 type StatisticsService struct {
-	fetcher fetcher.StatFetcher
-	repo    repo.StatisticsRepo
+	trackService service.ITrackService
+	fetcher      fetcher.StatFetcher
+	repo         repo.StatisticsRepo
 }
 
 func (ss *StatisticsService) Create(stat *models.Statistics) error {
@@ -60,4 +62,40 @@ func (ss *StatisticsService) Fetch(tracks []uint64) error {
 	}
 
 	return nil
+}
+
+func (ss *StatisticsService) GetRelevantGenre() (string, error) {
+	/*  По-хорошему надо конечно выгружать из БД только пачками по 100,
+	и распараллелить по данным, но мне влом, а если прям надо, то сделаю */
+
+	var err error
+	var stats map[uint64][]models.Statistics
+
+	stats, err = ss.repo.GetAllGroupByTracksSince(time.Now().AddDate(0, -3, 0))
+	if err != nil {
+		return "", fmt.Errorf("can't get stats with err %w", err)
+	}
+
+	genres := map[string]uint64{}
+	for trackID, statsPerTrack := range stats {
+		track, err := ss.trackService.Get(trackID)
+		if err != nil {
+			return "", fmt.Errorf("can't get track %d with err %w", trackID, err)
+		}
+
+		for _, stat := range statsPerTrack {
+			genres[track.Genre] += stat.Streams
+		}
+	}
+
+	var relevantGenre string
+	var maxStreamsPerGenre uint64
+	for genre, streams := range genres {
+		if streams > maxStreamsPerGenre {
+			maxStreamsPerGenre = streams
+			relevantGenre = genre
+		}
+	}
+
+	return relevantGenre, err
 }
