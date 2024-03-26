@@ -3,20 +3,16 @@ package service
 import (
 	"cookdroogers/internal/Manager/repo"
 	s "cookdroogers/internal/Manager/service"
-	ss "cookdroogers/internal/Statistics/service"
 	"cookdroogers/models"
 	"fmt"
 )
 
 type ManagerService struct {
-	ss   ss.IStatisticsService
 	repo repo.ManagerRepo
 }
 
-func NewManagerService(
-	r repo.ManagerRepo,
-	ss ss.IStatisticsService) s.IManagerService {
-	return &ManagerService{ss: ss, repo: r}
+func NewManagerService(r repo.ManagerRepo) s.IManagerService {
+	return &ManagerService{repo: r}
 }
 
 func (ms *ManagerService) Create(artist *models.Manager) error {

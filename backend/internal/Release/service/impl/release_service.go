@@ -2,8 +2,8 @@ package service
 
 import (
 	"cookdroogers/internal/Release/repo"
-	s "cookdroogers/internal/Release/service"
-	ts "cookdroogers/internal/Track/service"
+	releaseService "cookdroogers/internal/Release/service"
+	trackService "cookdroogers/internal/Track/service"
 	"cookdroogers/models"
 	"fmt"
 	"runtime"
@@ -11,22 +11,35 @@ import (
 )
 
 type ReleaseService struct {
-	trackService ts.ITrackService
-	repo         repo.ReleaseRepo
+	trkSvc trackService.ITrackService
+	repo   repo.ReleaseRepo
 }
 
 func NewReleaseService(
-	ts ts.ITrackService,
-	r repo.ReleaseRepo) s.IReleaseService {
-	return &ReleaseService{trackService: ts, repo: r}
+	trkSvc trackService.ITrackService,
+	r repo.ReleaseRepo) releaseService.IReleaseService {
+	return &ReleaseService{trkSvc: trkSvc, repo: r}
 }
 
-// Upload new release and its tracks to DB
-func (rs *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
+// Create new release and its tracks in DB
+func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
 
 	release.Status = models.UnpublishedRelease
 
+	// Divide tracks on parts by CPUnum and upload then concurrently
+	rlsSvc.uploadTracksParallel(release, tracks)
+
+	if err := rlsSvc.repo.Create(release); err != nil {
+		return fmt.Errorf("can't create release with err %w", err)
+	}
+
+	return nil
+}
+
+func (rlsSvc *ReleaseService) uploadTracksParallel(release *models.Release, tracks []models.Track) {
+
 	wg := new(sync.WaitGroup)
+
 	workersNum := runtime.NumCPU()
 	tracksLen := len(tracks)
 	mu := new(sync.Mutex)
@@ -38,60 +51,61 @@ func (rs *ReleaseService) Create(release *models.Release, tracks []models.Track)
 		}
 
 		wg.Add(1)
-		go func(start, end int, mu *sync.Mutex) {
-			defer wg.Done()
-
-			for i := start; start < end; i++ {
-				trackID, err := rs.trackService.Create(&tracks[i])
-				if err != nil {
-					continue
-				}
-
-				mu.Lock()
-				release.Tracks = append(release.Tracks, trackID)
-				mu.Unlock()
-			}
-		}(start, end, mu)
+		go rlsSvc.uploadBunchOfTracks(release, start, end, tracks, wg, mu)
 	}
 	wg.Wait()
-
-	if err := rs.repo.Create(release); err != nil {
-		return fmt.Errorf("can't create release with err %w", err)
-	}
-	return nil
 }
 
-func (rs *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
-	release, err := rs.repo.Get(releaseID)
+func (rlsSvc *ReleaseService) uploadBunchOfTracks(release *models.Release,
+	start, end int, tracks []models.Track,
+	wg *sync.WaitGroup, mu *sync.Mutex) {
+
+	defer wg.Done()
+
+	for i := start; start < end; i++ {
+		trackID, err := rlsSvc.trkSvc.Create(&tracks[i])
+		if err != nil {
+			continue
+		}
+
+		mu.Lock()
+		release.Tracks = append(release.Tracks, trackID)
+		mu.Unlock()
+
+	}
+}
+
+func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
+	release, err := rlsSvc.repo.Get(releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
 	}
 	return release, nil
 }
 
-func (rs *ReleaseService) Update(release *models.Release) error {
-	if err := rs.repo.Update(release); err != nil {
+func (rlsSvc *ReleaseService) Update(release *models.Release) error {
+	if err := rlsSvc.repo.Update(release); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
-func (rs *ReleaseService) UpdateStatus(id uint64, stat models.ReleaseStatus) error {
-	if err := rs.repo.UpdateStatus(id, stat); err != nil {
+func (rlsSvc *ReleaseService) UpdateStatus(id uint64, stat models.ReleaseStatus) error {
+	if err := rlsSvc.repo.UpdateStatus(id, stat); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
-func (rs *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
-	release, err := rs.repo.Get(releaseID)
+func (rlsSvc *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
+	release, err := rlsSvc.repo.Get(releaseID)
 	if err != nil {
 		return "", fmt.Errorf("can't get release with err %w", err)
 	}
 
 	genres := make(map[string]int)
 	for _, trackID := range release.Tracks {
-		track, err := rs.trackService.Get(trackID)
+		track, err := rlsSvc.trkSvc.Get(trackID)
 		if err != nil {
 			return "", fmt.Errorf("can't get track %d with err %w", trackID, err)
 		}

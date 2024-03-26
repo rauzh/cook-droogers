@@ -1,41 +1,21 @@
 package service
 
 import (
-	ars "cookdroogers/internal/Artist/service"
-	ms "cookdroogers/internal/Manager/service"
 	"cookdroogers/internal/Publication/repo"
 	s "cookdroogers/internal/Publication/service"
-	rs "cookdroogers/internal/Release/service"
-	as "cookdroogers/internal/Request/service"
-	ss "cookdroogers/internal/Statistics/service"
 	"cookdroogers/models"
 	"fmt"
 	"time"
 )
 
 type PublicationService struct {
-	requestService as.IRequestService
-	releaseService rs.IReleaseService
-	managerService ms.IManagerService
-	artistService  ars.IArtistService
-	statService    ss.IStatisticsService
-	repo           repo.PublicationRepo
+	repo repo.PublicationRepo
 }
 
 func NewPublicationService(
-	as as.IRequestService,
-	rs rs.IReleaseService,
-	ms ms.IManagerService,
-	ars ars.IArtistService,
-	ss ss.IStatisticsService,
 	repo repo.PublicationRepo) s.IPublicationService {
 	return &PublicationService{
-		requestService: as,
-		releaseService: rs,
-		managerService: ms,
-		artistService:  ars,
-		statService:    ss,
-		repo:           repo,
+		repo: repo,
 	}
 }
 
