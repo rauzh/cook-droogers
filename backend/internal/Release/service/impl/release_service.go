@@ -2,6 +2,7 @@ package service
 
 import (
 	"cookdroogers/internal/Release/repo"
+	s "cookdroogers/internal/Release/service"
 	ts "cookdroogers/internal/Track/service"
 	"cookdroogers/models"
 	"fmt"
@@ -16,7 +17,7 @@ type ReleaseService struct {
 
 func NewReleaseService(
 	ts ts.ITrackService,
-	r repo.ReleaseRepo) *ReleaseService {
+	r repo.ReleaseRepo) s.IReleaseService {
 	return &ReleaseService{trackService: ts, repo: r}
 }
 

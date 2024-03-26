@@ -2,6 +2,7 @@ package service
 
 import (
 	"cookdroogers/internal/Track/repo"
+	s "cookdroogers/internal/Track/service"
 	"cookdroogers/models"
 	"fmt"
 )
@@ -10,7 +11,7 @@ type TrackService struct {
 	repo repo.TrackRepo
 }
 
-func NewTrackService(r repo.TrackRepo) *TrackService {
+func NewTrackService(r repo.TrackRepo) s.ITrackService {
 	return &TrackService{repo: r}
 }
 

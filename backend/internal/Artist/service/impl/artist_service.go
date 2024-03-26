@@ -3,6 +3,7 @@ package service
 import (
 	as "cookdroogers/internal/Application/service"
 	artistRepo "cookdroogers/internal/Artist/repo"
+	s "cookdroogers/internal/Artist/service"
 	ms "cookdroogers/internal/Manager/service"
 	us "cookdroogers/internal/User/service"
 	"cookdroogers/models"
@@ -21,7 +22,7 @@ func NewArtistService(
 	as as.IApplicationService,
 	ms ms.IManagerService,
 	us us.IUserService,
-	r artistRepo.ArtistRepo) *ArtistService {
+	r artistRepo.ArtistRepo) s.IArtistService {
 	return &ArtistService{
 		applicationService: as,
 		managerService:     ms,

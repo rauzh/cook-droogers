@@ -2,6 +2,7 @@ package service
 
 import (
 	"cookdroogers/internal/User/repo"
+	s "cookdroogers/internal/User/service"
 	"cookdroogers/models"
 	repo_errors "cookdroogers/pkg/errors/repo"
 	"errors"
@@ -10,6 +11,10 @@ import (
 
 type UserService struct {
 	repo repo.UserRepo
+}
+
+func NewUserService(repo repo.UserRepo) s.IUserService {
+	return &UserService{repo: repo}
 }
 
 func (us *UserService) Create(newUser *models.User) error {

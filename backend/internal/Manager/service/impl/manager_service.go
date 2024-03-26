@@ -2,6 +2,7 @@ package service
 
 import (
 	"cookdroogers/internal/Manager/repo"
+	s "cookdroogers/internal/Manager/service"
 	"cookdroogers/models"
 	"fmt"
 )
@@ -10,7 +11,7 @@ type ManagerService struct {
 	repo repo.ManagerRepo
 }
 
-func NewManagerService(r repo.ManagerRepo) *ManagerService {
+func NewManagerService(r repo.ManagerRepo) s.IManagerService {
 	return &ManagerService{repo: r}
 }
 
@@ -35,4 +36,8 @@ func (ms *ManagerService) GetRandomManagerID() (uint64, error) {
 		return 0, fmt.Errorf("can't get manager with err %w", err)
 	}
 	return id, nil
+}
+
+func (ms *ManagerService) GetReport() (map[string]string, error) {
+	return nil, nil
 }

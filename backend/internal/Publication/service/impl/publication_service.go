@@ -5,6 +5,7 @@ import (
 	ars "cookdroogers/internal/Artist/service"
 	ms "cookdroogers/internal/Manager/service"
 	"cookdroogers/internal/Publication/repo"
+	s "cookdroogers/internal/Publication/service"
 	rs "cookdroogers/internal/Release/service"
 	ss "cookdroogers/internal/Statistics/service"
 	"cookdroogers/models"
@@ -29,7 +30,7 @@ func NewPublicationService(
 	ms ms.IManagerService,
 	ars ars.IArtistService,
 	ss ss.IStatisticsService,
-	repo repo.PublicationRepo) *PublicationService {
+	repo repo.PublicationRepo) s.IPublicationService {
 	return &PublicationService{
 		applicationService: as,
 		releaseService:     rs,
@@ -79,7 +80,6 @@ func (ps *PublicationService) CreatePublApplication(applierID, releaseID uint64,
 	}
 
 	go func() {
-		var grade uint8 = 5
 
 		application.Status = models.ProcessingApplication
 		err := ps.applicationService.Update(&application)
@@ -87,40 +87,7 @@ func (ps *PublicationService) CreatePublApplication(applierID, releaseID uint64,
 			panic("CREATE-PUBL-APPL: Can't update APPL")
 		}
 
-		pubsThatDay, err := ps.repo.GetAllByDate(date)
-		if err != nil {
-			panic("CREATE-PUBL-APPL: Can't get ALL PUBL BY DATE")
-		}
-
-		if len(pubsThatDay) > 1 {
-			grade--
-			application.Meta["descr"] += "\n Too many releases that day"
-		}
-
-		pubsFromThatArtistLastSeason, err := ps.repo.GetAllByArtistSinceDate(date.AddDate(0, -3, 1), applierID)
-		if err != nil {
-			panic("CREATE-PUBL-APPL: Can't get ALL PUBL BY ARTIST SINCE DATE")
-		}
-
-		if len(pubsFromThatArtistLastSeason) > 2 {
-			grade--
-			application.Meta["descr"] += "\n Too many releases from this artist"
-		}
-
-		relevantGenre, err := ps.statService.GetRelevantGenre()
-		if err != nil {
-			panic("CREATE-PUBL-APPL: Can't get RELEVANT GENRE")
-		}
-
-		currentGenre, err := ps.releaseService.GetMainGenre(releaseID)
-		if err != nil {
-			panic("CREATE-PUBL-APPL: Can't get CURRENT GENRE")
-		}
-
-		if currentGenre != relevantGenre {
-			grade--
-			application.Meta["descr"] += "\n Not relevant genre"
-		}
+		ps.getDegree(releaseID, date, &application)
 
 		artist, err := ps.artistService.Get(applierID)
 		if err != nil {
@@ -128,7 +95,6 @@ func (ps *PublicationService) CreatePublApplication(applierID, releaseID uint64,
 		}
 
 		application.ManagerID = artist.ManagerID
-		application.Meta["grade"] = fmt.Sprintf("%d", grade)
 		application.Status = models.OnApprovalApplication
 
 		err = ps.applicationService.Update(&application)
@@ -139,6 +105,47 @@ func (ps *PublicationService) CreatePublApplication(applierID, releaseID uint64,
 	}()
 
 	return nil
+}
+
+func (ps *PublicationService) getDegree(releaseID uint64, date time.Time, application *models.Application) {
+	var grade uint8 = 5
+
+	pubsThatDay, err := ps.repo.GetAllByDate(date)
+	if err != nil {
+		panic("CREATE-PUBL-APPL: Can't get ALL PUBL BY DATE")
+	}
+
+	if len(pubsThatDay) > 1 {
+		grade--
+		application.Meta["descr"] += "\n Too many releases that day"
+	}
+
+	pubsFromThatArtistLastSeason, err := ps.repo.GetAllByArtistSinceDate(date.AddDate(0, -3, 1), application.ApplierID)
+	if err != nil {
+		panic("CREATE-PUBL-APPL: Can't get ALL PUBL BY ARTIST SINCE DATE")
+	}
+
+	if len(pubsFromThatArtistLastSeason) > 2 {
+		grade--
+		application.Meta["descr"] += "\n Too many releases from this artist"
+	}
+
+	relevantGenre, err := ps.statService.GetRelevantGenre()
+	if err != nil {
+		panic("CREATE-PUBL-APPL: Can't get RELEVANT GENRE")
+	}
+
+	currentGenre, err := ps.releaseService.GetMainGenre(releaseID)
+	if err != nil {
+		panic("CREATE-PUBL-APPL: Can't get CURRENT GENRE")
+	}
+
+	if currentGenre != relevantGenre {
+		grade--
+		application.Meta["descr"] += "\n Not relevant genre"
+	}
+
+	application.Meta["grade"] = fmt.Sprintf("%d", grade)
 }
 
 func (ps *PublicationService) ApplyPublApplication(applicationID uint64) error {

@@ -3,6 +3,7 @@ package service
 import (
 	"cookdroogers/internal/Statistics/fetcher"
 	"cookdroogers/internal/Statistics/repo"
+	s "cookdroogers/internal/Statistics/service"
 	ts "cookdroogers/internal/Track/service"
 	"cookdroogers/models"
 	"errors"
@@ -19,7 +20,7 @@ type StatisticsService struct {
 func NewStatisticsService(
 	ts ts.ITrackService,
 	f fetcher.StatFetcher,
-	r repo.StatisticsRepo) *StatisticsService {
+	r repo.StatisticsRepo) s.IStatisticsService {
 	return &StatisticsService{
 		trackService: ts,
 		fetcher:      f,

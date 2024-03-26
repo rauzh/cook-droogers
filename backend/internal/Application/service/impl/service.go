@@ -2,6 +2,7 @@ package service
 
 import (
 	applicationRepo "cookdroogers/internal/Application/repo"
+	s "cookdroogers/internal/Application/service"
 	"cookdroogers/models"
 	"fmt"
 	"time"
@@ -11,7 +12,7 @@ type ApplicationService struct {
 	repo applicationRepo.ApplicationRepo
 }
 
-func NewApplicationServiceImpl(repo applicationRepo.ApplicationRepo) *ApplicationService {
+func NewApplicationServiceImpl(repo applicationRepo.ApplicationRepo) s.IApplicationService {
 	return &ApplicationService{
 		repo: repo,
 	}
