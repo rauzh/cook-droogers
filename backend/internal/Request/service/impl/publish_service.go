@@ -2,7 +2,7 @@ package service
 
 import (
 	artistService "cookdroogers/internal/Artist/service"
-	publicationRepo "cookdroogers/internal/Publication/repo"
+	publicationService "cookdroogers/internal/Publication/service"
 	releaseService "cookdroogers/internal/Release/service"
 	requestErrors "cookdroogers/internal/Request/errors"
 	requestService "cookdroogers/internal/Request/service"
@@ -19,7 +19,7 @@ type PublishService struct {
 	artSvc  artistService.IArtistService
 	statSvc statisticsServive.IStatisticsService
 	rlsSvc  releaseService.IReleaseService
-	pblRepo publicationRepo.PublicationRepo
+	pblcSvc publicationService.IPublicationService
 }
 
 const Week time.Duration = 24 * 7 * time.Hour
@@ -30,13 +30,13 @@ func NewPublishService(
 	artSvc artistService.IArtistService,
 	statSvc statisticsServive.IStatisticsService,
 	rlsSvc releaseService.IReleaseService,
-	pblRepo publicationRepo.PublicationRepo) requestService.IPublishService {
+	pblcSvc publicationService.IPublicationService) requestService.IPublishService {
 	return &PublishService{
 		reqSvc:  reqSvc,
 		artSvc:  artSvc,
 		statSvc: statSvc,
 		rlsSvc:  rlsSvc,
-		pblRepo: pblRepo,
+		pblcSvc: pblcSvc,
 	}
 }
 
@@ -100,14 +100,14 @@ func (pblSvc *PublishService) proceedToManager(request models.Request, releaseID
 func (pblSvc *PublishService) computeDegree(request *models.Request, releaseID uint64, date time.Time) {
 	var grade uint8 = DefaultGrade
 
-	pubsThatDay, errPubsThatDay := pblSvc.pblRepo.GetAllByDate(date)
+	pubsThatDay, errPubsThatDay := pblSvc.pblcSvc.GetAllByDate(date)
 	// If more than 1 release that day, decrement the grade
 	if errPubsThatDay != nil && len(pubsThatDay) > 1 {
 		grade--
 		request.Meta["descr"] += "\n Too many releases that day"
 	}
 
-	pubsFromThatArtistLastSeason, errPubsFromArtist := pblSvc.pblRepo.GetAllByArtistSinceDate(
+	pubsFromThatArtistLastSeason, errPubsFromArtist := pblSvc.pblcSvc.GetAllByArtistSinceDate(
 		date.AddDate(0, -3, 1),
 		request.ApplierID,
 	)
@@ -154,7 +154,7 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 	}
 
 	// Create publication
-	if err := pblSvc.pblRepo.Create(&publication); err != nil {
+	if err := pblSvc.pblcSvc.Create(&publication); err != nil {
 		return fmt.Errorf("can't create publication with err %w", err)
 	}
 

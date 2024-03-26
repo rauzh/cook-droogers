@@ -7,4 +7,5 @@ type UserRepo interface {
 	GetByEmail(string) (*models.User, error)
 	Get(uint64) (*models.User, error)
 	Update(*models.User) error
+	UpdateType(userID uint64, typ models.UserType) error
 }

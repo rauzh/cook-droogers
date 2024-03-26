@@ -79,3 +79,10 @@ func (us *UserService) Update(user *models.User) error {
 	}
 	return nil
 }
+
+func (us *UserService) UpdateType(userID uint64, typ models.UserType) error {
+	if err := us.repo.UpdateType(userID, typ); err != nil {
+		return fmt.Errorf("can't update user with err %w", err)
+	}
+	return nil
+}

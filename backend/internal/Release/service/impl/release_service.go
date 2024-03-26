@@ -76,6 +76,13 @@ func (rs *ReleaseService) Update(release *models.Release) error {
 	return nil
 }
 
+func (rs *ReleaseService) UpdateStatus(id uint64, stat models.ReleaseStatus) error {
+	if err := rs.repo.UpdateStatus(id, stat); err != nil {
+		return fmt.Errorf("can't update release with err %w", err)
+	}
+	return nil
+}
+
 func (rs *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
 	release, err := rs.repo.Get(releaseID)
 	if err != nil {

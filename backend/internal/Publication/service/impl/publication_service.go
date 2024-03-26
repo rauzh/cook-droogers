@@ -10,6 +10,7 @@ import (
 	ss "cookdroogers/internal/Statistics/service"
 	"cookdroogers/models"
 	"fmt"
+	"time"
 )
 
 type PublicationService struct {
@@ -54,6 +55,22 @@ func (ps *PublicationService) Update(publication *models.Publication) error {
 
 func (ps *PublicationService) Get(id uint64) (*models.Publication, error) {
 	publication, err := ps.repo.Get(id)
+	if err != nil {
+		return nil, fmt.Errorf("can't get publication info with error %w", err)
+	}
+	return publication, nil
+}
+
+func (ps *PublicationService) GetAllByDate(date time.Time) ([]models.Publication, error) {
+	publication, err := ps.repo.GetAllByDate(date)
+	if err != nil {
+		return nil, fmt.Errorf("can't get publication info with error %w", err)
+	}
+	return publication, nil
+}
+
+func (ps *PublicationService) GetAllByArtistSinceDate(date time.Time, artistID uint64) ([]models.Publication, error) {
+	publication, err := ps.repo.GetAllByArtistSinceDate(date, artistID)
 	if err != nil {
 		return nil, fmt.Errorf("can't get publication info with error %w", err)
 	}
