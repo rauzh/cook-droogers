@@ -2,28 +2,28 @@ package models
 
 import "time"
 
-type ApplicationStatus string
+type RequestStatus string
 
 const (
-	NewApplication        ApplicationStatus = "New"
-	ProcessingApplication ApplicationStatus = "Processing"
-	OnApprovalApplication ApplicationStatus = "On approval"
-	ClosedApplication     ApplicationStatus = "Closed"
+	NewRequest        RequestStatus = "New"
+	ProcessingRequest RequestStatus = "Processing"
+	OnApprovalRequest RequestStatus = "On approval"
+	ClosedRequest     RequestStatus = "Closed"
 )
 
-type ApplicationType string
+type RequestType string
 
 const (
-	SignApplication    ApplicationType = "Sign"
-	PublishApplication ApplicationType = "Publish"
+	SignRequest    RequestType = "Sign"
+	PublishRequest RequestType = "Publish"
 )
 
-type Application struct {
-	ApplicationID uint64
-	Type          ApplicationType
-	Status        ApplicationStatus
-	Date          time.Time
-	Meta          map[string]string
-	ApplierID     uint64
-	ManagerID     uint64
+type Request struct {
+	RequestID uint64
+	Type      RequestType
+	Status    RequestStatus
+	Date      time.Time
+	Meta      map[string]string
+	ApplierID uint64
+	ManagerID uint64
 }

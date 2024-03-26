@@ -3,16 +3,20 @@ package service
 import (
 	"cookdroogers/internal/Manager/repo"
 	s "cookdroogers/internal/Manager/service"
+	ss "cookdroogers/internal/Statistics/service"
 	"cookdroogers/models"
 	"fmt"
 )
 
 type ManagerService struct {
+	ss   ss.IStatisticsService
 	repo repo.ManagerRepo
 }
 
-func NewManagerService(r repo.ManagerRepo) s.IManagerService {
-	return &ManagerService{repo: r}
+func NewManagerService(
+	r repo.ManagerRepo,
+	ss ss.IStatisticsService) s.IManagerService {
+	return &ManagerService{ss: ss, repo: r}
 }
 
 func (ms *ManagerService) Create(artist *models.Manager) error {
@@ -38,6 +42,24 @@ func (ms *ManagerService) GetRandomManagerID() (uint64, error) {
 	return id, nil
 }
 
-func (ms *ManagerService) GetReport() (map[string]string, error) {
+func (ms *ManagerService) GetReport(managerID uint64) (map[string]string, error) {
+
+	// manager, err := ms.repo.Get(managerID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// report := make(map[string]string)
+
+	// relevantGenre, err := ms.ss.GetRelevantGenre()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// report["relevantGenre"] = relevantGenre
+
+	// for _, artistID := range manager.Artists {
+
+	// }
+
 	return nil, nil
 }

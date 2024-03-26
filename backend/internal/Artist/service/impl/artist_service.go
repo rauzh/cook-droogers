@@ -1,10 +1,10 @@
 package service
 
 import (
-	as "cookdroogers/internal/Application/service"
 	artistRepo "cookdroogers/internal/Artist/repo"
 	s "cookdroogers/internal/Artist/service"
 	ms "cookdroogers/internal/Manager/service"
+	as "cookdroogers/internal/Request/service"
 	us "cookdroogers/internal/User/service"
 	"cookdroogers/models"
 	"fmt"
@@ -12,22 +12,22 @@ import (
 )
 
 type ArtistService struct {
-	applicationService as.IApplicationService
-	managerService     ms.IManagerService
-	userService        us.IUserService
-	repo               artistRepo.ArtistRepo
+	requestService as.IRequestService
+	managerService ms.IManagerService
+	userService    us.IUserService
+	repo           artistRepo.ArtistRepo
 }
 
 func NewArtistService(
-	as as.IApplicationService,
+	as as.IRequestService,
 	ms ms.IManagerService,
 	us us.IUserService,
 	r artistRepo.ArtistRepo) s.IArtistService {
 	return &ArtistService{
-		applicationService: as,
-		managerService:     ms,
-		userService:        us,
-		repo:               r,
+		requestService: as,
+		managerService: ms,
+		userService:    us,
+		repo:           r,
 	}
 }
 
@@ -61,14 +61,14 @@ func (ars *ArtistService) Update(artist *models.Artist) error {
 	return nil
 }
 
-func (ars *ArtistService) CreateSignApplication(userID uint64, nickname string) error {
+func (ars *ArtistService) CreateSignRequest(userID uint64, nickname string) error {
 
 	if nickname == "" {
 		return fmt.Errorf("no nickname provided")
 	}
 
-	application := models.Application{
-		Type: models.SignApplication,
+	request := models.Request{
+		Type: models.SignRequest,
 		Meta: map[string]string{
 			"nickname": nickname,
 			"descr":    "",
@@ -76,42 +76,42 @@ func (ars *ArtistService) CreateSignApplication(userID uint64, nickname string) 
 		ApplierID: userID,
 	}
 
-	if err := ars.applicationService.Create(&application); err != nil {
-		return fmt.Errorf("can't create application with err %w", err)
+	if err := ars.requestService.Create(&request); err != nil {
+		return fmt.Errorf("can't create request with err %w", err)
 	}
 
-	go func(managerService ms.IManagerService, applicationService as.IApplicationService) {
+	go func(managerService ms.IManagerService, requestService as.IRequestService) {
 
-		application.Status = models.OnApprovalApplication
+		request.Status = models.OnApprovalRequest
 
 		managerID, err := managerService.GetRandomManagerID()
 		if err == nil {
-			application.ManagerID = managerID
+			request.ManagerID = managerID
 		} else {
-			application.Status = models.ClosedApplication
-			application.Meta["descr"] = "Can't find manager"
+			request.Status = models.ClosedRequest
+			request.Meta["descr"] = "Can't find manager"
 		}
 
-		applicationService.Update(&application)
+		requestService.Update(&request)
 
-	}(ars.managerService, ars.applicationService)
+	}(ars.managerService, ars.requestService)
 
 	return nil
 }
 
-func (ars *ArtistService) ApplySignApplication(applicationID uint64) error {
+func (ars *ArtistService) ApplySignRequest(requestID uint64) error {
 
-	application, err := ars.applicationService.Get(applicationID)
+	request, err := ars.requestService.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get application %d with err %w", applicationID, err)
+		return fmt.Errorf("can't get request %d with err %w", requestID, err)
 	}
 
 	artist := models.Artist{
-		UserID:       application.ApplierID,
-		Nickname:     application.Meta["nickname"],
+		UserID:       request.ApplierID,
+		Nickname:     request.Meta["nickname"],
 		ContractTerm: time.Now().AddDate(1, 0, 0),
 		Activity:     true,
-		ManagerID:    application.ManagerID,
+		ManagerID:    request.ManagerID,
 	}
 
 	if err := ars.Create(&artist); err != nil {
@@ -126,22 +126,22 @@ func (ars *ArtistService) ApplySignApplication(applicationID uint64) error {
 		user.Type = models.ArtistUser
 		ars.userService.Update(user)
 
-		application.Status = models.ClosedApplication
-		ars.applicationService.Update(application)
+		request.Status = models.ClosedRequest
+		ars.requestService.Update(request)
 	}()
 
 	return nil
 }
 
-func (ars *ArtistService) DeclineSignApplication(applicationID uint64) error {
-	application, err := ars.applicationService.Get(applicationID)
+func (ars *ArtistService) DeclineSignRequest(requestID uint64) error {
+	request, err := ars.requestService.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get application %d with err %w", applicationID, err)
+		return fmt.Errorf("can't get request %d with err %w", requestID, err)
 	}
 
-	application.Status = models.ClosedApplication
-	application.Meta["descr"] = "The application is declined."
-	ars.applicationService.Update(application)
+	request.Status = models.ClosedRequest
+	request.Meta["descr"] = "The request is declined."
+	ars.requestService.Update(request)
 
 	return nil
 }
