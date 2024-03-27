@@ -83,6 +83,22 @@ func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
 	return release, nil
 }
 
+func (rlsSvc *ReleaseService) GetAllByArtist(artistID uint64) ([]models.Release, error) {
+	releases, err := rlsSvc.repo.GetAllByArtist(artistID)
+	if err != nil {
+		return nil, fmt.Errorf("can't get release with err %w", err)
+	}
+	return releases, nil
+}
+
+func (rlsSvc *ReleaseService) GetAllTracks(release *models.Release) ([]models.Track, error) {
+	tracks, err := rlsSvc.repo.GetAllTracks(release)
+	if err != nil {
+		return nil, fmt.Errorf("can't get release with err %w", err)
+	}
+	return tracks, nil
+}
+
 func (rlsSvc *ReleaseService) Update(release *models.Release) error {
 	if err := rlsSvc.repo.Update(release); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)

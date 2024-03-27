@@ -49,6 +49,14 @@ func (ps *PublicationService) GetAllByDate(date time.Time) ([]models.Publication
 	return publication, nil
 }
 
+func (ps *PublicationService) GetAllByManager(mng uint64) ([]models.Publication, error) {
+	publication, err := ps.repo.GetAllByManager(mng)
+	if err != nil {
+		return nil, fmt.Errorf("can't get publication info with error %w", err)
+	}
+	return publication, nil
+}
+
 func (ps *PublicationService) GetAllByArtistSinceDate(date time.Time, artistID uint64) ([]models.Publication, error) {
 	publication, err := ps.repo.GetAllByArtistSinceDate(date, artistID)
 	if err != nil {
