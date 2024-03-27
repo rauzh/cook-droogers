@@ -1,6 +1,8 @@
 package service
 
-import "cookdroogers/models"
+import (
+	"cookdroogers/models"
+)
 
 type IStatisticsService interface {
 	Create(*models.Statistics) error

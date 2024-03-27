@@ -37,25 +37,3 @@ func (ms *ManagerService) GetRandomManagerID() (uint64, error) {
 	}
 	return id, nil
 }
-
-func (ms *ManagerService) GetReport(managerID uint64) (map[string]string, error) {
-
-	// manager, err := ms.repo.Get(managerID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// report := make(map[string]string)
-
-	// relevantGenre, err := ms.ss.GetRelevantGenre()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// report["relevantGenre"] = relevantGenre
-
-	// for _, artistID := range manager.Artists {
-
-	// }
-
-	return nil, nil
-}

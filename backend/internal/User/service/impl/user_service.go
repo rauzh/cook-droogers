@@ -1,42 +1,57 @@
 package service
 
 import (
+	userErrors "cookdroogers/internal/User/errors"
 	"cookdroogers/internal/User/repo"
-	s "cookdroogers/internal/User/service"
+	userService "cookdroogers/internal/User/service"
 	"cookdroogers/models"
-	repo_errors "cookdroogers/pkg/errors/repo"
+	repoErrors "cookdroogers/pkg/errors/repo"
 	"errors"
 	"fmt"
+	"net/mail"
 )
 
 type UserService struct {
 	repo repo.UserRepo
 }
 
-func NewUserService(repo repo.UserRepo) s.IUserService {
+func NewUserService(repo repo.UserRepo) userService.IUserService {
 	return &UserService{repo: repo}
 }
 
-func (us *UserService) Create(newUser *models.User) error {
+func (usrSvc *UserService) validate(usr *models.User) error {
 
-	if newUser.Email == "" {
-		return errors.New("can't  create user: no email provided")
-	}
-	if newUser.Name == "" {
-		return errors.New("can't  create user: no name provided")
-	}
-	if newUser.Password == "" {
-		return errors.New("can't  create user: no password provided")
+	_, err := mail.ParseAddress(usr.Email)
+	if err != nil {
+		return userErrors.ErrInvalidEmail
 	}
 
-	_, err := us.repo.GetByEmail(newUser.Email)
-	if err != nil && !errors.Is(err, repo_errors.ErrorNotExists) {
+	if usr.Name == "" {
+		return userErrors.ErrInvalidName
+	}
+
+	if usr.Password == "" {
+		return userErrors.ErrInvalidPassword
+	}
+
+	return nil
+}
+
+func (usrSvc *UserService) Create(newUser *models.User) error {
+
+	err := usrSvc.validate(newUser)
+	if err != nil {
+		return err
+	}
+
+	_, err = usrSvc.repo.GetByEmail(newUser.Email)
+	if err != nil && !errors.Is(err, repoErrors.ErrorNotExists) {
 		return fmt.Errorf("can't create user: %w", err)
 	}
 
 	newUser.Type = models.NonMemberUser
 
-	err = us.repo.Create(newUser)
+	err = usrSvc.repo.Create(newUser)
 	if err != nil {
 		return fmt.Errorf("can'r create user: %w", err)
 	}
@@ -44,8 +59,8 @@ func (us *UserService) Create(newUser *models.User) error {
 	return nil
 }
 
-func (us *UserService) Login(login, password string) (*models.User, error) {
-	user, err := us.repo.GetByEmail(login)
+func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
+	user, err := usrSvc.repo.GetByEmail(login)
 	if err != nil {
 		return nil, err
 	}
@@ -57,31 +72,31 @@ func (us *UserService) Login(login, password string) (*models.User, error) {
 	return user, nil
 }
 
-func (us *UserService) GetByEmail(email string) (*models.User, error) {
-	user, err := us.repo.GetByEmail(email)
+func (usrSvc *UserService) GetByEmail(email string) (*models.User, error) {
+	user, err := usrSvc.repo.GetByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}
 	return user, nil
 }
 
-func (us *UserService) Get(id uint64) (*models.User, error) {
-	user, err := us.repo.Get(id)
+func (usrSvc *UserService) Get(id uint64) (*models.User, error) {
+	user, err := usrSvc.repo.Get(id)
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}
 	return user, nil
 }
 
-func (us *UserService) Update(user *models.User) error {
-	if err := us.repo.Update(user); err != nil {
+func (usrSvc *UserService) Update(user *models.User) error {
+	if err := usrSvc.repo.Update(user); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil
 }
 
-func (us *UserService) UpdateType(userID uint64, typ models.UserType) error {
-	if err := us.repo.UpdateType(userID, typ); err != nil {
+func (usrSvc *UserService) UpdateType(userID uint64, typ models.UserType) error {
+	if err := usrSvc.repo.UpdateType(userID, typ); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil
