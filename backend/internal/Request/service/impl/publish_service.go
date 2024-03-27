@@ -57,12 +57,12 @@ func (pblSvc *PublishService) Apply(applierID, releaseID uint64, date time.Time)
 		ApplierID: applierID,
 	}
 
-	// Create request instance in db
+	// Create request.go instance in db
 	if err := pblSvc.reqSvc.Create(&request); err != nil {
 		return err
 	}
 
-	// Async process request and proceed it to manager
+	// Async process request.go and proceed it to manager
 	go pblSvc.proceedToManager(request, releaseID, date)
 
 	return nil
@@ -70,7 +70,7 @@ func (pblSvc *PublishService) Apply(applierID, releaseID uint64, date time.Time)
 
 func (pblSvc *PublishService) proceedToManager(request models.Request, releaseID uint64, date time.Time) {
 
-	// Set request status to "Processing" & UPD db
+	// Set request.go status to "Processing" & UPD db
 	request.Status = models.ProcessingRequest
 
 	err := pblSvc.reqSvc.Update(&request)
@@ -78,7 +78,7 @@ func (pblSvc *PublishService) proceedToManager(request models.Request, releaseID
 		panic("CREATE-PUBL-APPL: Can't update APPL")
 	}
 
-	// Analyze request and set degree
+	// Analyze request.go and set degree
 	pblSvc.computeDegree(&request, releaseID, date)
 
 	// Get applier's data
@@ -87,7 +87,7 @@ func (pblSvc *PublishService) proceedToManager(request models.Request, releaseID
 		panic("CREATE-PUBL-APPL: Can't get ARTIST")
 	}
 
-	// Proceed request to the artist's manager & change its status to "On Approval"
+	// Proceed request.go to the artist's manager & change its status to "On Approval"
 	request.ManagerID = artist.ManagerID
 	request.Status = models.OnApprovalRequest
 
@@ -132,7 +132,7 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 
 	request, err := pblSvc.reqSvc.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get request %d with err %w", requestID, err)
+		return fmt.Errorf("can't get request.go %d with err %w", requestID, err)
 	}
 
 	// Get releaseID from meta
@@ -144,7 +144,7 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 	// Get date from meta
 	date, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", request.Meta["date"])
 	if err != nil {
-		return errors.New("can't get date from publication request")
+		return errors.New("can't get date from publication request.go")
 	}
 
 	publication := models.Publication{
@@ -158,14 +158,14 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 		return fmt.Errorf("can't create publication with err %w", err)
 	}
 
-	// Update associated release and request
+	// Update associated release and request.go
 	if err := pblSvc.rlsSvc.UpdateStatus(releaseID, models.PublishedRelease); err != nil {
 		return fmt.Errorf("can't update publication with err %w", err)
 	}
 
 	request.Status = models.ClosedRequest
 	if err := pblSvc.reqSvc.Update(request); err != nil {
-		return fmt.Errorf("can't update request with err %w", err)
+		return fmt.Errorf("can't update request.go with err %w", err)
 	}
 
 	return nil
@@ -174,11 +174,11 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 func (pblSvc *PublishService) Decline(requestID uint64) error {
 	request, err := pblSvc.reqSvc.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get request %d with err %w", requestID, err)
+		return fmt.Errorf("can't get request.go %d with err %w", requestID, err)
 	}
 
 	request.Status = models.ClosedRequest
-	request.Meta["descr"] = "The request is declined."
+	request.Meta["descr"] = "The request.go is declined."
 
 	return pblSvc.reqSvc.Update(request)
 }

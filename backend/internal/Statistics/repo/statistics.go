@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//go:generate mockery --name StatisticsRepo --with-expecter
 type StatisticsRepo interface {
 	Create(*models.Statistics) error
 	GetForTrack(uint64) ([]models.Statistics, error)

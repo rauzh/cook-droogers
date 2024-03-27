@@ -2,6 +2,7 @@ package repo
 
 import "cookdroogers/models"
 
+//go:generate mockery --name ReleaseRepo --with-expecter
 type ReleaseRepo interface {
 	Create(*models.Release) error
 	Get(uint64) (*models.Release, error)

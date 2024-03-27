@@ -48,7 +48,7 @@ func (sctSvc *SignContractService) Apply(userID uint64, nickname string) error {
 	}
 
 	if err := sctSvc.reqSvc.Create(&request); err != nil {
-		return fmt.Errorf("can't create request with err %w", err)
+		return fmt.Errorf("can't create request.go with err %w", err)
 	}
 
 	go sctSvc.proceedToManager(request)
@@ -74,7 +74,7 @@ func (sctSvc *SignContractService) Accept(requestID uint64) error {
 
 	request, err := sctSvc.reqSvc.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get request %d with err %w", requestID, err)
+		return fmt.Errorf("can't get request.go %d with err %w", requestID, err)
 	}
 
 	artist := models.Artist{
@@ -104,11 +104,11 @@ func (sctSvc *SignContractService) Accept(requestID uint64) error {
 func (sctSvc *SignContractService) Decline(requestID uint64) error {
 	request, err := sctSvc.reqSvc.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get request %d with err %w", requestID, err)
+		return fmt.Errorf("can't get request.go %d with err %w", requestID, err)
 	}
 
 	request.Status = models.ClosedRequest
-	request.Meta["descr"] = "The request is declined."
+	request.Meta["descr"] = "The request.go is declined."
 
 	return sctSvc.reqSvc.Update(request)
 }

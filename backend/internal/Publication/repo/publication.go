@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//go:generate mockery --name PublicationRepo --with-expecter
 type PublicationRepo interface {
 	Create(*models.Publication) error
 	Get(uint64) (*models.Publication, error)
