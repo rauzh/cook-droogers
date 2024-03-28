@@ -14,6 +14,7 @@ import (
 	statService "cookdroogers/internal/Statistics/service/impl"
 	trackMocks "cookdroogers/internal/Track/repo/mocks"
 	trackService "cookdroogers/internal/Track/service/impl"
+	transacMock "cookdroogers/internal/TransactionManager/mocks"
 	"cookdroogers/models"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -23,6 +24,7 @@ import (
 
 func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 
+	transactionMock := transacMock.NewTransactionManager(t)
 	mockMngRepo := mngMocks.NewManagerRepo(t)
 	mockArtRepo := artMocks.NewArtistRepo(t)
 	pbcMockRepo := pbcMocks.NewPublicationRepo(t)
@@ -195,10 +197,10 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 
 	trkSvc := trackService.NewTrackService(trkMockRepo)
 	mngSvc := mngService.NewManagerService(mockMngRepo)
-	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo)
 	artSvc := artService.NewArtistService(mockArtRepo)
 	pbcSvc := pbcService.NewPublicationService(pbcMockRepo)
-	rlsSvc := rlsService.NewReleaseService(trkSvc, rlsMockRepo)
+	rlsSvc := rlsService.NewReleaseService(trkSvc, transactionMock, rlsMockRepo)
+	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo, rlsSvc)
 
 	rptSvc := NewReportService(mngSvc, statSvc, artSvc, pbcSvc, rlsSvc)
 

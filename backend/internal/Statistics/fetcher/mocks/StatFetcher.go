@@ -22,7 +22,7 @@ func (_m *StatFetcher) EXPECT() *StatFetcher_Expecter {
 }
 
 // Fetch provides a mock function with given fields: tracks
-func (_m *StatFetcher) Fetch(tracks []uint64) ([]models.Statistics, error) {
+func (_m *StatFetcher) Fetch(tracks []models.Track) ([]models.Statistics, error) {
 	ret := _m.Called(tracks)
 
 	if len(ret) == 0 {
@@ -31,10 +31,10 @@ func (_m *StatFetcher) Fetch(tracks []uint64) ([]models.Statistics, error) {
 
 	var r0 []models.Statistics
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]uint64) ([]models.Statistics, error)); ok {
+	if rf, ok := ret.Get(0).(func([]models.Track) ([]models.Statistics, error)); ok {
 		return rf(tracks)
 	}
-	if rf, ok := ret.Get(0).(func([]uint64) []models.Statistics); ok {
+	if rf, ok := ret.Get(0).(func([]models.Track) []models.Statistics); ok {
 		r0 = rf(tracks)
 	} else {
 		if ret.Get(0) != nil {
@@ -42,7 +42,7 @@ func (_m *StatFetcher) Fetch(tracks []uint64) ([]models.Statistics, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func([]uint64) error); ok {
+	if rf, ok := ret.Get(1).(func([]models.Track) error); ok {
 		r1 = rf(tracks)
 	} else {
 		r1 = ret.Error(1)
@@ -57,14 +57,14 @@ type StatFetcher_Fetch_Call struct {
 }
 
 // Fetch is a helper method to define mock.On call
-//   - tracks []uint64
+//   - tracks []models.Track
 func (_e *StatFetcher_Expecter) Fetch(tracks interface{}) *StatFetcher_Fetch_Call {
 	return &StatFetcher_Fetch_Call{Call: _e.mock.On("Fetch", tracks)}
 }
 
-func (_c *StatFetcher_Fetch_Call) Run(run func(tracks []uint64)) *StatFetcher_Fetch_Call {
+func (_c *StatFetcher_Fetch_Call) Run(run func(tracks []models.Track)) *StatFetcher_Fetch_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]uint64))
+		run(args[0].([]models.Track))
 	})
 	return _c
 }
@@ -74,7 +74,7 @@ func (_c *StatFetcher_Fetch_Call) Return(_a0 []models.Statistics, _a1 error) *St
 	return _c
 }
 
-func (_c *StatFetcher_Fetch_Call) RunAndReturn(run func([]uint64) ([]models.Statistics, error)) *StatFetcher_Fetch_Call {
+func (_c *StatFetcher_Fetch_Call) RunAndReturn(run func([]models.Track) ([]models.Statistics, error)) *StatFetcher_Fetch_Call {
 	_c.Call.Return(run)
 	return _c
 }

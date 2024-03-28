@@ -1,6 +1,7 @@
 package service
 
 import (
+	releaseService "cookdroogers/internal/Release/service"
 	"cookdroogers/internal/Statistics/fetcher"
 	"cookdroogers/internal/Statistics/repo"
 	s "cookdroogers/internal/Statistics/service"
@@ -12,19 +13,22 @@ import (
 )
 
 type StatisticsService struct {
-	trackService ts.ITrackService
-	fetcher      fetcher.StatFetcher
-	repo         repo.StatisticsRepo
+	trackService   ts.ITrackService
+	releaseService releaseService.IReleaseService
+	fetcher        fetcher.StatFetcher
+	repo           repo.StatisticsRepo
 }
 
 func NewStatisticsService(
 	ts ts.ITrackService,
 	f fetcher.StatFetcher,
-	r repo.StatisticsRepo) s.IStatisticsService {
+	r repo.StatisticsRepo,
+	rls releaseService.IReleaseService) s.IStatisticsService {
 	return &StatisticsService{
-		trackService: ts,
-		fetcher:      f,
-		repo:         r,
+		trackService:   ts,
+		releaseService: rls,
+		fetcher:        f,
+		repo:           r,
 	}
 }
 
@@ -54,7 +58,12 @@ func (statSvc *StatisticsService) GetForTrack(trackID uint64) ([]models.Statisti
 	return stats, nil
 }
 
-func (statSvc *StatisticsService) Fetch(tracks []uint64) error {
+func (statSvc *StatisticsService) FetchByRelease(release *models.Release) error {
+
+	tracks, err := statSvc.releaseService.GetAllTracks(release)
+	if err != nil {
+		return fmt.Errorf("can't fetch stats with err %w", err)
+	}
 
 	stats, err := statSvc.fetcher.Fetch(tracks)
 	if err != nil {

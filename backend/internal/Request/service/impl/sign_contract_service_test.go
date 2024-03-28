@@ -106,6 +106,4 @@ func TestSignContractService_Apply_Fail(t *testing.T) {
 
 	assert.Equal(t, err.Error(),
 		"can't apply sign contract request with err can't create request info with error db error")
-
-	//assert.Equal(t,)
 }
