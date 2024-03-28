@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/Release/repo"
 	releaseService "cookdroogers/internal/Release/service"
 	trackService "cookdroogers/internal/Track/service"
+	transactionManager "cookdroogers/internal/TransactionManager"
 	"cookdroogers/models"
 	"fmt"
 	"runtime"
@@ -12,14 +13,16 @@ import (
 )
 
 type ReleaseService struct {
-	trkSvc trackService.ITrackService
-	repo   repo.ReleaseRepo
+	trkSvc             trackService.ITrackService
+	repo               repo.ReleaseRepo
+	transactionManager transactionManager.TransactionManager
 }
 
 func NewReleaseService(
 	trkSvc trackService.ITrackService,
+	transactionMngr transactionManager.TransactionManager,
 	r repo.ReleaseRepo) releaseService.IReleaseService {
-	return &ReleaseService{trkSvc: trkSvc, repo: r}
+	return &ReleaseService{trkSvc: trkSvc, repo: r, transactionManager: transactionMngr}
 }
 
 func (rlsSvc *ReleaseService) validate(release *models.Release) error {
@@ -44,17 +47,25 @@ func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Tr
 
 	release.Status = models.UnpublishedRelease
 
+	transactionHash, err := rlsSvc.transactionManager.BeginTransaction()
+	if err != nil {
+		return err
+	}
 	// Divide tracks on parts by CPUnum and upload then concurrently
-	rlsSvc.uploadTracksParallel(release, tracks)
+	rlsSvc.uploadTracks(release, tracks, transactionHash)
 
 	if err := rlsSvc.repo.Create(release); err != nil {
+		rlsSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't create release with err %w", err)
 	}
+
+	err = rlsSvc.transactionManager.CommitTransaction(transactionHash)
 
 	return nil
 }
 
-func (rlsSvc *ReleaseService) uploadTracksParallel(release *models.Release, tracks []models.Track) {
+func (rlsSvc *ReleaseService) uploadTracks(
+	release *models.Release, tracks []models.Track, transactionHash string) {
 
 	wg := new(sync.WaitGroup)
 
@@ -69,20 +80,23 @@ func (rlsSvc *ReleaseService) uploadTracksParallel(release *models.Release, trac
 		}
 
 		wg.Add(1)
-		go rlsSvc.uploadBunchOfTracks(release, start, end, tracks, wg, mu)
+		go rlsSvc.uploadBunchOfTracks(release, start, end, tracks, wg, mu, transactionHash)
 	}
 	wg.Wait()
 }
 
 func (rlsSvc *ReleaseService) uploadBunchOfTracks(release *models.Release,
 	start, end int, tracks []models.Track,
-	wg *sync.WaitGroup, mu *sync.Mutex) {
+	wg *sync.WaitGroup, mu *sync.Mutex, transactionHash string) {
 
 	defer wg.Done()
 
 	for i := start; start < end; i++ {
 		trackID, err := rlsSvc.trkSvc.Create(&tracks[i])
-		if err != nil {
+		if err != nil && rlsSvc.transactionManager.IsActive(transactionHash) {
+			rlsSvc.transactionManager.RollbackTransaction(transactionHash)
+			return
+		} else if err != nil {
 			continue
 		}
 

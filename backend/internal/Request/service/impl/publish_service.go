@@ -7,6 +7,7 @@ import (
 	requestErrors "cookdroogers/internal/Request/errors"
 	requestService "cookdroogers/internal/Request/service"
 	statisticsServive "cookdroogers/internal/Statistics/service"
+	transactionManager "cookdroogers/internal/TransactionManager"
 	"cookdroogers/models"
 	"errors"
 	"fmt"
@@ -15,11 +16,12 @@ import (
 )
 
 type PublishService struct {
-	reqSvc  requestService.IRequestService
-	artSvc  artistService.IArtistService
-	statSvc statisticsServive.IStatisticsService
-	rlsSvc  releaseService.IReleaseService
-	pblcSvc publicationService.IPublicationService
+	reqSvc             requestService.IRequestService
+	artSvc             artistService.IArtistService
+	statSvc            statisticsServive.IStatisticsService
+	rlsSvc             releaseService.IReleaseService
+	pblcSvc            publicationService.IPublicationService
+	transactionManager transactionManager.TransactionManager
 }
 
 const Week time.Duration = 24 * 7 * time.Hour
@@ -30,13 +32,15 @@ func NewPublishService(
 	artSvc artistService.IArtistService,
 	statSvc statisticsServive.IStatisticsService,
 	rlsSvc releaseService.IReleaseService,
-	pblcSvc publicationService.IPublicationService) requestService.IPublishService {
+	pblcSvc publicationService.IPublicationService,
+	transactionMngr transactionManager.TransactionManager) requestService.IPublishService {
 	return &PublishService{
-		reqSvc:  reqSvc,
-		artSvc:  artSvc,
-		statSvc: statSvc,
-		rlsSvc:  rlsSvc,
-		pblcSvc: pblcSvc,
+		reqSvc:             reqSvc,
+		artSvc:             artSvc,
+		statSvc:            statSvc,
+		rlsSvc:             rlsSvc,
+		pblcSvc:            pblcSvc,
+		transactionManager: transactionMngr,
 	}
 }
 
@@ -144,7 +148,7 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 	// Get date from meta
 	date, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", request.Meta["date"])
 	if err != nil {
-		return errors.New("can't get date from publication request.go")
+		return errors.New("can't get date from publication request")
 	}
 
 	publication := models.Publication{
@@ -153,22 +157,30 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 		ManagerID: request.ManagerID,
 	}
 
+	transactionHash, err := pblSvc.transactionManager.BeginTransaction()
+	if err != nil {
+		return err
+	}
 	// Create publication
 	if err := pblSvc.pblcSvc.Create(&publication); err != nil {
+		pblSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't create publication with err %w", err)
 	}
 
 	// Update associated release and request.go
 	if err := pblSvc.rlsSvc.UpdateStatus(releaseID, models.PublishedRelease); err != nil {
+		pblSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't update publication with err %w", err)
 	}
 
 	request.Status = models.ClosedRequest
 	if err := pblSvc.reqSvc.Update(request); err != nil {
+		pblSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't update request.go with err %w", err)
 	}
 
-	return nil
+	err = pblSvc.transactionManager.CommitTransaction(transactionHash)
+	return err
 }
 
 func (pblSvc *PublishService) Decline(requestID uint64) error {

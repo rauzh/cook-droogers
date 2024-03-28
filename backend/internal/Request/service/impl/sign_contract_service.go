@@ -5,6 +5,7 @@ import (
 	managerService "cookdroogers/internal/Manager/service"
 	requestErrors "cookdroogers/internal/Request/errors"
 	requestService "cookdroogers/internal/Request/service"
+	transactionManager "cookdroogers/internal/TransactionManager"
 	userService "cookdroogers/internal/User/service"
 	"cookdroogers/models"
 	"fmt"
@@ -12,10 +13,11 @@ import (
 )
 
 type SignContractService struct {
-	reqSvc requestService.IRequestService
-	mngSvc managerService.IManagerService
-	usrSvc userService.IUserService
-	artSvc artistService.IArtistService
+	reqSvc             requestService.IRequestService
+	mngSvc             managerService.IManagerService
+	usrSvc             userService.IUserService
+	artSvc             artistService.IArtistService
+	transactionManager transactionManager.TransactionManager
 }
 
 func NewSignContractService(
@@ -23,12 +25,14 @@ func NewSignContractService(
 	mngSvc managerService.IManagerService,
 	usrSvc userService.IUserService,
 	artSvc artistService.IArtistService,
+	transactionMngr transactionManager.TransactionManager,
 ) requestService.ISignContractService {
 	return &SignContractService{
-		reqSvc: reqSvc,
-		mngSvc: mngSvc,
-		usrSvc: usrSvc,
-		artSvc: artSvc,
+		reqSvc:             reqSvc,
+		mngSvc:             mngSvc,
+		usrSvc:             usrSvc,
+		artSvc:             artSvc,
+		transactionManager: transactionMngr,
 	}
 }
 
@@ -85,20 +89,29 @@ func (sctSvc *SignContractService) Accept(requestID uint64) error {
 		ManagerID:    request.ManagerID,
 	}
 
+	transactionHash, err := sctSvc.transactionManager.BeginTransaction()
+	if err != nil {
+		return err
+	}
+
 	if err := sctSvc.artSvc.Create(&artist); err != nil {
+		sctSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't create artist %s with err %w", artist.Nickname, err)
 	}
 
 	if err := sctSvc.usrSvc.UpdateType(artist.UserID, models.ArtistUser); err != nil {
+		sctSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 
 	request.Status = models.ClosedRequest
 	if err := sctSvc.reqSvc.Update(request); err != nil {
+		sctSvc.transactionManager.RollbackTransaction(transactionHash)
 		return fmt.Errorf("can't update reqiest with err %w", err)
 	}
 
-	return nil
+	err = sctSvc.transactionManager.CommitTransaction(transactionHash)
+	return err
 }
 
 func (sctSvc *SignContractService) Decline(requestID uint64) error {

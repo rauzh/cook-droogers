@@ -6,6 +6,7 @@ import (
 	mngMocks "cookdroogers/internal/Manager/repo/mocks"
 	mngService "cookdroogers/internal/Manager/service/impl"
 	reqMocks "cookdroogers/internal/Request/repo/mocks"
+	transacMock "cookdroogers/internal/TransactionManager/mocks"
 	usrMocks "cookdroogers/internal/User/repo/mocks"
 	usrService "cookdroogers/internal/User/service/impl"
 	"cookdroogers/models"
@@ -17,6 +18,7 @@ import (
 
 func TestSignContractService_Apply(t *testing.T) {
 
+	mockTrans := transacMock.NewTransactionManager(t)
 	mockArtRepo := artMocks.NewArtistRepo(t)
 
 	mockUsrRepo := usrMocks.NewUserRepo(t)
@@ -57,7 +59,7 @@ func TestSignContractService_Apply(t *testing.T) {
 	usrSvc := usrService.NewUserService(mockUsrRepo)
 	artSvc := artService.NewArtistService(mockArtRepo)
 
-	sctSvc := NewSignContractService(reqSvc, mngSvc, usrSvc, artSvc)
+	sctSvc := NewSignContractService(reqSvc, mngSvc, usrSvc, artSvc, mockTrans)
 
 	err := sctSvc.Apply(777, "aboba")
 
@@ -67,6 +69,8 @@ func TestSignContractService_Apply(t *testing.T) {
 }
 
 func TestSignContractService_Apply_Fail(t *testing.T) {
+
+	mockTrans := transacMock.NewTransactionManager(t)
 
 	mockArtRepo := artMocks.NewArtistRepo(t)
 
@@ -94,7 +98,7 @@ func TestSignContractService_Apply_Fail(t *testing.T) {
 	usrSvc := usrService.NewUserService(mockUsrRepo)
 	artSvc := artService.NewArtistService(mockArtRepo)
 
-	sctSvc := NewSignContractService(reqSvc, mngSvc, usrSvc, artSvc)
+	sctSvc := NewSignContractService(reqSvc, mngSvc, usrSvc, artSvc, mockTrans)
 
 	err := sctSvc.Apply(777, "aboba")
 
