@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type ReportService struct {
+type ReportServiceJSON struct {
 	mngSvc  managerService.IManagerService
 	statSvc statisticsServive.IStatisticsService
 	artSvc  artistService.IArtistService
@@ -27,7 +27,7 @@ func NewReportService(
 	pbcSvc publicationService.IPublicationService,
 	rlsSvc releaseService.IReleaseService,
 ) reportService.IReportService {
-	return &ReportService{
+	return &ReportServiceJSON{
 		mngSvc:  mngSvc,
 		statSvc: statSvc,
 		artSvc:  artSvc,
@@ -36,10 +36,66 @@ func NewReportService(
 	}
 }
 
-func (rptSvc *ReportService) GetReportForManager(mngID uint64) (map[string][]byte, error) {
+func (rptSvc *ReportServiceJSON) GetReportForManager(mngID uint64) (map[string][]byte, error) {
 
 	report := make(map[string][]byte)
 
+	relGenreJSON, err := rptSvc.getRelevantGenreJSON()
+	if err != nil {
+		return nil, err
+	}
+	report["relevant_genre"] = relGenreJSON
+
+	artistStatsJson, err := rptSvc.getAllArtistsStatsForManager(mngID)
+	if err != nil {
+		return nil, err
+	}
+
+	report["artists_stats"] = artistStatsJson
+
+	return report, nil
+}
+
+func (rptSvc *ReportServiceJSON) GetReportForArtist(artistID uint64) (map[string][]byte, error) {
+
+	report := make(map[string][]byte)
+
+	releases, err := rptSvc.rlsSvc.GetAllByArtist(artistID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, release := range releases {
+		tracks, err := rptSvc.rlsSvc.GetAllTracks(&release)
+		if err != nil {
+			return nil, err
+		}
+
+		tracksStats := make(map[string]uint64)
+		for _, track := range tracks {
+			stats, err := rptSvc.statSvc.GetForTrack(track.TrackID)
+			if err != nil {
+				return nil, err
+			}
+
+			var totalStreams uint64
+			for _, stat := range stats {
+				totalStreams += stat.Streams
+			}
+
+			tracksStats[track.Ttile] = totalStreams
+		}
+		releaseStatsJson, err := json.Marshal(tracksStats)
+		if err != nil {
+			return nil, err
+		}
+		report[release.Title] = releaseStatsJson
+	}
+
+	return report, nil
+}
+
+func (rptSvc *ReportServiceJSON) getRelevantGenreJSON() ([]byte, error) {
 	relevantGenre, err := rptSvc.statSvc.GetRelevantGenre()
 	if err != nil {
 		return nil, nil
@@ -50,8 +106,10 @@ func (rptSvc *ReportService) GetReportForManager(mngID uint64) (map[string][]byt
 		return nil, err
 	}
 
-	report["relevant_genre"] = relGenreJson
+	return relGenreJson, nil
+}
 
+func (rptSvc *ReportServiceJSON) getAllArtistsStatsForManager(mngID uint64) ([]byte, error) {
 	manager, err := rptSvc.mngSvc.Get(mngID)
 	if err != nil {
 		return nil, err
@@ -124,50 +182,10 @@ func (rptSvc *ReportService) GetReportForManager(mngID uint64) (map[string][]byt
 		artistStats[artists[release.ArtistID].Nickname] = releaseStats
 	}
 
-	artistStatsJson, err := json.Marshal(artistStats)
-	if err != nil {
-		return nil, err
-	}
-	report["artists_stats"] = artistStatsJson
-
-	return report, nil
-}
-
-func (rptSvc *ReportService) GetReportForArtist(artistID uint64) (map[string][]byte, error) {
-
-	report := make(map[string][]byte)
-
-	releases, err := rptSvc.rlsSvc.GetAllByArtist(artistID)
+	artistStatsJSON, err := json.Marshal(artistStats)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, release := range releases {
-		tracks, err := rptSvc.rlsSvc.GetAllTracks(&release)
-		if err != nil {
-			return nil, err
-		}
-
-		tracksStats := make(map[string]uint64)
-		for _, track := range tracks {
-			stats, err := rptSvc.statSvc.GetForTrack(track.TrackID)
-			if err != nil {
-				return nil, err
-			}
-
-			var totalStreams uint64
-			for _, stat := range stats {
-				totalStreams += stat.Streams
-			}
-
-			tracksStats[track.Ttile] = totalStreams
-		}
-		releaseStatsJson, err := json.Marshal(tracksStats)
-		if err != nil {
-			return nil, err
-		}
-		report[release.Title] = releaseStatsJson
-	}
-
-	return report, nil
+	return artistStatsJSON, nil
 }

@@ -48,7 +48,7 @@ func (sctSvc *SignContractService) Apply(userID uint64, nickname string) error {
 	}
 
 	if err := sctSvc.reqSvc.Create(&request); err != nil {
-		return fmt.Errorf("can't create request.go with err %w", err)
+		return fmt.Errorf("can't apply sign contract request with err %w", err)
 	}
 
 	go sctSvc.proceedToManager(request)

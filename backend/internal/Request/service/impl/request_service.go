@@ -25,7 +25,7 @@ func (as *RequestService) Create(request *models.Request) error {
 	request.Date = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 
 	if err := as.repo.Create(request); err != nil {
-		return fmt.Errorf("can't create request.go info with error %w", err)
+		return fmt.Errorf("can't create request info with error %w", err)
 	}
 	return nil
 }

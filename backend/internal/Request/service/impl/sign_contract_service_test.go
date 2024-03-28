@@ -9,6 +9,7 @@ import (
 	usrMocks "cookdroogers/internal/User/repo/mocks"
 	usrService "cookdroogers/internal/User/service/impl"
 	"cookdroogers/models"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -63,4 +64,44 @@ func TestSignContractService_Apply(t *testing.T) {
 	time.Sleep(time.Second)
 
 	assert.Nil(t, err)
+}
+
+func TestSignContractService_Apply_Fail(t *testing.T) {
+
+	mockArtRepo := artMocks.NewArtistRepo(t)
+
+	mockUsrRepo := usrMocks.NewUserRepo(t)
+
+	mockMngRepo := mngMocks.NewManagerRepo(t)
+
+	mockRequestRepo := reqMocks.NewRequestRepo(t)
+	y, m, d := time.Now().UTC().Date()
+	mockRequestRepo.EXPECT().Create(
+		&models.Request{
+			Type:   models.SignRequest,
+			Status: models.NewRequest,
+			Date:   time.Date(y, m, d, 0, 0, 0, 0, time.UTC),
+			Meta: map[string]string{
+				"nickname": "aboba",
+				"descr":    "",
+			},
+			ApplierID: uint64(777),
+		},
+	).Return(errors.New("db error")).Once()
+
+	reqSvc := NewRequestServiceImpl(mockRequestRepo)
+	mngSvc := mngService.NewManagerService(mockMngRepo)
+	usrSvc := usrService.NewUserService(mockUsrRepo)
+	artSvc := artService.NewArtistService(mockArtRepo)
+
+	sctSvc := NewSignContractService(reqSvc, mngSvc, usrSvc, artSvc)
+
+	err := sctSvc.Apply(777, "aboba")
+
+	time.Sleep(time.Second)
+
+	assert.Equal(t, err.Error(),
+		"can't apply sign contract request with err can't create request info with error db error")
+
+	//assert.Equal(t,)
 }
