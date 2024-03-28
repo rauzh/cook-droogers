@@ -1,6 +1,7 @@
 package service
 
 import (
+	releaseErrors "cookdroogers/internal/Release/errors"
 	"cookdroogers/internal/Release/repo"
 	releaseService "cookdroogers/internal/Release/service"
 	trackService "cookdroogers/internal/Track/service"
@@ -21,8 +22,25 @@ func NewReleaseService(
 	return &ReleaseService{trkSvc: trkSvc, repo: r}
 }
 
+func (rlsSvc *ReleaseService) validate(release *models.Release) error {
+
+	if release.Title == "" {
+		return releaseErrors.ErrNoTitle
+	}
+
+	if release.DateCreation.IsZero() {
+		return releaseErrors.ErrNoDate
+	}
+
+	return nil
+}
+
 // Create new release and its tracks in DB
 func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
+
+	if err := rlsSvc.validate(release); err != nil {
+		return err
+	}
 
 	release.Status = models.UnpublishedRelease
 

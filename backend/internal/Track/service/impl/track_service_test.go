@@ -25,21 +25,3 @@ func TestTrackService_Get(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "rock", track.Genre)
 }
-
-func TestTrackService_Create(t *testing.T) {
-
-	mockTrackRepo := trackMocks.NewTrackRepo(t)
-	mockTrackRepo.EXPECT().Get(uint64(1234)).Return(&models.Track{
-		TrackID:  1234,
-		Ttile:    "aa",
-		Duration: 120,
-		Genre:    "rock",
-		Artists:  []uint64{82, 4},
-	}, nil).Once()
-
-	ts := NewTrackService(mockTrackRepo)
-
-	track, err := ts.Get(1234)
-	assert.Nil(t, err)
-	assert.Equal(t, "rock", track.Genre)
-}

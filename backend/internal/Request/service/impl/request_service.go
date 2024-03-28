@@ -21,7 +21,8 @@ func NewRequestServiceImpl(repo requestRepo.RequestRepo) s.IRequestService {
 func (as *RequestService) Create(request *models.Request) error {
 
 	request.Status = models.NewRequest
-	request.Date = time.Now()
+	y, m, d := time.Now().UTC().Date()
+	request.Date = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 
 	if err := as.repo.Create(request); err != nil {
 		return fmt.Errorf("can't create request.go info with error %w", err)
