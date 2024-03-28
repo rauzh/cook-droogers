@@ -78,12 +78,16 @@ func (rptSvc *ReportServiceJSON) GetReportForArtist(artistID uint64) (map[string
 				return nil, err
 			}
 
-			var totalStreams uint64
+			latestStatDate := stats[0].Date
+			latestStat := stats[0]
 			for _, stat := range stats {
-				totalStreams += stat.Streams
+				if stat.Date.After(latestStatDate) {
+					latestStatDate = stat.Date
+					latestStat = stat
+				}
 			}
 
-			tracksStats[track.Ttile] = totalStreams
+			tracksStats[track.Title] = latestStat.Streams
 		}
 		releaseStatsJson, err := json.Marshal(tracksStats)
 		if err != nil {

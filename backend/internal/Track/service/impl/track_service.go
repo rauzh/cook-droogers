@@ -29,7 +29,7 @@ func (trkSvc *TrackService) validate(track *models.Track) error {
 		return trackErrors.ErrNoType
 	}
 
-	if track.Ttile == "" {
+	if track.Title == "" {
 		return trackErrors.ErrNoTitle
 	}
 

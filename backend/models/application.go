@@ -19,11 +19,11 @@ const (
 )
 
 type Request struct {
-	RequestID uint64
-	Type      RequestType
-	Status    RequestStatus
-	Date      time.Time
-	Meta      map[string]string
-	ApplierID uint64
-	ManagerID uint64
+	RequestID uint64            `json:"request_id"`
+	Type      RequestType       `json:"type"`
+	Status    RequestStatus     `json:"status"`
+	Date      time.Time         `json:"date"`
+	Meta      map[string]string `json:"meta"`
+	ApplierID uint64            `json:"applier_id"`
+	ManagerID uint64            `json:"manager_id"`
 }
