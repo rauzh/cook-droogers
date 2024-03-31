@@ -1,7 +1,7 @@
 package service
 
 import (
-	trackMocks "cookdroogers/internal/Track/repo/mocks"
+	mocks "cookdroogers/internal/repo/mocks"
 	"cookdroogers/models"
 	"testing"
 
@@ -10,10 +10,10 @@ import (
 
 func TestTrackService_Get(t *testing.T) {
 
-	mockTrackRepo := trackMocks.NewTrackRepo(t)
+	mockTrackRepo := mocks.NewTrackRepo(t)
 	mockTrackRepo.EXPECT().Get(uint64(1234)).Return(&models.Track{
 		TrackID:  1234,
-		Ttile:    "aa",
+		Title:    "aa",
 		Duration: 120,
 		Genre:    "rock",
 		Artists:  []uint64{82, 4},

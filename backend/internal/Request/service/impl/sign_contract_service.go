@@ -78,7 +78,7 @@ func (sctSvc *SignContractService) Accept(requestID uint64) error {
 
 	request, err := sctSvc.reqSvc.Get(requestID)
 	if err != nil {
-		return fmt.Errorf("can't get request.go %d with err %w", requestID, err)
+		return fmt.Errorf("can't get request %d with err %w", requestID, err)
 	}
 
 	artist := models.Artist{

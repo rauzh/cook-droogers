@@ -33,27 +33,12 @@ type StatJSON struct {
 
 func (fetcher *StatFetcherAdapter) Fetch(tracks []models.Track) ([]models.Statistics, error) {
 
-	tracksInfo := make([]SendData, len(tracks))
-
-	for _, track := range tracks {
-
-		artist, err := fetcher.artistRepo.Get(track.Artists[0])
-		if err != nil {
-			return nil, err
-		}
-
-		tracksInfo = append(tracksInfo, SendData{
-			Artist: artist.Nickname,
-			Track:  track.Title,
-		})
-	}
-
-	tracksInfoJSON, err := json.Marshal(tracksInfo)
+	sendData, err := fetcher.getSendData(tracks)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Post(fetcher.url, "application/json", bytes.NewBuffer(tracksInfoJSON))
+	resp, err := http.Post(fetcher.url, "application/json", bytes.NewBuffer(sendData))
 	if err != nil {
 		return nil, err
 	}
@@ -82,4 +67,28 @@ func (fetcher *StatFetcherAdapter) Fetch(tracks []models.Track) ([]models.Statis
 	}
 
 	return statsInternal, nil
+}
+
+func (fetcher *StatFetcherAdapter) getSendData(tracks []models.Track) ([]byte, error) {
+	tracksInfo := make([]SendData, len(tracks))
+
+	for _, track := range tracks {
+
+		artist, err := fetcher.artistRepo.Get(track.Artists[0])
+		if err != nil {
+			return nil, err
+		}
+
+		tracksInfo = append(tracksInfo, SendData{
+			Artist: artist.Nickname,
+			Track:  track.Title,
+		})
+	}
+
+	tracksInfoJSON, err := json.Marshal(tracksInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return tracksInfoJSON, nil
 }

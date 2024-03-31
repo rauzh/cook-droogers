@@ -10,10 +10,10 @@ const (
 )
 
 type Release struct {
-	ReleaseID    uint64        `json:"release_id"`
-	Title        string        `json:"title"`
-	Status       ReleaseStatus `json:"status"`
-	DateCreation time.Time     `json:"date_creation"`
-	Tracks       []uint64      `json:"tracks"`
-	ArtistID     uint64        `json:"artist_id"`
+	ReleaseID    uint64
+	Title        string
+	Status       ReleaseStatus
+	DateCreation time.Time
+	Tracks       []uint64
+	ArtistID     uint64
 }

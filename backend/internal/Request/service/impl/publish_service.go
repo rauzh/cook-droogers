@@ -44,6 +44,7 @@ func NewPublishService(
 	}
 }
 
+// сделать нормальный ооп с наследованием от общей базовой заявки
 func (pblSvc *PublishService) Apply(applierID, releaseID uint64, date time.Time) error {
 
 	// Publication date must be at least week later than application date
@@ -66,7 +67,7 @@ func (pblSvc *PublishService) Apply(applierID, releaseID uint64, date time.Time)
 		return err
 	}
 
-	// Async process request.go and proceed it to manager
+	// Async process request.go and proceed it to manager ДОКРУТИТЬ НАДЕЖНОСТЬ!!!
 	go pblSvc.proceedToManager(request, releaseID, date)
 
 	return nil
@@ -101,6 +102,7 @@ func (pblSvc *PublishService) proceedToManager(request models.Request, releaseID
 	}
 }
 
+// пробег по проверкам которые в итоге возрвращаютт структуру с диффом оценки и описанием с каким-нибудь реквест валидатор (чтобы можно бвло норм расширять)
 func (pblSvc *PublishService) computeDegree(request *models.Request, releaseID uint64, date time.Time) {
 	var grade uint8 = DefaultGrade
 
@@ -145,7 +147,7 @@ func (pblSvc *PublishService) Accept(requestID uint64) error {
 		return requestErrors.ErrInvalidMetaReleaseID
 	}
 
-	// Get date from meta
+	// Get date from meta время в константу
 	date, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", request.Meta["date"])
 	if err != nil {
 		return errors.New("can't get date from publication request")

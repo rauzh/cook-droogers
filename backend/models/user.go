@@ -9,9 +9,9 @@ const (
 )
 
 type User struct {
-	UserID   uint64   `json:"user_id"`
-	Name     string   `json:"name"`
-	Email    string   `json:"email"`
-	Password string   `json:"password"`
-	Type     UserType `json:"type"`
+	UserID   uint64
+	Name     string
+	Email    string
+	Password string
+	Type     UserType
 }
