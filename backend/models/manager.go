@@ -1,6 +1,7 @@
 package models
 
 type Manager struct {
-	UserID  uint64
-	Artists []uint64
+	ManagerID uint64
+	UserID    uint64
+	Artists   []uint64
 }

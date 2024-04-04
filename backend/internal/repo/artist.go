@@ -1,11 +1,13 @@
 package repo
 
-import "cookdroogers/models"
+import (
+	"context"
+	"cookdroogers/models"
+)
 
 //go:generate mockery --name ArtistRepo --with-expecter
 type ArtistRepo interface {
-	Create(*models.Artist) error
-	Get(uint64) (*models.Artist, error)
-	GetAll() ([]models.Artist, error)
-	Update(*models.Artist) error
+	Create(context.Context, *models.Artist) error
+	Get(context.Context, uint64) (*models.Artist, error)
+	Update(context.Context, *models.Artist) error
 }

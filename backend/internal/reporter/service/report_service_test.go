@@ -1,20 +1,15 @@
-package impl
+package service
 
 import (
-	artMocks "cookdroogers/internal/Artist/repo/mocks"
-	artService "cookdroogers/internal/Artist/service/impl"
-	mngMocks "cookdroogers/internal/Manager/repo/mocks"
-	mngService "cookdroogers/internal/Manager/service/impl"
-	pbcMocks "cookdroogers/internal/Publication/repo/mocks"
-	pbcService "cookdroogers/internal/Publication/service/impl"
-	rlsMocks "cookdroogers/internal/Release/repo/mocks"
-	rlsService "cookdroogers/internal/Release/service/impl"
-	statFetcher "cookdroogers/internal/Statistics/fetcher/mocks"
-	statMocks "cookdroogers/internal/Statistics/repo/mocks"
-	statService "cookdroogers/internal/Statistics/service/impl"
-	trackMocks "cookdroogers/internal/Track/repo/mocks"
-	trackService "cookdroogers/internal/Track/service/impl"
-	transacMock "cookdroogers/internal/TransactionManager/mocks"
+	artService "cookdroogers/internal/artist/service"
+	mngService "cookdroogers/internal/manager/service"
+	pbcService "cookdroogers/internal/publication/service"
+	rlsService "cookdroogers/internal/release/service"
+	mocks "cookdroogers/internal/repo/mocks"
+	statFetcher "cookdroogers/internal/statistics/fetcher/mocks"
+	statService "cookdroogers/internal/statistics/service"
+	trackService "cookdroogers/internal/track/service"
+	transacMock "cookdroogers/internal/transactor/mocks"
 	"cookdroogers/models"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -24,13 +19,13 @@ import (
 
 func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 
-	transactionMock := transacMock.NewTransactionManager(t)
-	mockMngRepo := mngMocks.NewManagerRepo(t)
-	mockArtRepo := artMocks.NewArtistRepo(t)
-	pbcMockRepo := pbcMocks.NewPublicationRepo(t)
-	rlsMockRepo := rlsMocks.NewReleaseRepo(t)
-	trkMockRepo := trackMocks.NewTrackRepo(t)
-	statMockRepo := statMocks.NewStatisticsRepo(t)
+	transactionMock := transacMock.NewTransactor(t)
+	mockMngRepo := mocks.NewManagerRepo(t)
+	mockArtRepo := mocks.NewArtistRepo(t)
+	pbcMockRepo := mocks.NewPublicationRepo(t)
+	rlsMockRepo := mocks.NewReleaseRepo(t)
+	trkMockRepo := mocks.NewTrackRepo(t)
+	statMockRepo := mocks.NewStatisticsRepo(t)
 
 	now := time.Now().UTC()
 

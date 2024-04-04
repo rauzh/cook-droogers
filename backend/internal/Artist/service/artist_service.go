@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 type IArtistService interface {
 	Create(*models.Artist) error
 	Get(uint64) (*models.Artist, error)
-	GetAll() ([]models.Artist, error)
 	Update(*models.Artist) error
 }
 
@@ -22,30 +22,22 @@ func NewArtistService(r repo.ArtistRepo) IArtistService {
 }
 
 func (ars *ArtistService) Create(artist *models.Artist) error {
-	if err := ars.repo.Create(artist); err != nil {
+	if err := ars.repo.Create(context.Background(), artist); err != nil {
 		return fmt.Errorf("can't create artist with err %w", err)
 	}
 	return nil
 }
 
 func (ars *ArtistService) Get(id uint64) (*models.Artist, error) {
-	artist, err := ars.repo.Get(id)
+	artist, err := ars.repo.Get(context.Background(), id)
 	if err != nil {
 		return nil, fmt.Errorf("can't get artist with err %w", err)
 	}
 	return artist, nil
 }
 
-func (ars *ArtistService) GetAll() ([]models.Artist, error) {
-	artists, err := ars.repo.GetAll()
-	if err != nil {
-		return nil, fmt.Errorf("can't get artists with err %w", err)
-	}
-	return artists, nil
-}
-
 func (ars *ArtistService) Update(artist *models.Artist) error {
-	if err := ars.repo.Update(artist); err != nil {
+	if err := ars.repo.Update(context.Background(), artist); err != nil {
 		return fmt.Errorf("can't update artist with err %w", err)
 	}
 	return nil

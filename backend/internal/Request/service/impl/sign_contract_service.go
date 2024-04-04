@@ -60,20 +60,6 @@ func (sctSvc *SignContractService) Apply(userID uint64, nickname string) error {
 	return nil
 }
 
-func (sctSvc *SignContractService) proceedToManager(request models.Request) {
-	request.Status = models.OnApprovalRequest
-
-	managerID, err := sctSvc.mngSvc.GetRandomManagerID()
-	if err == nil {
-		request.ManagerID = managerID
-	} else {
-		request.Status = models.ClosedRequest
-		request.Meta["descr"] = "Can't find manager"
-	}
-
-	sctSvc.reqSvc.Update(&request)
-}
-
 func (sctSvc *SignContractService) Accept(requestID uint64) error {
 
 	request, err := sctSvc.reqSvc.Get(requestID)
