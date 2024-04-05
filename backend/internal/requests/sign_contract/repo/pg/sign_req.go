@@ -50,11 +50,7 @@ func (sctRepo *SignContractRequestPgRepo) SetMeta(ctx context.Context, signReq *
 	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
 		metaJson, signReq.RequestID).Scan()
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (sctRepo *SignContractRequestPgRepo) Get(ctx context.Context, id uint64) (*sign_contract.SignContractRequest, error) {
@@ -94,56 +90,48 @@ func (sctRepo *SignContractRequestPgRepo) Get(ctx context.Context, id uint64) (*
 
 func (sctRepo *SignContractRequestPgRepo) Update(ctx context.Context, signReq *sign_contract.SignContractRequest) error {
 
-	//if signReq.RequestID == 0 {
-	//	return ErrorInvalidRequestID
-	//}
-	//
-	//meta := map[string]string{
-	//	"nickname":    signReq.Nickname,
-	//	"description": signReq.Description,
-	//}
-	//
-	//metaJson, err := json.Marshal(meta)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//q := "UPDATE requests SET meta=$1 WHERE request_id=$2"
-	//
-	//err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
-	//	metaJson, signReq.RequestID).Scan()
-	//
-	//if err != nil {
-	//	return err
-	//}
+	if signReq.RequestID == 0 {
+		return ErrorInvalidRequestID
+	}
 
-	return nil
+	meta := map[string]string{
+		"nickname":    signReq.Nickname,
+		"description": signReq.Description,
+	}
+
+	metaJson, err := json.Marshal(meta)
+	if err != nil {
+		return err
+	}
+
+	q := "UPDATE requests SET status=$2, type=$3, meta=$4, manager_id=$5, user_id=$6 WHERE request_id=$1"
+
+	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
+		signReq.RequestID, signReq.Status, signReq.Type, metaJson, signReq.ManagerID, signReq.ApplierID).Scan()
+
+	return err
 }
 
 func (sctRepo *SignContractRequestPgRepo) Create(ctx context.Context, signReq *sign_contract.SignContractRequest) error {
 
-	//if signReq.RequestID == 0 {
-	//	return ErrorInvalidRequestID
-	//}
-	//
-	//meta := map[string]string{
-	//	"nickname":    signReq.Nickname,
-	//	"description": signReq.Description,
-	//}
-	//
-	//metaJson, err := json.Marshal(meta)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//q := "UPDATE requests SET meta=$1 WHERE request_id=$2"
-	//
-	//err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
-	//	metaJson, signReq.RequestID).Scan()
-	//
-	//if err != nil {
-	//	return err
-	//}
+	if signReq.RequestID == 0 {
+		return ErrorInvalidRequestID
+	}
 
-	return nil
+	meta := map[string]string{
+		"nickname":    signReq.Nickname,
+		"description": signReq.Description,
+	}
+
+	metaJson, err := json.Marshal(meta)
+	if err != nil {
+		return err
+	}
+
+	q := "INSERT INTO requests (status, type, creation_date, meta, manager_id, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING request_id"
+
+	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
+		signReq.Status, signReq.Type, signReq.Date, metaJson, signReq.ManagerID, signReq.ApplierID).Scan(&signReq.RequestID)
+
+	return err
 }

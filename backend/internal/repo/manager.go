@@ -1,10 +1,13 @@
 package repo
 
-import "cookdroogers/models"
+import (
+	"context"
+	"cookdroogers/models"
+)
 
 //go:generate mockery --name ManagerRepo --with-expecter
 type ManagerRepo interface {
-	Create(*models.Manager) error
-	Get(uint64) (*models.Manager, error)
-	GetRandManagerID() (uint64, error)
+	Create(context.Context, *models.Manager) error
+	Get(context.Context, uint64) (*models.Manager, error)
+	GetRandManagerID(context.Context) (uint64, error)
 }

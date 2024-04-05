@@ -149,3 +149,11 @@ func (sctInteractor *SignContractRequestInteractor) GetType() base.RequestType {
 
 	return sctInteractor.req.Type
 }
+
+func (sctInteractor *SignContractRequestInteractor) Get(id uint64) (*sign_contract.SignContractRequest, error) {
+	req, err := sctInteractor.repo.Get(context.Background(), id)
+	if err != nil {
+		return nil, fmt.Errorf("can't get sign contract request with err %w", err)
+	}
+	return req, nil
+}
