@@ -1,6 +1,9 @@
 package base
 
-import "time"
+import (
+	cd_time "cookdroogers/pkg/time"
+	"time"
+)
 
 type RequestStatus string
 
@@ -18,7 +21,9 @@ const (
 	PublishRequest RequestType = "Publish"
 )
 
-type IRequest interface {
+const DescrDeclinedRequest = "The request is declined."
+
+type IRequestUseCase interface {
 	Apply() error
 	Accept() error
 	Decline() error
@@ -36,6 +41,5 @@ type Request struct {
 
 func InitDateStatus(req *Request) {
 	req.Status = NewRequest
-	y, m, d := time.Now().UTC().Date()
-	req.Date = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	req.Date = cd_time.GetToday()
 }

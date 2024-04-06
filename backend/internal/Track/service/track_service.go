@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo"
 	trackErrors "cookdroogers/internal/track/errors"
 	"cookdroogers/models"
@@ -8,7 +9,7 @@ import (
 )
 
 type ITrackService interface {
-	Create(*models.Track) (uint64, error)
+	Create(context.Context, *models.Track) (uint64, error)
 	Get(uint64) (*models.Track, error)
 }
 
@@ -40,13 +41,18 @@ func (trkSvc *TrackService) validate(track *models.Track) error {
 	return nil
 }
 
-func (trkSvc *TrackService) Create(track *models.Track) (uint64, error) {
+func (trkSvc *TrackService) Create(ctx context.Context, track *models.Track) (uint64, error) {
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	if err := trkSvc.validate(track); err != nil {
 		return 0, err
 	}
 
-	trackID, err := trkSvc.repo.Create(track)
+	trackID, err := trkSvc.repo.Create(ctx, track)
+
 	if err != nil {
 		return 0, fmt.Errorf("can't create track with err %w", err)
 	}
@@ -54,7 +60,8 @@ func (trkSvc *TrackService) Create(track *models.Track) (uint64, error) {
 }
 
 func (trkSvc *TrackService) Get(trackID uint64) (*models.Track, error) {
-	track, err := trkSvc.repo.Get(trackID)
+	track, err := trkSvc.repo.Get(context.Background(), trackID)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get track with err %w", err)
 	}

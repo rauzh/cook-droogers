@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo"
 	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
@@ -52,14 +53,14 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 		return err
 	}
 
-	_, err = usrSvc.repo.GetByEmail(newUser.Email)
+	_, err = usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
 	if err != nil && !errors.Is(err, repoErrors.ErrorNotExists) {
 		return fmt.Errorf("can't create user: %w", err)
 	}
 
 	newUser.Type = models.NonMemberUser
 
-	err = usrSvc.repo.Create(newUser)
+	err = usrSvc.repo.Create(context.Background(), newUser)
 	if err != nil {
 		return fmt.Errorf("can'r create user: %w", err)
 	}
@@ -68,7 +69,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 }
 
 func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
-	user, err := usrSvc.repo.GetByEmail(login)
+	user, err := usrSvc.repo.GetByEmail(context.Background(), login)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
 }
 
 func (usrSvc *UserService) GetByEmail(email string) (*models.User, error) {
-	user, err := usrSvc.repo.GetByEmail(email)
+	user, err := usrSvc.repo.GetByEmail(context.Background(), email)
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}
@@ -89,7 +90,8 @@ func (usrSvc *UserService) GetByEmail(email string) (*models.User, error) {
 }
 
 func (usrSvc *UserService) Get(id uint64) (*models.User, error) {
-	user, err := usrSvc.repo.Get(id)
+	user, err := usrSvc.repo.Get(context.Background(), id)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}
@@ -97,14 +99,14 @@ func (usrSvc *UserService) Get(id uint64) (*models.User, error) {
 }
 
 func (usrSvc *UserService) Update(user *models.User) error {
-	if err := usrSvc.repo.Update(user); err != nil {
+	if err := usrSvc.repo.Update(context.Background(), user); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil
 }
 
 func (usrSvc *UserService) UpdateType(userID uint64, typ models.UserType) error {
-	if err := usrSvc.repo.UpdateType(userID, typ); err != nil {
+	if err := usrSvc.repo.UpdateType(context.Background(), userID, typ); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil

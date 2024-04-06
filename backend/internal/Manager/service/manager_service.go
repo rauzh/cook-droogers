@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"fmt"
@@ -21,14 +22,15 @@ func NewManagerService(r repo.ManagerRepo) IManagerService {
 }
 
 func (mngSvc *ManagerService) Create(artist *models.Manager) error {
-	if err := mngSvc.repo.Create(artist); err != nil {
+	if err := mngSvc.repo.Create(context.Background(), artist); err != nil {
 		return fmt.Errorf("can't create manager with err %w", err)
 	}
 	return nil
 }
 
 func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
-	manager, err := mngSvc.repo.Get(id)
+	manager, err := mngSvc.repo.Get(context.Background(), id)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get manager with err %w", err)
 	}
@@ -36,7 +38,8 @@ func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
 }
 
 func (mngSvc *ManagerService) GetRandomManagerID() (uint64, error) {
-	id, err := mngSvc.repo.GetRandManagerID()
+	id, err := mngSvc.repo.GetRandManagerID(context.Background())
+
 	if err != nil {
 		return 0, fmt.Errorf("can't get manager with err %w", err)
 	}

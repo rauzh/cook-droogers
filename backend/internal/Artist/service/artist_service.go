@@ -30,6 +30,7 @@ func (ars *ArtistService) Create(artist *models.Artist) error {
 
 func (ars *ArtistService) Get(id uint64) (*models.Artist, error) {
 	artist, err := ars.repo.Get(context.Background(), id)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get artist with err %w", err)
 	}

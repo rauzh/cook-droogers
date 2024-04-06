@@ -1,14 +1,13 @@
 package service
 
 import (
+	"context"
 	releaseErrors "cookdroogers/internal/release/errors"
 	"cookdroogers/internal/repo"
 	trackService "cookdroogers/internal/track/service"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"fmt"
-	"runtime"
-	"sync"
 )
 
 type IReleaseService interface {
@@ -46,7 +45,6 @@ func (rlsSvc *ReleaseService) validate(release *models.Release) error {
 	return nil
 }
 
-// Create new release and its tracks in DB
 func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
 
 	if err := rlsSvc.validate(release); err != nil {
@@ -55,68 +53,37 @@ func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Tr
 
 	release.Status = models.UnpublishedRelease
 
-	transactionHash, err := rlsSvc.transactor.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	// Divide tracks on parts by CPUnum and upload then concurrently
-	rlsSvc.uploadTracks(release, tracks, transactionHash)
+	ctx := context.Background()
+	return rlsSvc.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
+		if err := rlsSvc.uploadTracks(ctx, release, tracks); err != nil {
+			return fmt.Errorf("can't create release with err %w", err)
+		}
 
-	if err := rlsSvc.repo.Create(release); err != nil {
-		rlsSvc.transactor.RollbackTransaction(transactionHash)
-		return fmt.Errorf("can't create release with err %w", err)
-	}
+		if err := rlsSvc.repo.Create(ctx, release); err != nil {
+			return fmt.Errorf("can't create release with err %w", err)
+		}
 
-	err = rlsSvc.transactor.CommitTransaction(transactionHash)
+		return nil
+	})
+}
+
+func (rlsSvc *ReleaseService) uploadTracks(ctx context.Context, release *models.Release, tracks []models.Track) error {
+
+	for _, track := range tracks {
+		trackID, err := rlsSvc.trkSvc.Create(ctx, &track)
+		if err != nil {
+			return err
+		}
+
+		release.Tracks = append(release.Tracks, trackID)
+	}
 
 	return nil
 }
 
-func (rlsSvc *ReleaseService) uploadTracks(
-	release *models.Release, tracks []models.Track, transactionHash string) {
-
-	wg := new(sync.WaitGroup)
-
-	workersNum := runtime.NumCPU()
-	tracksLen := len(tracks)
-	mu := new(sync.Mutex)
-
-	for worker := 0; worker < workersNum; worker++ {
-		start, end := tracksLen/workersNum*worker, tracksLen/workersNum*(worker+1)
-		if worker == workersNum-1 {
-			end = tracksLen - 1
-		}
-
-		wg.Add(1)
-		go rlsSvc.uploadBunchOfTracks(release, start, end, tracks, wg, mu, transactionHash)
-	}
-	wg.Wait()
-}
-
-func (rlsSvc *ReleaseService) uploadBunchOfTracks(release *models.Release,
-	start, end int, tracks []models.Track,
-	wg *sync.WaitGroup, mu *sync.Mutex, transactionHash string) {
-
-	defer wg.Done()
-
-	for i := start; start < end; i++ {
-		trackID, err := rlsSvc.trkSvc.Create(&tracks[i])
-		if err != nil && rlsSvc.transactor.IsActive(transactionHash) {
-			rlsSvc.transactor.RollbackTransaction(transactionHash)
-			return
-		} else if err != nil {
-			continue
-		}
-
-		mu.Lock()
-		release.Tracks = append(release.Tracks, trackID)
-		mu.Unlock()
-
-	}
-}
-
 func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
-	release, err := rlsSvc.repo.Get(releaseID)
+	release, err := rlsSvc.repo.Get(context.Background(), releaseID)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
 	}
@@ -124,7 +91,8 @@ func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
 }
 
 func (rlsSvc *ReleaseService) GetAllByArtist(artistID uint64) ([]models.Release, error) {
-	releases, err := rlsSvc.repo.GetAllByArtist(artistID)
+	releases, err := rlsSvc.repo.GetAllByArtist(context.Background(), artistID)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
 	}
@@ -132,7 +100,8 @@ func (rlsSvc *ReleaseService) GetAllByArtist(artistID uint64) ([]models.Release,
 }
 
 func (rlsSvc *ReleaseService) GetAllTracks(release *models.Release) ([]models.Track, error) {
-	tracks, err := rlsSvc.repo.GetAllTracks(release)
+	tracks, err := rlsSvc.repo.GetAllTracks(context.Background(), release)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
 	}
@@ -140,21 +109,21 @@ func (rlsSvc *ReleaseService) GetAllTracks(release *models.Release) ([]models.Tr
 }
 
 func (rlsSvc *ReleaseService) Update(release *models.Release) error {
-	if err := rlsSvc.repo.Update(release); err != nil {
+	if err := rlsSvc.repo.Update(context.Background(), release); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
 func (rlsSvc *ReleaseService) UpdateStatus(id uint64, stat models.ReleaseStatus) error {
-	if err := rlsSvc.repo.UpdateStatus(id, stat); err != nil {
+	if err := rlsSvc.repo.UpdateStatus(context.Background(), id, stat); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
 func (rlsSvc *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
-	release, err := rlsSvc.repo.Get(releaseID)
+	release, err := rlsSvc.repo.Get(context.Background(), releaseID)
 	if err != nil {
 		return "", fmt.Errorf("can't get release with err %w", err)
 	}
@@ -180,3 +149,44 @@ func (rlsSvc *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
 
 	return mainGenre, nil
 }
+
+//
+//func (rlsSvc *ReleaseService) uploadTracks(
+//	release *models.Release, tracks []models.Track) {
+//
+//	wg := new(sync.WaitGroup)
+//
+//	workersNum := runtime.NumCPU()
+//	tracksLen := len(tracks)
+//	mu := new(sync.Mutex)
+//
+//	for worker := 0; worker < workersNum; worker++ {
+//		start, end := tracksLen/workersNum*worker, tracksLen/workersNum*(worker+1)
+//		if worker == workersNum-1 {
+//			end = tracksLen - 1
+//		}
+//
+//		wg.Add(1)
+//		go rlsSvc.uploadBunchOfTracks(release, start, end, tracks, wg, mu)
+//	}
+//	wg.Wait()
+//}
+//
+//func (rlsSvc *ReleaseService) uploadBunchOfTracks(release *models.Release,
+//	start, end int, tracks []models.Track,
+//	wg *sync.WaitGroup, mu *sync.Mutex) {
+//
+//	defer wg.Done()
+//
+//	for i := start; start < end; i++ {
+//		trackID, err := rlsSvc.trkSvc.Create(&tracks[i])
+//		if err != nil {
+//			return
+//		}
+//
+//		mu.Lock()
+//		release.Tracks = append(release.Tracks, trackID)
+//		mu.Unlock()
+//
+//	}
+//}

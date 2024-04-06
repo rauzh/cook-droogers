@@ -2,8 +2,8 @@ package adapters
 
 import (
 	"bytes"
-	artistRepo "cookdroogers/internal/Artist/repo"
-	releaseRepo "cookdroogers/internal/Release/repo"
+	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"encoding/json"
 	"errors"
@@ -14,8 +14,8 @@ import (
 
 type StatFetcherAdapter struct {
 	url         string
-	artistRepo  artistRepo.ArtistRepo
-	releaseRepo releaseRepo.ReleaseRepo
+	artistRepo  repo.ArtistRepo
+	releaseRepo repo.ReleaseRepo
 }
 
 type SendData struct {
@@ -74,7 +74,7 @@ func (fetcher *StatFetcherAdapter) getSendData(tracks []models.Track) ([]byte, e
 
 	for _, track := range tracks {
 
-		artist, err := fetcher.artistRepo.Get(track.Artists[0])
+		artist, err := fetcher.artistRepo.Get(context.Background(), track.Artists[0])
 		if err != nil {
 			return nil, err
 		}

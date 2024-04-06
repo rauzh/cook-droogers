@@ -13,6 +13,6 @@ package requests
 //func (rf ReqFabric) Create(request base.IRequest)  base.IRequest {
 //	switch request.GetType() {
 //	case base.SignRequest:
-//		return interactor.NewSignContractRequestInteractor()
+//		return interactor.NewSignContractRequestUseCase()
 //	}
 //}

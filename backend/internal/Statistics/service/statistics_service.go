@@ -1,14 +1,15 @@
 package service
 
 import (
+	"context"
 	releaseService "cookdroogers/internal/release/service"
 	"cookdroogers/internal/repo"
 	"cookdroogers/internal/statistics/fetcher"
 	ts "cookdroogers/internal/track/service"
 	"cookdroogers/models"
+	cdtime "cookdroogers/pkg/time"
 	"errors"
 	"fmt"
-	"time"
 )
 
 type IStatisticsService interface {
@@ -42,16 +43,17 @@ func NewStatisticsService(
 
 func (statSvc *StatisticsService) Create(stat *models.Statistics) error {
 
-	stat.Date = time.Now()
+	stat.Date = cdtime.GetToday()
 
-	if err := statSvc.repo.Create(stat); err != nil {
+	if err := statSvc.repo.Create(context.Background(), stat); err != nil {
 		return fmt.Errorf("can't create stats with err %w", err)
 	}
 	return nil
 }
 
 func (statSvc *StatisticsService) GetByID(statID uint64) (*models.Statistics, error) {
-	stat, err := statSvc.repo.GetByID(statID)
+	stat, err := statSvc.repo.GetByID(context.Background(), statID)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get stats with err %w", err)
 	}
@@ -59,7 +61,8 @@ func (statSvc *StatisticsService) GetByID(statID uint64) (*models.Statistics, er
 }
 
 func (statSvc *StatisticsService) GetForTrack(trackID uint64) ([]models.Statistics, error) {
-	stats, err := statSvc.repo.GetForTrack(trackID)
+	stats, err := statSvc.repo.GetForTrack(context.Background(), trackID)
+
 	if err != nil {
 		return nil, fmt.Errorf("can't get stats for track %d with err %w", trackID, err)
 	}
@@ -83,10 +86,10 @@ func (statSvc *StatisticsService) FetchByRelease(release *models.Release) error 
 	}
 
 	for _, stat := range stats {
-		stat.Date = time.Now()
+		stat.Date = cdtime.GetToday()
 	}
 
-	if err = statSvc.repo.CreateMany(stats); err != nil {
+	if err = statSvc.repo.CreateMany(context.Background(), stats); err != nil {
 		return fmt.Errorf("can't create stats with err %w", err)
 	}
 
@@ -94,10 +97,8 @@ func (statSvc *StatisticsService) FetchByRelease(release *models.Release) error 
 }
 
 func (statSvc *StatisticsService) GetRelevantGenre() (string, error) {
-	/*  По-хорошему надо конечно выгружать из БД только пачками по 100,
-	и распараллелить по данным, но мне влом, а если прям надо, то сделаю */
 
-	stats, err := statSvc.repo.GetAllGroupByTracksSince(time.Now().AddDate(0, -3, 0))
+	stats, err := statSvc.repo.GetAllGroupByTracksSince(context.Background(), cdtime.RelevantPeriod())
 	if err != nil {
 		return "", fmt.Errorf("can't get stats with err %w", err)
 	}
@@ -116,6 +117,7 @@ func (statSvc *StatisticsService) GetRelevantGenre() (string, error) {
 
 	var relevantGenre string
 	var maxStreamsPerGenre uint64
+
 	for genre, streams := range genres {
 		if streams > maxStreamsPerGenre {
 			maxStreamsPerGenre = streams
@@ -135,6 +137,7 @@ func (statSvc *StatisticsService) GetLatestStatForTrack(trackID uint64) (*models
 
 	latestStatDate := stats[0].Date
 	latestStat := stats[0]
+
 	for _, stat := range stats {
 		if stat.Date.After(latestStatDate) {
 			latestStatDate = stat.Date

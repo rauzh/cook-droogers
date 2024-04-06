@@ -24,7 +24,6 @@ type PublishService struct {
 	transactionManager transactionManager.TransactionManager
 }
 
-const Week time.Duration = 24 * 7 * time.Hour
 const DefaultGrade uint8 = 5
 
 func NewPublishService(
