@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const SignRequestProceedToManager = "sign_request_proceed_to_manager"
+const (
+	SignRequestProceedToManager = "sign_request_proceed_to_manager"
+	RequestTimeOutExplanation   = "the request is no longer relevant"
+)
 
 type SignContractReqMessage struct {
 	RequestID   uint64             `json:"request_id"`
@@ -23,6 +26,92 @@ type SignContractReqMessage struct {
 	ManagerID   uint64             `json:"manager_id"`
 	Nickname    string             `json:"nickname"`
 	Description string             `json:"description"`
+}
+
+func NewSignRequestProducerMsg(topic string, req *sign_contract.SignContractRequest) (*sarama.ProducerMessage, error) {
+	msg := NewSignContractReqMessage(req)
+	msgJson, err := NewMsgValue(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.StringEncoder(msgJson),
+	}, nil
+}
+
+func (sctUseCase *SignContractRequestUseCase) runProceedToManagerConsumer() error {
+	if sctUseCase.scBroker == nil {
+		return errors.New("no broker")
+	}
+
+	go func() {
+		for {
+			select {
+			case msg := <-sctUseCase.scBroker.Consumers[SignRequestProceedToManager].Messages():
+				sctUseCase.processProceedToManagerMsg(msg)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (sctUseCase *SignContractRequestUseCase) processProceedToManagerMsg(msg *sarama.ConsumerMessage) {
+
+	signContractReqMsg := SignContractReqMessage{}
+	if err := json.Unmarshal(msg.Value, &signContractReqMsg); err != nil {
+		return // LOG
+	}
+
+	signReq := signContractReqMsg.ToSignContractReq()
+
+	if err := signReq.Validate(sign_contract.SignRequest); err != nil {
+		sctUseCase.closeProceedToManagerReq(signReq, err.Error())
+		return
+	}
+
+	if msg.Timestamp.Before(cdtime.RelevantPeriod()) {
+		sctUseCase.closeProceedToManagerReq(signReq, RequestTimeOutExplanation)
+		return
+	}
+
+	if err := sctUseCase.proceedToManager(signReq); err != nil {
+
+		retryProducerMsg := &sarama.ProducerMessage{
+			Topic:     SignRequestProceedToManager,
+			Value:     sarama.StringEncoder(msg.Value),
+			Timestamp: msg.Timestamp, // реализация протухания начиная с **первой отправки**
+		}
+
+		_, _, _ = sctUseCase.scBroker.SendMessage(retryProducerMsg)
+	}
+}
+
+func (sctUseCase *SignContractRequestUseCase) closeProceedToManagerReq(signReq *sign_contract.SignContractRequest, explanation string) {
+
+	signReq.Description = base.DescrDeclinedRequest + ".\n" + explanation
+	signReq.Status = base.ClosedRequest
+
+	if err := sctUseCase.repo.Update(context.Background(), signReq); err != nil {
+		_ = sctUseCase.sendProceedToManagerMSG(signReq) // resend VALIDATED message
+	}
+}
+
+func (sctUseCase *SignContractRequestUseCase) sendProceedToManagerMSG(signReq *sign_contract.SignContractRequest) error {
+
+	msg, err := NewSignRequestProducerMsg(SignRequestProceedToManager, signReq)
+	if err != nil {
+		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
+	}
+
+	_, _, err = sctUseCase.scBroker.SendMessage(msg)
+	if err != nil {
+		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
+	}
+
+	return nil
 }
 
 func NewSignContractReqMessage(req *sign_contract.SignContractRequest) *SignContractReqMessage {
@@ -59,91 +148,4 @@ func NewMsgValue(msg *SignContractReqMessage) ([]byte, error) {
 		return nil, err
 	}
 	return msgjson, nil
-}
-
-func NewSignRequestProducerMsg(topic string, req *sign_contract.SignContractRequest) (*sarama.ProducerMessage, error) {
-	msg := NewSignContractReqMessage(req)
-	msgJson, err := NewMsgValue(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &sarama.ProducerMessage{
-		Topic: topic,
-		Value: sarama.StringEncoder(msgJson),
-	}, nil
-}
-
-func (sctUseCase *SignContractRequestUseCase) sendProceedToManagerMSG(signReq *sign_contract.SignContractRequest) error {
-
-	msg, err := NewSignRequestProducerMsg(SignRequestProceedToManager, signReq)
-	if err != nil {
-		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
-	}
-
-	_, _, err = sctUseCase.scBroker.SendMessage(msg)
-	if err != nil {
-		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
-	}
-
-	return nil
-}
-
-func (sctUseCase *SignContractRequestUseCase) runProceedToManagerConsumer() error {
-	if sctUseCase.scBroker == nil {
-		return errors.New("no broker")
-	}
-
-	go func() {
-		for {
-			select {
-			case msg := <-sctUseCase.scBroker.Consumers[SignRequestProceedToManager].Messages():
-				msgJson := msg.Value
-				msgSC := SignContractReqMessage{}
-				if err := json.Unmarshal(msgJson, &msgSC); err != nil {
-					continue // LOG
-				}
-
-				signReq := msgSC.ToSignContractReq()
-				if err := signReq.Validate(sign_contract.SignRequest); err != nil {
-					// CLOSE потому что невалидно (или потому что еще одна попытка закрыть)
-					signReq.Description = base.DescrDeclinedRequest + err.Error()
-					signReq.Status = base.ClosedRequest
-
-					if err := sctUseCase.repo.Update(context.Background(), signReq); err != nil {
-						_ = sctUseCase.sendProceedToManagerMSG(signReq) // без ошибки потому что ее тут БЫТЬ НЕ МОЖЕТ (переотправка валидного)
-					}
-
-					continue
-				}
-
-				if err := sctUseCase.proceedToManager(signReq); err != nil {
-					// Ошибка функции --> ретрай (если не протухло)
-
-					if msg.Timestamp.Before(cdtime.RelevantPeriod()) {
-						// CLOSE потому что протухло
-
-						signReq.Description = base.DescrDeclinedRequest
-						signReq.Status = base.ClosedRequest
-
-						if err := sctUseCase.repo.Update(context.Background(), signReq); err != nil {
-							_ = sctUseCase.sendProceedToManagerMSG(signReq) // без ошибки потому что ее тут БЫТЬ НЕ МОЖЕТ (переотправка валидного)
-						}
-
-						continue
-					}
-
-					retryProducerMsg := &sarama.ProducerMessage{
-						Topic:     SignRequestProceedToManager,
-						Value:     sarama.StringEncoder(msgJson),
-						Timestamp: msg.Timestamp, // реализация протухания начиная с **первой отправки**
-					}
-
-					_, _, _ = sctUseCase.scBroker.SendMessage(retryProducerMsg)
-				}
-			}
-		}
-	}()
-
-	return nil
 }

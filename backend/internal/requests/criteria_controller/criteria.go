@@ -1,5 +1,7 @@
 package criteria
 
+import "cookdroogers/internal/requests/base"
+
 const ExplanationCantApply = "Can't apply criteria"
 const ExplanationOK = "OK"
 
@@ -11,7 +13,7 @@ type CriteriaDiff struct {
 type CriteriaName string
 
 type Criteria interface {
-	Apply() CriteriaDiff
+	Apply(base.IRequest) CriteriaDiff
 	Name() CriteriaName
 }
 

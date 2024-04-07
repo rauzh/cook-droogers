@@ -1,7 +1,9 @@
 package publish_criteria
 
 import (
-	publicationService "cookdroogers/internal/publication/service"
+	"context"
+	"cookdroogers/internal/repo"
+	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/criteria_controller"
 	"cookdroogers/internal/requests/publish"
 	cdtime "cookdroogers/pkg/time"
@@ -15,18 +17,23 @@ const (
 )
 
 type ArtistReleaseLimitPerSeasonCriteria struct {
-	req                *publish.PublishRequest
-	publicationService publicationService.IPublicationService
+	publicationRepo repo.PublicationRepo
 }
 
 func (oarpsc *ArtistReleaseLimitPerSeasonCriteria) Name() criteria.CriteriaName {
 	return ArtistReleaseLimitPerSeason
 }
 
-func (oarpsc *ArtistReleaseLimitPerSeasonCriteria) Apply() (result criteria.CriteriaDiff) {
+func (oarpsc *ArtistReleaseLimitPerSeasonCriteria) Apply(request base.IRequest) (result criteria.CriteriaDiff) {
 
-	pubsFromArtistLastSeason, err := oarpsc.publicationService.GetAllByArtistSinceDate(
-		cdtime.RelevantPeriod(), oarpsc.req.ApplierID)
+	if err := request.Validate(publish.PubReq); err != nil {
+		result.Explanation = criteria.ExplanationCantApply
+		return
+	}
+	pubReq := request.(*publish.PublishRequest)
+
+	pubsFromArtistLastSeason, err := oarpsc.publicationRepo.GetAllByArtistSinceDate(context.Background(),
+		cdtime.RelevantPeriod(), pubReq.ApplierID)
 
 	if err != nil {
 		result.Explanation = criteria.ExplanationCantApply
@@ -45,10 +52,9 @@ func (oarpsc *ArtistReleaseLimitPerSeasonCriteria) Apply() (result criteria.Crit
 }
 
 type ArtistReleaseLimitPerSeasonCriteriaFabric struct {
-	req                *publish.PublishRequest
-	publicationService publicationService.IPublicationService
+	PublicationRepo repo.PublicationRepo
 }
 
 func (fabric *ArtistReleaseLimitPerSeasonCriteriaFabric) Create() criteria.Criteria {
-	return &ArtistReleaseLimitPerSeasonCriteria{req: fabric.req, publicationService: fabric.publicationService}
+	return &ArtistReleaseLimitPerSeasonCriteria{publicationRepo: fabric.PublicationRepo}
 }

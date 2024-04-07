@@ -1,25 +1,30 @@
 package criteria
 
+import (
+	"cookdroogers/internal/requests/base"
+	"fmt"
+)
+
 type CriteriaCollectionDiff struct {
 	ResultDiff        int
 	ResultExplanation map[CriteriaName]CriteriaDiff
 }
 
 type ICriteriaCollection interface {
-	Apply() CriteriaCollectionDiff
+	Apply(request base.IRequest) CriteriaCollectionDiff
 }
 
 type CriteriaCollection struct {
 	criterias []Criteria
 }
 
-func (cc *CriteriaCollection) Apply() (result CriteriaCollectionDiff) {
+func (cc *CriteriaCollection) Apply(request base.IRequest) (result CriteriaCollectionDiff) {
 
 	result.ResultExplanation = make(map[CriteriaName]CriteriaDiff)
 
 	for _, crit := range cc.criterias {
 
-		critRes := crit.Apply()
+		critRes := crit.Apply(request)
 
 		result.ResultDiff += critRes.Diff
 		result.ResultExplanation[crit.Name()] = critRes
@@ -40,4 +45,8 @@ func BuildCollection(fabrics ...AbstractCriteriaFabric) (ICriteriaCollection, er
 	}
 
 	return &CriteriaCollection{criterias: crits}, nil
+}
+
+func DiffToString(name CriteriaName, explanation string, diff int) string {
+	return fmt.Sprintf("**%s** diff: %d\n**%s** reason: %s", name, diff, name, explanation)
 }

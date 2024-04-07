@@ -4,11 +4,13 @@ import (
 	"context"
 	"cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
+	criteria "cookdroogers/internal/requests/criteria_controller"
 	"cookdroogers/internal/requests/publish"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	statService "cookdroogers/internal/statistics/service"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
+	"cookdroogers/pkg/kafka"
 	"fmt"
 )
 
@@ -18,6 +20,8 @@ type PublishRequestUseCase struct {
 	releaseRepo     repo.ReleaseRepo
 	artistRepo      repo.ArtistRepo
 	transactor      transactor.Transactor
+	pbBroker        *kafka.SyncBroker
+	criterias       *criteria.CriteriaCollection
 
 	repo publishReqRepo.PublishRequestRepo
 }
@@ -28,16 +32,33 @@ func NewPublishRequestUseCase(
 	releaseRepo repo.ReleaseRepo,
 	artistRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
+	pbBroker *kafka.SyncBroker,
+	criterias *criteria.CriteriaCollection,
 	repo publishReqRepo.PublishRequestRepo,
-) base.IRequestUseCase {
-	return &PublishRequestUseCase{
+) (base.IRequestUseCase, error) {
+
+	err := pbBroker.SignConsumerToTopic(PublishRequestProceedToManager)
+	if err != nil {
+		return nil, err
+	}
+
+	publishUseCase := &PublishRequestUseCase{
 		statService:     statService,
 		publicationRepo: publicationRepo,
 		releaseRepo:     releaseRepo,
 		artistRepo:      artistRepo,
 		repo:            repo,
 		transactor:      transactor,
+		criterias:       criterias,
+		pbBroker:        pbBroker,
 	}
+
+	err = publishUseCase.runProceedToManagerConsumer()
+	if err != nil {
+		return nil, err
+	}
+
+	return publishUseCase, nil
 }
 
 func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error {
@@ -53,24 +74,42 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 		return fmt.Errorf("can't apply sign contract request with err %w", err)
 	}
 
-	//go sctUseCase.proceedToManager(request)  ПРИКРУТИТЬ КАФКУ
-
 	return nil
 }
 
-//func (sctUseCase *SignContractRequestUseCase) proceedToManager(signReq *sign_contract.SignContractRequest) {
-//	signReq.Status = base.OnApprovalRequest
-//
-//	managerID, err := sctUseCase.mngRepo.GetRandManagerID()
-//	if err == nil {
-//		signReq.ManagerID = managerID
-//	} else {
-//		signReq.Status = base.ClosedRequest
-//		signReq.Description= "Can't find manager"
-//	}
-//
-//	sctUseCase.repo.Update(context.Background(), signReq)
-//}
+func (publishUseCase *PublishRequestUseCase) proceedToManager(pubReq *publish.PublishRequest) error {
+
+	ctx := context.Background()
+
+	pubReq.Status = base.ProcessingRequest
+
+	err := publishUseCase.repo.Update(ctx, pubReq)
+	if err != nil {
+		return fmt.Errorf("cant proceed publish request to manager with err %w", err)
+	}
+
+	publishUseCase.computeDegree(pubReq)
+
+	artist, err := publishUseCase.artistRepo.Get(ctx, pubReq.ApplierID)
+	if err != nil {
+		return fmt.Errorf("cant proceed publish request to manager with err %w", err)
+	}
+
+	pubReq.ManagerID = artist.ManagerID
+	pubReq.Status = base.OnApprovalRequest
+
+	return publishUseCase.repo.Update(ctx, pubReq)
+}
+
+func (publishUseCase *PublishRequestUseCase) computeDegree(pubReq *publish.PublishRequest) {
+
+	summaryDiff := publishUseCase.criterias.Apply(pubReq)
+
+	pubReq.Grade = summaryDiff.ResultDiff
+	for criteriaName, criteriaDiff := range summaryDiff.ResultExplanation {
+		pubReq.Description += criteria.DiffToString(criteriaName, criteriaDiff.Explanation, criteriaDiff.Diff)
+	}
+}
 
 func (publishUseCase *PublishRequestUseCase) Accept(request base.IRequest) error {
 
