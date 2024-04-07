@@ -5,18 +5,14 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/publish"
-	pubReqErrors "cookdroogers/internal/requests/publish/errors"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	statService "cookdroogers/internal/statistics/service"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
-	cdtime "cookdroogers/pkg/time"
 	"fmt"
 )
 
 type PublishRequestUseCase struct {
-	req *publish.PublishRequest
-
 	statService     statService.IStatisticsService
 	publicationRepo repo.PublicationRepo
 	releaseRepo     repo.ReleaseRepo
@@ -44,40 +40,16 @@ func NewPublishRequestUseCase(
 	}
 }
 
-func (publishUseCase *PublishRequestUseCase) validate() error {
+func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error {
 
-	if publishUseCase.req == nil {
-		return pubReqErrors.ErrNoReq
-	}
-
-	if publishUseCase.req.ExpectedDate.IsZero() || cdtime.CheckDateWeekLater(publishUseCase.req.ExpectedDate) {
-		return pubReqErrors.ErrInvalidDate
-	}
-
-	if publishUseCase.req.ReleaseID == publish.EmptyID {
-		return pubReqErrors.ErrNoReleaseID
-	}
-
-	if publishUseCase.req.ApplierID == publish.EmptyID {
-		return pubReqErrors.ErrNoApplierID
-	}
-
-	if publishUseCase.req.Type != base.PublishRequest {
-		return pubReqErrors.ErrInvalidType
-	}
-
-	return nil
-}
-
-func (publishUseCase *PublishRequestUseCase) Apply() error {
-
-	if err := publishUseCase.validate(); err != nil {
+	if err := request.Validate(publish.PubReq); err != nil {
 		return err
 	}
+	pubReq := request.(*publish.PublishRequest)
 
-	base.InitDateStatus(&publishUseCase.req.Request)
+	base.InitDateStatus(&pubReq.Request)
 
-	if err := publishUseCase.repo.Create(context.Background(), publishUseCase.req); err != nil {
+	if err := publishUseCase.repo.Create(context.Background(), pubReq); err != nil {
 		return fmt.Errorf("can't apply sign contract request with err %w", err)
 	}
 
@@ -100,16 +72,17 @@ func (publishUseCase *PublishRequestUseCase) Apply() error {
 //	sctUseCase.repo.Update(context.Background(), signReq)
 //}
 
-func (publishUseCase *PublishRequestUseCase) Accept() error {
+func (publishUseCase *PublishRequestUseCase) Accept(request base.IRequest) error {
 
-	if err := publishUseCase.validate(); err != nil {
+	if err := request.Validate(publish.PubReq); err != nil {
 		return err
 	}
+	pubReq := request.(*publish.PublishRequest)
 
 	publication := models.Publication{
-		ReleaseID: publishUseCase.req.ReleaseID,
-		Date:      publishUseCase.req.ExpectedDate,
-		ManagerID: publishUseCase.req.ManagerID,
+		ReleaseID: pubReq.ReleaseID,
+		Date:      pubReq.ExpectedDate,
+		ManagerID: pubReq.ManagerID,
 	}
 
 	ctx := context.Background()
@@ -123,8 +96,8 @@ func (publishUseCase *PublishRequestUseCase) Accept() error {
 			return fmt.Errorf("can't update publication with err %w", err)
 		}
 
-		publishUseCase.req.Status = base.ClosedRequest
-		if err := publishUseCase.repo.Update(ctx, publishUseCase.req); err != nil {
+		pubReq.Status = base.ClosedRequest
+		if err := publishUseCase.repo.Update(ctx, pubReq); err != nil {
 			return fmt.Errorf("can't update request.go with err %w", err)
 		}
 
@@ -132,29 +105,17 @@ func (publishUseCase *PublishRequestUseCase) Accept() error {
 	})
 }
 
-func (publishUseCase *PublishRequestUseCase) Decline() error {
+func (publishUseCase *PublishRequestUseCase) Decline(request base.IRequest) error {
 
-	if err := publishUseCase.validate(); err != nil {
+	if err := request.Validate(publish.PubReq); err != nil {
 		return err
 	}
+	pubReq := request.(*publish.PublishRequest)
 
-	publishUseCase.req.Status = base.ClosedRequest
-	publishUseCase.req.Description = base.DescrDeclinedRequest
+	pubReq.Status = base.ClosedRequest
+	pubReq.Description = base.DescrDeclinedRequest
 
-	return publishUseCase.repo.Update(context.Background(), publishUseCase.req)
-}
-
-func (publishUseCase *PublishRequestUseCase) GetType() base.RequestType {
-
-	if publishUseCase.req == nil {
-		return ""
-	}
-
-	return publishUseCase.req.Type
-}
-
-func (publishUseCase *PublishRequestUseCase) SetReq(pubReq *publish.PublishRequest) {
-	publishUseCase.req = pubReq
+	return publishUseCase.repo.Update(context.Background(), pubReq)
 }
 
 func (publishUseCase *PublishRequestUseCase) Get(id uint64) (*publish.PublishRequest, error) {

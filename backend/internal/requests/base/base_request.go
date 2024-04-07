@@ -1,7 +1,8 @@
 package base
 
 import (
-	cd_time "cookdroogers/pkg/time"
+	baseReqErrors "cookdroogers/internal/requests/base/errors"
+	cdtime "cookdroogers/pkg/time"
 	"time"
 )
 
@@ -16,17 +17,17 @@ const (
 
 type RequestType string
 
-const (
-	SignRequest    RequestType = "Sign"
-	PublishRequest RequestType = "Publish"
-)
-
 const DescrDeclinedRequest = "The request is declined."
+const EmptyID = 0
 
 type IRequestUseCase interface {
-	Apply() error
-	Accept() error
-	Decline() error
+	Apply(request IRequest) error
+	Accept(request IRequest) error
+	Decline(request IRequest) error
+}
+
+type IRequest interface {
+	Validate(RequestType) error
 	GetType() RequestType
 }
 
@@ -39,7 +40,25 @@ type Request struct {
 	ManagerID uint64
 }
 
+func (req *Request) Validate(requestType RequestType) error {
+	if req.ApplierID == EmptyID {
+		return baseReqErrors.ErrNoApplierID
+	}
+	if req.Type != requestType {
+		return baseReqErrors.ErrInvalidType
+	}
+	if req.Status == ClosedRequest {
+		return baseReqErrors.ErrAlreadyClosed
+	}
+
+	return nil
+}
+
+func (req *Request) GetType() RequestType {
+	return req.Type
+}
+
 func InitDateStatus(req *Request) {
 	req.Status = NewRequest
-	req.Date = cd_time.GetToday()
+	req.Date = cdtime.GetToday()
 }

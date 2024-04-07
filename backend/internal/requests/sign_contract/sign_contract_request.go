@@ -2,7 +2,10 @@ package sign_contract
 
 import (
 	"cookdroogers/internal/requests/base"
+	sctErrors "cookdroogers/internal/requests/sign_contract/errors"
 )
+
+const SignRequest base.RequestType = "Sign"
 
 type SignContractRequest struct {
 	base.Request
@@ -15,5 +18,21 @@ const (
 	MonthsContract = 0
 	DaysContract   = 0
 	MaxNicknameLen = 128
-	EmptyID        = 0
 )
+
+func (scReq *SignContractRequest) Validate(reqType base.RequestType) error {
+
+	if err := scReq.Request.Validate(reqType); err != nil {
+		return nil
+	}
+
+	if scReq.Nickname == "" || len(scReq.Nickname) > MaxNicknameLen {
+		return sctErrors.ErrNickname
+	}
+
+	return nil
+}
+
+func (scReq *SignContractRequest) GetType() base.RequestType {
+	return scReq.Type
+}

@@ -5,21 +5,21 @@ import (
 	repo "cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/sign_contract"
-	sctErrors "cookdroogers/internal/requests/sign_contract/errors"
+	"cookdroogers/internal/requests/sign_contract/errors"
 	signContractRepo "cookdroogers/internal/requests/sign_contract/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
+	"cookdroogers/pkg/kafka"
 	cdtime "cookdroogers/pkg/time"
 	"fmt"
 )
 
 type SignContractRequestUseCase struct {
-	req *sign_contract.SignContractRequest
-
 	mngRepo    repo.ManagerRepo
 	userRepo   repo.UserRepo
 	artistRepo repo.ArtistRepo
 	transactor transactor.Transactor
+	scBroker   *kafka.SyncBroker
 
 	repo signContractRepo.SignContractRequestRepo
 }
@@ -29,81 +29,78 @@ func NewSignContractRequestUseCase(
 	usrRepo repo.UserRepo,
 	artRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
+	scBroker *kafka.SyncBroker,
 	repo signContractRepo.SignContractRequestRepo,
-) base.IRequestUseCase {
-	return &SignContractRequestUseCase{
+) (base.IRequestUseCase, error) {
+
+	err := scBroker.SignConsumerToTopic(SignRequestProceedToManager)
+	if err != nil {
+		return nil, err
+	}
+
+	sctUseCase := &SignContractRequestUseCase{
 		mngRepo:    mngRepo,
 		userRepo:   usrRepo,
 		artistRepo: artRepo,
 		repo:       repo,
 		transactor: transactor,
+		scBroker:   scBroker,
 	}
+
+	err = sctUseCase.runProceedToManagerConsumer()
+	if err != nil {
+		return nil, err
+	}
+
+	return sctUseCase, nil
 }
 
-func (sctUseCase *SignContractRequestUseCase) validate() error {
+func (sctUseCase *SignContractRequestUseCase) Apply(request base.IRequest) error {
 
-	if sctUseCase.req == nil {
-		return sctErrors.ErrNoReq
-	}
-
-	if sctUseCase.req.Nickname == "" || len(sctUseCase.req.Nickname) > sign_contract.MaxNicknameLen {
-		return sctErrors.ErrNickname
-	}
-
-	if sctUseCase.req.ApplierID == sign_contract.EmptyID {
-		return sctErrors.ErrNoApplierID
-	}
-
-	if sctUseCase.req.Type != base.SignRequest {
-		return sctErrors.ErrInvalidType
-	}
-
-	return nil
-}
-
-func (sctUseCase *SignContractRequestUseCase) Apply() error {
-
-	if err := sctUseCase.validate(); err != nil {
+	if err := request.Validate(sign_contract.SignRequest); err != nil {
 		return err
 	}
+	signReq := request.(*sign_contract.SignContractRequest)
 
-	base.InitDateStatus(&sctUseCase.req.Request)
+	base.InitDateStatus(&signReq.Request)
 
-	if err := sctUseCase.repo.Create(context.Background(), sctUseCase.req); err != nil {
+	if err := sctUseCase.repo.Create(context.Background(), signReq); err != nil {
 		return fmt.Errorf("can't apply sign contract request with err %w", err)
 	}
 
-	//go sctUseCase.proceedToManager(request)  ПРИКРУТИТЬ КАФКУ
+	if err := sctUseCase.sendProceedToManagerMSG(signReq); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-//func (sctUseCase *SignContractRequestUseCase) proceedToManager(signReq *sign_contract.SignContractRequest) {
-//	signReq.Status = base.OnApprovalRequest
-//
-//	managerID, err := sctUseCase.mngRepo.GetRandManagerID()
-//	if err == nil {
-//		signReq.ManagerID = managerID
-//	} else {
-//		signReq.Status = base.ClosedRequest
-//		signReq.Description= "Can't find manager"
-//	}
-//
-//	sctUseCase.repo.Update(context.Background(), signReq)
-//}
+func (sctUseCase *SignContractRequestUseCase) proceedToManager(signReq *sign_contract.SignContractRequest) error {
+	signReq.Status = base.OnApprovalRequest
 
-func (sctUseCase *SignContractRequestUseCase) Accept() error {
-
-	if err := sctUseCase.validate(); err != nil {
-		return err
+	managerID, err := sctUseCase.mngRepo.GetRandManagerID(context.Background())
+	if err != nil {
+		return errors.ErrCantFindManager
 	}
 
+	signReq.ManagerID = managerID
+
+	return sctUseCase.repo.Update(context.Background(), signReq)
+}
+
+func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) error {
+
+	if err := request.Validate(sign_contract.SignRequest); err != nil {
+		return err
+	}
+	signReq := request.(*sign_contract.SignContractRequest)
+
 	artist := models.Artist{
-		UserID:       sctUseCase.req.ApplierID,
-		Nickname:     sctUseCase.req.Nickname,
+		UserID:       signReq.ApplierID,
+		Nickname:     signReq.Nickname,
 		ContractTerm: cdtime.GetEndOfContract(),
 		Activity:     true,
-		ManagerID:    sctUseCase.req.ManagerID,
+		ManagerID:    signReq.ManagerID,
 	}
 
 	ctx := context.Background()
@@ -116,8 +113,8 @@ func (sctUseCase *SignContractRequestUseCase) Accept() error {
 			return fmt.Errorf("can't update user with err %w", err)
 		}
 
-		sctUseCase.req.Status = base.ClosedRequest
-		if err := sctUseCase.repo.Update(ctx, sctUseCase.req); err != nil {
+		signReq.Status = base.ClosedRequest
+		if err := sctUseCase.repo.Update(ctx, signReq); err != nil {
 			return fmt.Errorf("can't update reqiest with err %w", err)
 		}
 
@@ -125,35 +122,25 @@ func (sctUseCase *SignContractRequestUseCase) Accept() error {
 	})
 }
 
-func (sctUseCase *SignContractRequestUseCase) Decline() error {
+func (sctUseCase *SignContractRequestUseCase) Decline(request base.IRequest) error {
 
-	if err := sctUseCase.validate(); err != nil {
+	if err := request.Validate(sign_contract.SignRequest); err != nil {
 		return err
 	}
+	signReq := request.(*sign_contract.SignContractRequest)
 
-	sctUseCase.req.Status = base.ClosedRequest
-	sctUseCase.req.Description = base.DescrDeclinedRequest
+	signReq.Status = base.ClosedRequest
+	signReq.Description = base.DescrDeclinedRequest
 
-	return sctUseCase.repo.Update(context.Background(), sctUseCase.req)
-}
-
-func (sctUseCase *SignContractRequestUseCase) GetType() base.RequestType {
-
-	if sctUseCase.req == nil {
-		return ""
-	}
-
-	return sctUseCase.req.Type
-}
-
-func (sctUseCase *SignContractRequestUseCase) SetReq(signReq *sign_contract.SignContractRequest) {
-	sctUseCase.req = signReq
+	return sctUseCase.repo.Update(context.Background(), signReq)
 }
 
 func (sctUseCase *SignContractRequestUseCase) Get(id uint64) (*sign_contract.SignContractRequest, error) {
+
 	req, err := sctUseCase.repo.Get(context.Background(), id)
 	if err != nil {
 		return nil, fmt.Errorf("can't get sign contract request with err %w", err)
 	}
+
 	return req, nil
 }
