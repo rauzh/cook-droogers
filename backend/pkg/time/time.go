@@ -1,11 +1,15 @@
 package time
 
 import (
-	"cookdroogers/internal/requests/sign_contract"
 	"time"
 )
 
-const Week time.Duration = 24 * 7 * time.Hour
+const (
+	Week           time.Duration = 24 * 7 * time.Hour
+	YearsContract                = 1
+	MonthsContract               = 0
+	DaysContract                 = 0
+)
 
 func GetToday() time.Time {
 	now := time.Now().UTC()
@@ -13,7 +17,7 @@ func GetToday() time.Time {
 }
 
 func GetEndOfContract() time.Time {
-	return time.Now().AddDate(sign_contract.YearsContract, sign_contract.MonthsContract, sign_contract.DaysContract)
+	return time.Now().AddDate(YearsContract, MonthsContract, DaysContract)
 }
 
 func RelevantPeriod() time.Time {

@@ -1,13 +1,27 @@
-package kafka
+package broker
 
 import (
+	"errors"
 	"fmt"
 	"github.com/IBM/sarama"
 )
 
+//go:generate mockery --name IBroker --with-expecter
+type IBroker interface {
+	SignConsumerToTopic(topic string) error
+	GetConsumerByTopic(topic string) sarama.PartitionConsumer
+	Close() error
+	SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error)
+}
+
+var (
+	ErrNoBroker   error = errors.New("no broker")
+	ErrNoConsumer error = errors.New("no consumer")
+)
+
 type SyncBroker struct {
-	producer  sarama.SyncProducer
-	master    sarama.Consumer
+	Producer  sarama.SyncProducer
+	Master    sarama.Consumer
 	Consumers map[string]sarama.PartitionConsumer // topic : consumer
 }
 
@@ -22,11 +36,11 @@ func NewSyncBroker(kafkaEndpoints []string, kafkaConfig *sarama.Config) (*SyncBr
 		return nil, fmt.Errorf("can't create consumer with err %w", err)
 	}
 
-	return &SyncBroker{producer: producer, master: master}, nil
+	return &SyncBroker{Producer: producer, Master: master}, nil
 }
 
 func (sb *SyncBroker) SignConsumerToTopic(topic string) error {
-	consumer, err := sb.master.ConsumePartition(topic, 0, sarama.OffsetOldest)
+	consumer, err := sb.Master.ConsumePartition(topic, 0, sarama.OffsetOldest)
 	if err != nil {
 		return fmt.Errorf("can't sign consumer with err %w", err)
 	}
@@ -35,16 +49,20 @@ func (sb *SyncBroker) SignConsumerToTopic(topic string) error {
 }
 
 func (sb *SyncBroker) Close() error {
-	if err := sb.producer.Close(); err != nil {
+	if err := sb.Producer.Close(); err != nil {
 		return err
 	}
-	if err := sb.master.Close(); err != nil {
+	if err := sb.Master.Close(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+func (sb *SyncBroker) GetConsumerByTopic(topic string) sarama.PartitionConsumer {
+	return sb.Consumers[topic]
+}
+
 func (sb *SyncBroker) SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {
-	return sb.producer.SendMessage(msg)
+	return sb.Producer.SendMessage(msg)
 }

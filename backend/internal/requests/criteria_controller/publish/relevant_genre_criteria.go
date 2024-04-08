@@ -56,10 +56,10 @@ func (rgc *RelevantGenreCriteria) Apply(request base.IRequest) (result criteria.
 }
 
 type RelevantGenreCriteriaFabric struct {
-	releaseService releaseService.IReleaseService
-	statService    statService.IStatisticsService
+	ReleaseService releaseService.IReleaseService
+	StatService    statService.IStatisticsService
 }
 
-func (fabric *RelevantGenreCriteriaFabric) Create() criteria.Criteria {
-	return &RelevantGenreCriteria{releaseService: fabric.releaseService, statService: fabric.statService}
+func (fabric *RelevantGenreCriteriaFabric) Create() (criteria.Criteria, error) {
+	return &RelevantGenreCriteria{releaseService: fabric.ReleaseService, statService: fabric.StatService}, nil
 }

@@ -4,12 +4,12 @@ import (
 	"context"
 	repo "cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
+	"cookdroogers/internal/requests/broker"
 	"cookdroogers/internal/requests/sign_contract"
 	"cookdroogers/internal/requests/sign_contract/errors"
 	signContractRepo "cookdroogers/internal/requests/sign_contract/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
-	"cookdroogers/pkg/kafka"
 	cdtime "cookdroogers/pkg/time"
 	"fmt"
 )
@@ -19,7 +19,7 @@ type SignContractRequestUseCase struct {
 	userRepo   repo.UserRepo
 	artistRepo repo.ArtistRepo
 	transactor transactor.Transactor
-	scBroker   *kafka.SyncBroker
+	scBroker   broker.IBroker
 
 	repo signContractRepo.SignContractRequestRepo
 }
@@ -29,7 +29,7 @@ func NewSignContractRequestUseCase(
 	usrRepo repo.UserRepo,
 	artRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
-	scBroker *kafka.SyncBroker,
+	scBroker broker.IBroker,
 	repo signContractRepo.SignContractRequestRepo,
 ) (base.IRequestUseCase, error) {
 

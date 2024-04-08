@@ -4,13 +4,13 @@ import (
 	"context"
 	"cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
+	"cookdroogers/internal/requests/broker"
 	criteria "cookdroogers/internal/requests/criteria_controller"
 	"cookdroogers/internal/requests/publish"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	statService "cookdroogers/internal/statistics/service"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
-	"cookdroogers/pkg/kafka"
 	"fmt"
 )
 
@@ -20,8 +20,8 @@ type PublishRequestUseCase struct {
 	releaseRepo     repo.ReleaseRepo
 	artistRepo      repo.ArtistRepo
 	transactor      transactor.Transactor
-	pbBroker        *kafka.SyncBroker
-	criterias       *criteria.CriteriaCollection
+	pbBroker        broker.IBroker
+	criterias       criteria.ICriteriaCollection
 
 	repo publishReqRepo.PublishRequestRepo
 }
@@ -32,8 +32,8 @@ func NewPublishRequestUseCase(
 	releaseRepo repo.ReleaseRepo,
 	artistRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
-	pbBroker *kafka.SyncBroker,
-	criterias *criteria.CriteriaCollection,
+	pbBroker broker.IBroker,
+	criterias criteria.ICriteriaCollection,
 	repo publishReqRepo.PublishRequestRepo,
 ) (base.IRequestUseCase, error) {
 
@@ -72,6 +72,10 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 
 	if err := publishUseCase.repo.Create(context.Background(), pubReq); err != nil {
 		return fmt.Errorf("can't apply sign contract request with err %w", err)
+	}
+
+	if err := publishUseCase.sendProceedToManagerMSG(pubReq); err != nil {
+		return err
 	}
 
 	return nil

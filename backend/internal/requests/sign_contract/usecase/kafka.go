@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 	"cookdroogers/internal/requests/base"
+	"cookdroogers/internal/requests/broker"
 	"cookdroogers/internal/requests/sign_contract"
 	cdtime "cookdroogers/pkg/time"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/IBM/sarama"
 	"time"
@@ -43,13 +43,18 @@ func NewSignRequestProducerMsg(topic string, req *sign_contract.SignContractRequ
 
 func (sctUseCase *SignContractRequestUseCase) runProceedToManagerConsumer() error {
 	if sctUseCase.scBroker == nil {
-		return errors.New("no broker")
+		return broker.ErrNoBroker
+	}
+
+	consumer := sctUseCase.scBroker.GetConsumerByTopic(SignRequestProceedToManager)
+	if consumer == nil {
+		return broker.ErrNoConsumer
 	}
 
 	go func() {
 		for {
 			select {
-			case msg := <-sctUseCase.scBroker.Consumers[SignRequestProceedToManager].Messages():
+			case msg := <-consumer.Messages():
 				sctUseCase.processProceedToManagerMsg(msg)
 			}
 		}

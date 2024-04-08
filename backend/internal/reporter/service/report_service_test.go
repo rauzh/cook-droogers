@@ -13,6 +13,7 @@ import (
 	"cookdroogers/models"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
 )
@@ -47,14 +48,14 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 		ArtistID:     uint64(777),
 	}
 
-	rlsMockRepo.EXPECT().GetAllByArtist(uint64(777)).Return(
+	rlsMockRepo.EXPECT().GetAllByArtist(mock.AnythingOfType("context.backgroundCtx"), uint64(777)).Return(
 		[]models.Release{
 			release1,
 			release2,
 		},
 		nil).Once()
 
-	rlsMockRepo.EXPECT().GetAllTracks(&release1).Return(
+	rlsMockRepo.EXPECT().GetAllTracks(mock.AnythingOfType("context.backgroundCtx"), &release1).Return(
 		[]models.Track{
 			{
 				TrackID:  11,
@@ -82,7 +83,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 			},
 		}, nil).Once()
 
-	rlsMockRepo.EXPECT().GetAllTracks(&release2).Return(
+	rlsMockRepo.EXPECT().GetAllTracks(mock.AnythingOfType("context.backgroundCtx"), &release2).Return(
 		[]models.Track{
 			{
 				TrackID:  21,
@@ -102,7 +103,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 			},
 		}, nil).Once()
 
-	statMockRepo.EXPECT().GetForTrack(uint64(11)).Return(
+	statMockRepo.EXPECT().GetForTrack(mock.AnythingOfType("context.backgroundCtx"), uint64(11)).Return(
 		[]models.Statistics{
 			{
 				StatID:  111,
@@ -119,7 +120,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 				TrackID: 11,
 			},
 		}, nil).Once()
-	statMockRepo.EXPECT().GetForTrack(uint64(12)).Return(
+	statMockRepo.EXPECT().GetForTrack(mock.AnythingOfType("context.backgroundCtx"), uint64(12)).Return(
 		[]models.Statistics{
 			{
 				StatID:  121,
@@ -136,7 +137,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 				TrackID: 12,
 			},
 		}, nil).Once()
-	statMockRepo.EXPECT().GetForTrack(uint64(13)).Return(
+	statMockRepo.EXPECT().GetForTrack(mock.AnythingOfType("context.backgroundCtx"), uint64(13)).Return(
 		[]models.Statistics{
 			{
 				StatID:  131,
@@ -153,7 +154,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 				TrackID: 13,
 			},
 		}, nil).Once()
-	statMockRepo.EXPECT().GetForTrack(uint64(21)).Return(
+	statMockRepo.EXPECT().GetForTrack(mock.AnythingOfType("context.backgroundCtx"), uint64(21)).Return(
 		[]models.Statistics{
 			{
 				StatID:  211,
@@ -170,7 +171,7 @@ func TestReportServiceJSON_GetReportForArtist(t *testing.T) {
 				TrackID: 21,
 			},
 		}, nil).Once()
-	statMockRepo.EXPECT().GetForTrack(uint64(22)).Return(
+	statMockRepo.EXPECT().GetForTrack(mock.AnythingOfType("context.backgroundCtx"), uint64(22)).Return(
 		[]models.Statistics{
 			{
 				StatID:  221,

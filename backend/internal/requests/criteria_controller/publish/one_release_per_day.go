@@ -31,7 +31,7 @@ func (orpdc *OneReleasePerDayCriteria) Apply(request base.IRequest) (result crit
 	}
 	pubReq := request.(*publish.PublishRequest)
 
-	pubsThatDay, err := orpdc.publicationRepo.GetAllByDate(context.Background(), pubReq.Date)
+	pubsThatDay, err := orpdc.publicationRepo.GetAllByDate(context.Background(), pubReq.ExpectedDate)
 	if err != nil {
 		result.Explanation = criteria.ExplanationCantApply
 		return
@@ -52,6 +52,6 @@ type OneReleasePerDayCriteriaFabric struct {
 	PublicationRepo repo.PublicationRepo
 }
 
-func (fabric *OneReleasePerDayCriteriaFabric) Create() criteria.Criteria {
-	return &OneReleasePerDayCriteria{publicationRepo: fabric.PublicationRepo}
+func (fabric *OneReleasePerDayCriteriaFabric) Create() (criteria.Criteria, error) {
+	return &OneReleasePerDayCriteria{publicationRepo: fabric.PublicationRepo}, nil
 }

@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 	"cookdroogers/internal/requests/base"
+	"cookdroogers/internal/requests/broker"
 	"cookdroogers/internal/requests/publish"
 	cdtime "cookdroogers/pkg/time"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/IBM/sarama"
 	"time"
@@ -44,14 +44,20 @@ func NewPublishRequestProducerMsg(topic string, req *publish.PublishRequest) (*s
 }
 
 func (publishUseCase *PublishRequestUseCase) runProceedToManagerConsumer() error {
+
 	if publishUseCase.pbBroker == nil {
-		return errors.New("no broker")
+		return broker.ErrNoBroker
 	}
 
+	consumer := publishUseCase.pbBroker.GetConsumerByTopic(PublishRequestProceedToManager)
+	if consumer == nil {
+		return broker.ErrNoConsumer
+	}
+	
 	go func() {
 		for {
 			select {
-			case msg := <-publishUseCase.pbBroker.Consumers[PublishRequestProceedToManager].Messages():
+			case msg := <-consumer.Messages():
 				publishUseCase.processProceedToManagerMsg(msg)
 			}
 		}

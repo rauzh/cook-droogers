@@ -35,7 +35,7 @@ func (cc *CriteriaCollection) Apply(request base.IRequest) (result CriteriaColle
 
 func BuildCollection(fabrics ...AbstractCriteriaFabric) (ICriteriaCollection, error) {
 
-	crits := make([]Criteria, len(fabrics))
+	crits := make([]Criteria, 0)
 	for _, fabric := range fabrics {
 		crit, err := fabric.Create()
 		if err != nil {

@@ -23,10 +23,10 @@ type PublishRequest struct {
 func (pubReq *PublishRequest) Validate(reqType base.RequestType) error {
 
 	if err := pubReq.Request.Validate(reqType); err != nil {
-		return nil
+		return err
 	}
 
-	if pubReq.ExpectedDate.IsZero() || cdtime.CheckDateWeekLater(pubReq.ExpectedDate) {
+	if pubReq.ExpectedDate.IsZero() || !cdtime.CheckDateWeekLater(pubReq.ExpectedDate) {
 		return pubReqErrors.ErrInvalidDate
 	}
 

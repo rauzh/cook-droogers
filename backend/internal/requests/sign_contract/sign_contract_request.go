@@ -23,7 +23,7 @@ const (
 func (scReq *SignContractRequest) Validate(reqType base.RequestType) error {
 
 	if err := scReq.Request.Validate(reqType); err != nil {
-		return nil
+		return err
 	}
 
 	if scReq.Nickname == "" || len(scReq.Nickname) > MaxNicknameLen {

@@ -55,6 +55,6 @@ type ArtistReleaseLimitPerSeasonCriteriaFabric struct {
 	PublicationRepo repo.PublicationRepo
 }
 
-func (fabric *ArtistReleaseLimitPerSeasonCriteriaFabric) Create() criteria.Criteria {
-	return &ArtistReleaseLimitPerSeasonCriteria{publicationRepo: fabric.PublicationRepo}
+func (fabric *ArtistReleaseLimitPerSeasonCriteriaFabric) Create() (criteria.Criteria, error) {
+	return &ArtistReleaseLimitPerSeasonCriteria{publicationRepo: fabric.PublicationRepo}, nil
 }

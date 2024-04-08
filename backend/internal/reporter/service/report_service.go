@@ -63,14 +63,12 @@ func (rptSvc *ReportServiceJSON) GetReportForManager(mngID uint64) (map[string][
 func (rptSvc *ReportServiceJSON) GetReportForArtist(artistID uint64) (map[string][]byte, error) {
 
 	report := make(map[string][]byte)
-	// Get all artist`s releases
 	releases, err := rptSvc.rlsSvc.GetAllByArtist(artistID)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, release := range releases {
-		// Get all tracks of each release
 		tracks, err := rptSvc.rlsSvc.GetAllTracks(&release)
 		if err != nil {
 			return nil, err
@@ -78,7 +76,6 @@ func (rptSvc *ReportServiceJSON) GetReportForArtist(artistID uint64) (map[string
 
 		tracksStats := make(map[string]uint64)
 		for _, track := range tracks {
-			// Get latest stats for each track
 			latestStat, err := rptSvc.statSvc.GetLatestStatForTrack(track.TrackID)
 			if err != nil {
 				return nil, err
