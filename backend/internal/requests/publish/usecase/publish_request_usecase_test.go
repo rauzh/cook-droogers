@@ -54,7 +54,7 @@ func _newMockPublishReqDepFields(t *testing.T) *_depFields {
 	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo, rlsSvc)
 
 	critCollection, _ := criteria.BuildCollection(
-		&publish_criteria.ArtistReleaseLimitPerSeasonCriteriaFabric{PublicationRepo: pbcMockRepo},
+		&publish_criteria.ArtistReleaseLimitPerSeasonCriteriaFabric{PublicationRepo: pbcMockRepo, ArtistRepo: mockArtRepo},
 		&publish_criteria.RelevantGenreCriteriaFabric{ReleaseService: rlsSvc, StatService: statSvc},
 		&publish_criteria.OneReleasePerDayCriteriaFabric{PublicationRepo: pbcMockRepo})
 
@@ -105,7 +105,7 @@ func TestPublishRequestUseCase_Decline(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: nil,
@@ -148,7 +148,7 @@ func TestPublishRequestUseCase_Decline(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(0, 0, 3),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: pubReqErrors.ErrInvalidDate,
@@ -216,7 +216,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: nil,
@@ -247,7 +247,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 3),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: base_errors.ErrInvalidType,
@@ -275,7 +275,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 3),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: base_errors.ErrAlreadyClosed,
@@ -343,7 +343,7 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: nil,
@@ -365,7 +365,7 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  "",
+					Description:  mock.Anything,
 				}).Return(nil).Once()
 			},
 			assert: func(t *testing.T, df *_depFields) {
@@ -387,7 +387,7 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -3,
 					ExpectedDate: cdtime.GetToday().AddDate(0, 0, 3),
-					Description:  "",
+					Description:  mock.Anything,
 				},
 			},
 			out: pubReqErrors.ErrInvalidDate,
@@ -476,11 +476,14 @@ func TestPublishRequestUseCase_proceedToManager(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        0,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  mock.Anything,
+					Description:  "",
 				}).Return(nil).Once()
 
+				df.artistRepo.EXPECT().GetByUserID(mock.AnythingOfType("context.backgroundCtx"), uint64(12)).Return(
+					&models.Artist{ManagerID: 9, ArtistID: 199}, nil).Once()
+
 				df.publicationRepo.EXPECT().GetAllByArtistSinceDate(mock.AnythingOfType("context.backgroundCtx"),
-					cdtime.RelevantPeriod(), uint64(12)).Return([]models.Publication{{}, {}, {}, {}}, nil).Once()
+					cdtime.RelevantPeriod(), uint64(199)).Return([]models.Publication{{}, {}, {}, {}}, nil).Once()
 
 				df.publicationRepo.EXPECT().GetAllByDate(mock.AnythingOfType("context.backgroundCtx"),
 					cdtime.GetToday().AddDate(1, 0, 0)).Return([]models.Publication{}, nil).Once()
@@ -512,7 +515,7 @@ func TestPublishRequestUseCase_proceedToManager(t *testing.T) {
 					ReleaseID:    777,
 					Grade:        -1,
 					ExpectedDate: cdtime.GetToday().AddDate(1, 0, 0),
-					Description:  "",
+					Description:  "**No releases from artist more than limit** diff: -1\n**No releases from artist more than limit** reason: More than limit releases per season**Genre should be relevant** diff: 0\n**Genre should be relevant** reason: Can't apply criteria**No releases that day** diff: 0\n**No releases that day** reason: OK",
 				}).Return(nil).Once()
 			},
 			assert: func(t *testing.T, df *_depFields) {

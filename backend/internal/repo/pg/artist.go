@@ -38,6 +38,23 @@ func (art *ArtistPgRepo) Get(ctx context.Context, id uint64) (*models.Artist, er
 	return &artist, nil
 }
 
+func (art *ArtistPgRepo) GetByUserID(ctx context.Context, id uint64) (*models.Artist, error) {
+
+	q := "SELECT * FROM artists JOIN users ON artists.user_id=users.user_id WHERE user_id=$1"
+
+	artist := models.Artist{}
+	err := art.txResolver.DefaultTrOrDB(ctx, art.db).QueryRowxContext(ctx, q, id).Scan(
+		&artist.ArtistID,
+		&artist.Nickname, &artist.ContractTerm, &artist.Activity,
+		&artist.UserID, &artist.ManagerID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &artist, nil
+}
+
 func (art *ArtistPgRepo) Update(ctx context.Context, artist *models.Artist) error {
 	q := "UPDATE artists SET user_id=$1, nickname=$2, contract_due=$3, activity=$4, manager_id=$5 WHERE artist_id=$6 RETURNING *"
 
