@@ -27,6 +27,8 @@ type _depFields struct {
 	signReqRepo *signReqRepoMocks.SignContractRequestRepo
 }
 
+var dberr = errors.New("db err")
+
 func _newMockSignReqDepFields(t *testing.T) *_depFields {
 
 	transactionMock := transacMock.NewTransactor(t)
@@ -327,6 +329,44 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 					Nickname:    "skibidi",
 					Description: "",
 				}).Return(nil).Once()
+			},
+			assert: func(t *testing.T, df *_depFields) {
+
+			},
+		},
+		{
+			name: "CantCreate",
+			in: &args{
+				signReq: &sign_contract.SignContractRequest{
+					Request: base.Request{
+						RequestID: 1,
+						Type:      sign_contract.SignRequest,
+						Status:    "",
+						ApplierID: 12,
+						ManagerID: 0,
+					},
+					Nickname:    "skibidi",
+					Description: "",
+				},
+			},
+			out: dberr,
+			dependencies: func(df *_depFields) {
+
+				df.scBroker.EXPECT().SignConsumerToTopic(SignRequestProceedToManager).Return(nil).Once()
+				df.scBroker.EXPECT().GetConsumerByTopic(SignRequestProceedToManager).Return(&sarama_mocks.PartitionConsumer{}).Once()
+
+				df.signReqRepo.EXPECT().Create(mock.AnythingOfType("context.backgroundCtx"), &sign_contract.SignContractRequest{
+					Request: base.Request{
+						RequestID: 1,
+						Type:      sign_contract.SignRequest,
+						Status:    base.NewRequest,
+						Date:      cdtime.GetToday(),
+						ApplierID: 12,
+						ManagerID: 0,
+					},
+					Nickname:    "skibidi",
+					Description: "",
+				}).Return(dberr).Once()
 			},
 			assert: func(t *testing.T, df *_depFields) {
 
