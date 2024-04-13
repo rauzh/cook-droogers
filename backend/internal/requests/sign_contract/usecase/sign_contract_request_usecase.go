@@ -5,8 +5,9 @@ import (
 	repo "cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/broker"
+	"cookdroogers/internal/requests/broker/broker_dto"
+	signContractBroker "cookdroogers/internal/requests/broker/sign_contract"
 	"cookdroogers/internal/requests/sign_contract"
-	"cookdroogers/internal/requests/sign_contract/errors"
 	signContractRepo "cookdroogers/internal/requests/sign_contract/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
@@ -15,7 +16,6 @@ import (
 )
 
 type SignContractRequestUseCase struct {
-	mngRepo    repo.ManagerRepo
 	userRepo   repo.UserRepo
 	artistRepo repo.ArtistRepo
 	transactor transactor.Transactor
@@ -25,7 +25,6 @@ type SignContractRequestUseCase struct {
 }
 
 func NewSignContractRequestUseCase(
-	mngRepo repo.ManagerRepo,
 	usrRepo repo.UserRepo,
 	artRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
@@ -33,23 +32,12 @@ func NewSignContractRequestUseCase(
 	repo signContractRepo.SignContractRequestRepo,
 ) (base.IRequestUseCase, error) {
 
-	err := scBroker.SignConsumerToTopic(SignRequestProceedToManager)
-	if err != nil {
-		return nil, err
-	}
-
 	sctUseCase := &SignContractRequestUseCase{
-		mngRepo:    mngRepo,
 		userRepo:   usrRepo,
 		artistRepo: artRepo,
 		repo:       repo,
 		transactor: transactor,
 		scBroker:   scBroker,
-	}
-
-	err = sctUseCase.runProceedToManagerConsumer()
-	if err != nil {
-		return nil, err
 	}
 
 	return sctUseCase, nil
@@ -73,19 +61,6 @@ func (sctUseCase *SignContractRequestUseCase) Apply(request base.IRequest) error
 	}
 
 	return nil
-}
-
-func (sctUseCase *SignContractRequestUseCase) proceedToManager(signReq *sign_contract.SignContractRequest) error {
-	signReq.Status = base.OnApprovalRequest
-
-	managerID, err := sctUseCase.mngRepo.GetRandManagerID(context.Background())
-	if err != nil {
-		return errors.ErrCantFindManager
-	}
-
-	signReq.ManagerID = managerID
-
-	return sctUseCase.repo.Update(context.Background(), signReq)
 }
 
 func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) error {
@@ -143,4 +118,19 @@ func (sctUseCase *SignContractRequestUseCase) Get(id uint64) (*sign_contract.Sig
 	}
 
 	return req, nil
+}
+
+func (sctUseCase *SignContractRequestUseCase) sendProceedToManagerMSG(signReq *sign_contract.SignContractRequest) error {
+
+	msg, err := broker_dto.NewSignRequestProducerMsg(signContractBroker.SignRequestProceedToManager, signReq)
+	if err != nil {
+		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
+	}
+
+	_, _, err = sctUseCase.scBroker.SendMessage(msg)
+	if err != nil {
+		return fmt.Errorf("can't apply sign contract request: can't proceed to manager with err %w", err)
+	}
+
+	return nil
 }
