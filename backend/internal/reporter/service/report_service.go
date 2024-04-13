@@ -7,6 +7,7 @@ import (
 	releaseService "cookdroogers/internal/release/service"
 	statisticsServive "cookdroogers/internal/statistics/service"
 	"cookdroogers/models"
+	cdtime "cookdroogers/pkg/time"
 	"encoding/json"
 	"time"
 )
@@ -128,7 +129,7 @@ func (rptSvc *ReportServiceJSON) getAllArtistsStatsForManager(mngID uint64) ([]b
 		return nil, err
 	}
 
-	lastSeasonStatDate := time.Now().UTC().AddDate(0, -3, 0)
+	lastSeasonStatDate := cdtime.RelevantPeriod()
 	currentDate := time.Now().UTC()
 
 	artistStats := make(map[string]map[string]map[uint64][]models.Statistics)
