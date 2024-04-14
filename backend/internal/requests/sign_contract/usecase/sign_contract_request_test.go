@@ -48,7 +48,7 @@ func _newMockSignReqDepFields(t *testing.T) *_depFields {
 	return f
 }
 
-func TestPublishRequestUseCase_Decline(t *testing.T) {
+func TestSignContractRequestUseCase_Decline(t *testing.T) {
 
 	type args struct {
 		signReq *sign_contract.SignContractRequest
@@ -147,7 +147,7 @@ func TestPublishRequestUseCase_Decline(t *testing.T) {
 	}
 }
 
-func TestPublishRequestUseCase_Accept(t *testing.T) {
+func TestSignContractRequestUseCase_Accept(t *testing.T) {
 
 	type args struct {
 		signReq *sign_contract.SignContractRequest
@@ -258,7 +258,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 	}
 }
 
-func TestPublishRequestUseCase_Apply(t *testing.T) {
+func TestSignContractRequestUseCase_Apply(t *testing.T) {
 
 	type args struct {
 		signReq *sign_contract.SignContractRequest
