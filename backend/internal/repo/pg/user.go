@@ -2,7 +2,9 @@ package postgres
 
 import (
 	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/models"
+	"database/sql"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -10,6 +12,12 @@ import (
 type UserPgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
+}
+
+func NewUserPgRepo(db *sql.DB) repo.UserRepo {
+	dbx := sqlx.NewDb(db, "pgx")
+
+	return &UserPgRepo{db: dbx, txResolver: trmsqlx.DefaultCtxGetter}
 }
 
 func (usr *UserPgRepo) Create(ctx context.Context, user *models.User) error {

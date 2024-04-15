@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"database/sql"
@@ -14,6 +15,12 @@ type ReleasePgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
 	transactor transactor.Transactor
+}
+
+func NewReleasePgRepo(db *sql.DB, transactor transactor.Transactor) repo.ReleaseRepo {
+	dbx := sqlx.NewDb(db, "pgx")
+
+	return &ReleasePgRepo{db: dbx, txResolver: trmsqlx.DefaultCtxGetter, transactor: transactor}
 }
 
 func (rel *ReleasePgRepo) Create(ctx context.Context, release *models.Release) error {
@@ -60,6 +67,27 @@ func (rel *ReleasePgRepo) Get(ctx context.Context, releaseID uint64) (*models.Re
 
 	release.ReleaseID = releaseID
 
+	q = "SELECT track_id FROM tracks WHERE release_id=$1"
+
+	rows, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).QueryxContext(ctx, q, releaseID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return &release, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var trackID uint64
+		err = rows.Scan(&trackID)
+		if err != nil {
+			return nil, err
+		}
+
+		release.Tracks = append(release.Tracks, trackID)
+	}
+
 	return &release, nil
 }
 
@@ -89,6 +117,27 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 		}
 
 		release.ArtistID = artistID
+
+		qTRK := "SELECT track_id FROM tracks WHERE release_id=$1"
+
+		rowsTRK, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).QueryxContext(ctx, qTRK, release.ReleaseID)
+		if errors.Is(err, sql.ErrNoRows) {
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		for rowsTRK.Next() {
+			var trackID uint64
+			err = rowsTRK.Scan(&trackID)
+			if err != nil {
+				return nil, err
+			}
+
+			release.Tracks = append(release.Tracks, trackID)
+		}
+
+		_ = rowsTRK.Close()
 
 		releases = append(releases, release)
 	}

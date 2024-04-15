@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"database/sql"
@@ -14,6 +15,12 @@ type ManagerPgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
 	transactor transactor.Transactor
+}
+
+func NewManagerPgRepo(db *sql.DB, transactor transactor.Transactor) repo.ManagerRepo {
+	dbx := sqlx.NewDb(db, "pgx")
+
+	return &ManagerPgRepo{db: dbx, txResolver: trmsqlx.DefaultCtxGetter, transactor: transactor}
 }
 
 func (mng *ManagerPgRepo) Create(ctx context.Context, manager *models.Manager) error {

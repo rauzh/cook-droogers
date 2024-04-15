@@ -23,6 +23,11 @@ type SignContractRequestPgRepo struct {
 	txResolver *trmsqlx.CtxGetter
 }
 
+type SignContractReqMetaPgDTO struct {
+	Nickname    string `json:"nickname"`
+	Description string `json:"description"`
+}
+
 func NewSignContractRequestPgRepo(db *sql.DB) repo.SignContractRequestRepo {
 	dbx := sqlx.NewDb(db, "pgx")
 
@@ -35,9 +40,9 @@ func (sctRepo *SignContractRequestPgRepo) SetMeta(ctx context.Context, signReq *
 		return ErrorInvalidRequestID
 	}
 
-	meta := map[string]string{
-		"nickname":    signReq.Nickname,
-		"description": signReq.Description,
+	meta := SignContractReqMetaPgDTO{
+		Nickname:    signReq.Nickname,
+		Description: signReq.Description,
 	}
 
 	metaJson, err := json.Marshal(meta)
@@ -67,23 +72,14 @@ func (sctRepo *SignContractRequestPgRepo) Get(ctx context.Context, id uint64) (*
 		return nil, err
 	}
 
-	meta := make(map[string]string)
+	meta := SignContractReqMetaPgDTO{}
 	err = json.Unmarshal(metaJson, &meta)
 	if err != nil {
 		return nil, err
 	}
 
-	val, ok := meta["nickname"]
-	if !ok {
-		return nil, ErrorNoNicknameInMeta
-	}
-	signRequest.Nickname = val
-
-	val, ok = meta["description"]
-	if !ok {
-		return nil, ErrorNoDescriptionInMeta
-	}
-	signRequest.Description = val
+	signRequest.Nickname = meta.Nickname
+	signRequest.Description = meta.Description
 
 	return &signRequest, nil
 }
@@ -94,9 +90,9 @@ func (sctRepo *SignContractRequestPgRepo) Update(ctx context.Context, signReq *s
 		return ErrorInvalidRequestID
 	}
 
-	meta := map[string]string{
-		"nickname":    signReq.Nickname,
-		"description": signReq.Description,
+	meta := SignContractReqMetaPgDTO{
+		Nickname:    signReq.Nickname,
+		Description: signReq.Description,
 	}
 
 	metaJson, err := json.Marshal(meta)
@@ -114,13 +110,9 @@ func (sctRepo *SignContractRequestPgRepo) Update(ctx context.Context, signReq *s
 
 func (sctRepo *SignContractRequestPgRepo) Create(ctx context.Context, signReq *sign_contract.SignContractRequest) error {
 
-	if signReq.RequestID == 0 {
-		return ErrorInvalidRequestID
-	}
-
-	meta := map[string]string{
-		"nickname":    signReq.Nickname,
-		"description": signReq.Description,
+	meta := SignContractReqMetaPgDTO{
+		Nickname:    signReq.Nickname,
+		Description: signReq.Description,
 	}
 
 	metaJson, err := json.Marshal(meta)

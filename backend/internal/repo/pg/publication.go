@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
 	"errors"
@@ -13,6 +14,12 @@ import (
 type PublicationPgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
+}
+
+func NewPublicationPgRepo(db *sql.DB) repo.PublicationRepo {
+	dbx := sqlx.NewDb(db, "pgx")
+
+	return &PublicationPgRepo{db: dbx, txResolver: trmsqlx.DefaultCtxGetter}
 }
 
 func (pub *PublicationPgRepo) Create(ctx context.Context, publication *models.Publication) error {

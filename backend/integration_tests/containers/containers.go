@@ -52,7 +52,7 @@ func SetupTestDatabase() (testcontainers.Container, *sql.DB, error) {
 	}
 	db.SetMaxOpenConns(10)
 
-	text, err := os.ReadFile("../../../db/scripts/init.sql ")
+	text, err := os.ReadFile("/Users/rauzh/Desktop/PPO_DB/cook-droogers/backend/integration_tests/init-tests.sql")
 	if err != nil {
 		return dbContainer, nil, err
 	}

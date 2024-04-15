@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
 	"errors"
@@ -13,6 +14,12 @@ import (
 type StatisticsPgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
+}
+
+func NewStatisticsPgRepo(db *sql.DB) repo.StatisticsRepo {
+	dbx := sqlx.NewDb(db, "pgx")
+
+	return &StatisticsPgRepo{db: dbx, txResolver: trmsqlx.DefaultCtxGetter}
 }
 
 func (stat *StatisticsPgRepo) Create(ctx context.Context, stats *models.Statistics) (err error) {
