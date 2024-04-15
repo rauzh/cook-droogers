@@ -74,10 +74,10 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 	if errors.Is(err, sql.ErrNoRows) {
 		return releases, nil
 	}
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 
@@ -129,7 +129,7 @@ func (rel *ReleasePgRepo) GetAllTracks(ctx context.Context, release *models.Rele
 
 			track.Artists = append(track.Artists, artistID)
 		}
-
+		_ = rows.Close()
 		tracks = append(tracks, track)
 	}
 

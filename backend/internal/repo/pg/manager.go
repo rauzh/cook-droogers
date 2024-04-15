@@ -65,11 +65,9 @@ func (mng *ManagerPgRepo) Get(ctx context.Context, userID uint64) (*models.Manag
 	if errors.Is(err, sql.ErrNoRows) {
 		return &manager, nil
 	}
-
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	for rows.Next() {

@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "cook_droogers"
+      POSTGRES_USER: "rauzh"
+      POSTGRES_PASSWORD: "1337"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -5,7 +5,8 @@ CREATE TABLE users (
     user_id 		    SERIAL PRIMARY KEY,
     name                TEXT NOT NULL,
 	email               TEXT NOT NULL,
-    type                VARCHAR(128) NOT NULL
+    password            TEXT NOT NULL,
+    type                INT NOT NUL CHECK (type IN (0, 1, 2))
 );
 
 -- DROP TABLE IF EXISTS managers CASCADE;
@@ -28,7 +29,7 @@ CREATE TABLE IF NOT EXISTS artists (
 CREATE TABLE IF NOT EXISTS releases (
     release_id 		    SERIAL PRIMARY KEY,
     title               VARCHAR(256),
-    status              VARCHAR(128),
+    status              VARCHAR(128) CHECK (status IN ("Unpublished", "Published")),
 	creation_date       TIMESTAMP,
     artist_id 	        INT NOT NULL REFERENCES artists ON DELETE CASCADE
 );
@@ -46,7 +47,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 -- DROP TABLE IF EXISTS requests CASCADE;
 CREATE TABLE IF NOT EXISTS requests (
     request_id 		    SERIAL PRIMARY KEY,
-	status              VARCHAR(256),
+	status              VARCHAR(256) CHECK (status IN ('New', 'Processing', 'On approval', 'Closed')),
     type                VARCHAR(256),
 	creation_date       TIMESTAMP,
 	meta 	            JSON,

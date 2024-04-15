@@ -58,10 +58,10 @@ func (pub *PublicationPgRepo) GetAllByDate(ctx context.Context, date time.Time) 
 	if errors.Is(err, sql.ErrNoRows) {
 		return publications, nil
 	}
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		publication := models.Publication{}
@@ -87,10 +87,10 @@ func (pub *PublicationPgRepo) GetAllByManager(ctx context.Context, mng uint64) (
 	if errors.Is(err, sql.ErrNoRows) {
 		return publications, nil
 	}
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		publication := models.Publication{}
@@ -119,10 +119,10 @@ func (pub *PublicationPgRepo) GetAllByArtistSinceDate(ctx context.Context, date 
 	if errors.Is(err, sql.ErrNoRows) {
 		return publications, nil
 	}
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		publication := models.Publication{}
