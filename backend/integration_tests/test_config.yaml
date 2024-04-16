@@ -1,6 +1,0 @@
----
-
-db_data:
-  pguser: "rauzh"
-  pgdatabase: :cook_droogers_test"
-  pgpassword: "1337"
