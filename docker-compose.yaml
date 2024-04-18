@@ -1,12 +1,36 @@
-version: "3.9"
+version: '3.8'
+
 services:
+  cook_droogers:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+      - postgres
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
   postgres:
     image: postgres:13.3
-    environment:
-      POSTGRES_DB: "cook_droogers"
-      POSTGRES_USER: "rauzh"
-      POSTGRES_PASSWORD: "1337"
     ports:
       - "5432:5432"
-    volumes:
-      - ./db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: "rauzh"
+      POSTGRES_PASSWORD: "1337"
+      POSTGRES_DB: "cook_droogers"
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"

@@ -8,7 +8,6 @@ import (
 	transactor2 "cookdroogers/internal/transactor/trm"
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
-	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/jmoiron/sqlx"
@@ -77,8 +76,6 @@ func TestReleaseTracks_CreateGet(t *testing.T) {
 
 	releaseCopy, err := releaseRepo.Get(ctx, release.ReleaseID)
 	assert.Equal(t, nil, err)
-
-	fmt.Println("!!!!")
 
 	assert.Equal(t, release.ReleaseID, releaseCopy.ReleaseID)
 	assert.Equal(t, len(release.Tracks), len(releaseCopy.Tracks))

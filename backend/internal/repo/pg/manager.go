@@ -50,27 +50,18 @@ func (mng *ManagerPgRepo) Create(ctx context.Context, manager *models.Manager) e
 		manager.ManagerID = managerID
 		return nil
 	})
-
 }
 
-func (mng *ManagerPgRepo) Get(ctx context.Context, userID uint64) (*models.Manager, error) {
-	q := "SELECT manager_id, user_id FROM managers WHERE manager_id=$1"
+// декомпозировал по причине появилась вторая функция гета
+func (mng *ManagerPgRepo) getManagedArtists(ctx context.Context, mngID uint64) ([]uint64, error) {
+	q := "SELECT artist_id FROM artists WHERE manager_id=$1"
 
-	manager := models.Manager{}
-	err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q,
-		userID).Scan(&manager.ManagerID, &manager.UserID)
+	rows, err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryxContext(ctx, q, mngID)
 
-	if err != nil {
-		return nil, err
-	}
-
-	q = "SELECT artist_id FROM artists WHERE manager_id=$1"
-
-	rows, err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryxContext(ctx, q,
-		manager.ManagerID)
+	artists := make([]uint64, 0)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return &manager, nil
+		return artists, nil
 	}
 	if err != nil {
 		return nil, err
@@ -83,8 +74,50 @@ func (mng *ManagerPgRepo) Get(ctx context.Context, userID uint64) (*models.Manag
 		if err != nil {
 			return nil, err
 		}
-		manager.Artists = append(manager.Artists, artistID)
+		artists = append(artists, artistID)
 	}
+
+	return artists, nil
+}
+
+func (mng *ManagerPgRepo) GetByUserID(ctx context.Context, userID uint64) (*models.Manager, error) {
+	q := "SELECT manager_id, user_id FROM managers WHERE user_id=$1"
+
+	manager := models.Manager{}
+	err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q,
+		userID).Scan(&manager.ManagerID, &manager.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	artists, err := mng.getManagedArtists(ctx, manager.ManagerID)
+	if err != nil {
+		return nil, err
+	}
+
+	manager.Artists = artists
+
+	return &manager, nil
+}
+
+func (mng *ManagerPgRepo) Get(ctx context.Context, managerID uint64) (*models.Manager, error) {
+	q := "SELECT manager_id, user_id FROM managers WHERE manager_id=$1"
+
+	manager := models.Manager{}
+	err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q,
+		managerID).Scan(&manager.ManagerID, &manager.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	artists, err := mng.getManagedArtists(ctx, manager.ManagerID)
+	if err != nil {
+		return nil, err
+	}
+
+	manager.Artists = artists
 
 	return &manager, nil
 }

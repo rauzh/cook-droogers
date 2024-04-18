@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"cookdroogers/internal/repo"
+	"cookdroogers/internal/statistics/fetcher"
 	"cookdroogers/models"
 	"encoding/json"
 	"errors"
@@ -29,6 +30,14 @@ type StatJSON struct {
 	Likes   uint64    `json:"likes"`
 	Track   uint64    `json:"track"`
 	Artist  uint64    `json:"artist"`
+}
+
+func NewStatFetcherAdapter(url string, artistRepo repo.ArtistRepo, releaseRepo repo.ReleaseRepo) fetcher.StatFetcher {
+	return &StatFetcherAdapter{
+		url:         url,
+		artistRepo:  artistRepo,
+		releaseRepo: releaseRepo,
+	}
 }
 
 func (fetcher *StatFetcherAdapter) Fetch(tracks []models.Track) ([]models.Statistics, error) {
