@@ -9,9 +9,10 @@ import (
 	"cookdroogers/internal/requests/sign_contract/usecase"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
-func userLoop(a *app.App, user *models.User) error {
+func userLoop(a *app.App, user *models.User, log *slog.Logger) error {
 
 	startPosition :=
 		`
@@ -33,10 +34,13 @@ func userLoop(a *app.App, user *models.User) error {
 		case 1:
 			err := applySignRequest(a, user)
 			if err != nil {
-				fmt.Println(err)
+				log.Error("Can't apply sign request: ", slog.Any("error", err))
 			}
 		case 2:
-			lookupReqs(a, user)
+			err := lookupReqs(a, user)
+			if err != nil {
+				log.Error("Can't look up requests: ", slog.Any("error", err))
+			}
 		case 3:
 			printInfo()
 		default:
@@ -56,23 +60,18 @@ func applySignRequest(a *app.App, applier *models.User) error {
 	return a.UseCases.SignContractReqUC.Apply(signReq)
 }
 
-func lookupReqs(a *app.App, user *models.User) {
+func lookupReqs(a *app.App, user *models.User) error {
 
 	reqs, err := a.Services.RequestService.GetAllByUserID(user.UserID)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	reqMap := make(map[uint64]base.Request)
 
 	for _, req := range reqs {
-		fmt.Printf("\n\t request id:%d"+
-			"\n\t type:%s"+
-			"\n\t status:%s"+
-			"\n\t date:%s"+
-			"\n\t manager:%d"+
-			"\n\t applier:%d\n", req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
+		fmt.Printf("\n\t request id:%d\n\t type:%s\n\t status:%s\n\t date:%s\n\t manager:%d\n\t applier:%d\n",
+			req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
 		reqMap[req.RequestID] = req
 	}
 
@@ -80,7 +79,7 @@ func lookupReqs(a *app.App, user *models.User) {
 	var reqID uint64
 	_, _ = fmt.Scanf("%d", &reqID)
 	if reqID == 0 {
-		return
+		return nil
 	}
 
 	switch reqMap[reqID].Type {
@@ -89,8 +88,7 @@ func lookupReqs(a *app.App, user *models.User) {
 
 		signreq, err := signReqUC.Get(reqID)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 		fmt.Printf("\n\t nickname: %s \n\t decription: %s\n", signreq.Nickname, signreq.Description)
@@ -99,14 +97,11 @@ func lookupReqs(a *app.App, user *models.User) {
 
 		pubreq, err := pubReqUC.Get(reqID)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
-		fmt.Printf("\n\t expected date:%s"+
-			"\n\t decription: %s"+
-			"\n\t grade: %d"+
-			"\n\t release id: %d\n", pubreq.ExpectedDate, pubreq.Description, pubreq.Grade, pubreq.ReleaseID)
+		fmt.Printf("\n\t expected date:%s\n\t decription: %s\n\t grade: %d\n\t release id: %d\n",
+			pubreq.ExpectedDate, pubreq.Description, pubreq.Grade, pubreq.ReleaseID)
 	}
-
+	return nil
 }

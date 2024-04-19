@@ -8,6 +8,7 @@ import (
 	"cookdroogers/internal/requests/broker/broker_dto"
 	publish_req_broker "cookdroogers/internal/requests/broker/publish"
 	"cookdroogers/internal/requests/publish"
+	"cookdroogers/internal/requests/publish/errors"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	statService "cookdroogers/internal/statistics/service"
 	"cookdroogers/internal/transactor"
@@ -19,6 +20,7 @@ type PublishRequestUseCase struct {
 	statService     statService.IStatisticsService
 	publicationRepo repo.PublicationRepo
 	releaseRepo     repo.ReleaseRepo
+	artistRepo      repo.ArtistRepo
 	transactor      transactor.Transactor
 	broker          broker.IBroker
 
@@ -29,6 +31,7 @@ func NewPublishRequestUseCase(
 	statService statService.IStatisticsService,
 	publicationRepo repo.PublicationRepo,
 	releaseRepo repo.ReleaseRepo,
+	artistRepo repo.ArtistRepo,
 	transactor transactor.Transactor,
 	pbBroker broker.IBroker,
 	repo publishReqRepo.PublishRequestRepo,
@@ -38,6 +41,7 @@ func NewPublishRequestUseCase(
 		statService:     statService,
 		publicationRepo: publicationRepo,
 		releaseRepo:     releaseRepo,
+		artistRepo:      artistRepo,
 		repo:            repo,
 		transactor:      transactor,
 		broker:          pbBroker,
@@ -61,6 +65,35 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 
 	if err := publishUseCase.sendProceedToManagerMSG(pubReq); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (publishUseCase *PublishRequestUseCase) checkRelease(pubReq *publish.PublishRequest) error {
+
+	ctx := context.Background()
+
+	release, err := publishUseCase.releaseRepo.Get(ctx, pubReq.ReleaseID)
+	if err != nil {
+		return err
+	}
+
+	if release.Status != models.UnpublishedRelease {
+		return errors.ErrReleaseAlreadyPublished
+	}
+
+	artist, err := publishUseCase.artistRepo.GetByUserID(ctx, pubReq.ApplierID)
+	if err != nil {
+		return err
+	}
+
+	if release.ArtistID != artist.ArtistID {
+		return errors.ErrNotOwner
+	}
+
+	if artist.ContractTerm.Before(pubReq.ExpectedDate) {
+		return errors.ErrEndContract
 	}
 
 	return nil

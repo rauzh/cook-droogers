@@ -26,6 +26,7 @@ type _depFields struct {
 	statService     statService.IStatisticsService
 	publicationRepo *mocks.PublicationRepo
 	releaseRepo     *mocks.ReleaseRepo
+	artistRepo      *mocks.ArtistRepo
 	transactor      *transacMock.Transactor
 	pbBroker        *broker_mocks.IBroker
 
@@ -36,6 +37,7 @@ func _newMockPublishReqDepFields(t *testing.T) *_depFields {
 	transactionMock := transacMock.NewTransactor(t)
 	pbcMockRepo := mocks.NewPublicationRepo(t)
 	rlsMockRepo := mocks.NewReleaseRepo(t)
+	artistMockRepo := mocks.NewArtistRepo(t)
 	trkMockRepo := mocks.NewTrackRepo(t)
 	statMockRepo := mocks.NewStatisticsRepo(t)
 	publishMockRepo := publishReqRepoMocks.NewPublishRequestRepo(t)
@@ -54,6 +56,7 @@ func _newMockPublishReqDepFields(t *testing.T) *_depFields {
 		statService:     statSvc,
 		publicationRepo: pbcMockRepo,
 		releaseRepo:     rlsMockRepo,
+		artistRepo:      artistMockRepo,
 		transactor:      transactionMock,
 		pbBroker:        mockBroker,
 		publishRepo:     publishMockRepo,
@@ -152,7 +155,7 @@ func TestPublishRequestUseCase_Decline(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.transactor, f.pbBroker, f.publishRepo)
+			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo)
 
 			// act
 			err = publishReqUseCase.Decline(tt.in.pubReq)
@@ -270,7 +273,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.transactor, f.pbBroker, f.publishRepo)
+			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo)
 
 			// act
 			err = publishReqUseCase.Accept(tt.in.pubReq)
@@ -377,7 +380,7 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.transactor, f.pbBroker, f.publishRepo)
+			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo)
 
 			// act
 			err = publishReqUseCase.Apply(tt.in.pubReq)

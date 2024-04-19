@@ -37,6 +37,7 @@ import (
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/jmoiron/sqlx"
+	"log/slog"
 )
 
 type App struct {
@@ -47,6 +48,7 @@ type App struct {
 	Broker     broker.IBroker
 	Transactor transactor.Transactor
 	Config     *cd_config.Config
+	Logger     *slog.Logger
 }
 
 type AppUseCases struct {
@@ -132,7 +134,7 @@ func (a *App) initUseCases() (*AppUseCases, error) {
 	}
 
 	pubUC, err := usecase2.NewPublishRequestUseCase(a.Services.StatService, a.repos.publicationRepo, a.repos.releaseRepo,
-		a.Transactor, a.Broker, a.repos.pubReqRepo)
+		a.repos.artistRepo, a.Transactor, a.Broker, a.repos.pubReqRepo)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +152,7 @@ func (a *App) initDB() (*sql.DB, error) {
 	dsnPGConn := fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
 		a.Config.Postgres.User, a.Config.Postgres.DBName, a.Config.Postgres.Password,
 		a.Config.Postgres.Host, a.Config.Postgres.Port)
-	fmt.Println(dsnPGConn)
+	//fmt.Println(dsnPGConn)
 
 	db, err := sql.Open("pgx", dsnPGConn)
 	if err != nil {
@@ -167,7 +169,9 @@ func (a *App) initDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func (a *App) Init() error {
+func (a *App) Init(log *slog.Logger) error {
+
+	a.Logger = log
 
 	db, err := a.initDB()
 	if err != nil {

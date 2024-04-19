@@ -20,6 +20,18 @@ type PublishRequest struct {
 	Description  string
 }
 
+func NewPublishRequest(applierID uint64, releaseID uint64, expectedDate time.Time) base.IRequest {
+
+	return &PublishRequest{
+		Request: base.Request{
+			Type:      PubReq,
+			ApplierID: applierID,
+		},
+		ReleaseID:    releaseID,
+		ExpectedDate: expectedDate,
+	}
+}
+
 func (pubReq *PublishRequest) Validate(reqType base.RequestType) error {
 
 	if err := pubReq.Request.Validate(reqType); err != nil {

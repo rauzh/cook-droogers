@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 )
 
-func RunMenu(a *app.App) error {
+func RunMenu(a *app.App, log *slog.Logger) error {
 	startPosition :=
 		`
 		0 -- выйти
@@ -30,38 +31,22 @@ func RunMenu(a *app.App) error {
 	case 1:
 		user, err := loginCLI(a)
 		if err != nil {
-			fmt.Println(err)
+			log.Error("Login error: ", slog.Any("error", err))
 			break
 		}
 
-		switch user.Type {
-		case models.ManagerUser:
-			fmt.Println(`
-	Переводим в меню менеджера...`)
-
-		case models.ArtistUser:
-			fmt.Println(`
-	Переводим в меню артиста..`)
-
-		case models.NonMemberUser:
-			fmt.Println(`
-	Переводим в меню пользователя..`)
-			err = userLoop(a, user)
-			if errors.Is(err, ErrEXIT) {
-				err = nil
-			}
-		}
+		err = switchMenu(a, user, log)
 
 	case 2:
 		user, err := registerCLI(a)
 		if err != nil {
-			fmt.Println(err)
+			log.Error("Register error: ", slog.Any("error", err))
 			break
 		}
 
 		fmt.Println(`
 	Переводим в меню пользователя..`)
-		err = userLoop(a, user)
+		err = userLoop(a, user, log)
 		if errors.Is(err, ErrEXIT) {
 			err = nil
 		}
@@ -80,8 +65,39 @@ func RunMenu(a *app.App) error {
 func printInfo() {
 	file, _ := os.Open("label_info.txt")
 
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	b, _ := io.ReadAll(file)
 	fmt.Print(b)
+}
+
+func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
+	switch user.Type {
+	case models.ManagerUser:
+		fmt.Println(`
+	Переводим в меню менеджера...`)
+
+	case models.ArtistUser:
+		fmt.Println(`
+	Переводим в меню артиста..`)
+		menu, err := initArtistMenu(a, user, log)
+		if err != nil {
+			log.Error("Can't init artist menu: ", slog.Any("error", err))
+		}
+
+		err = menu.Loop()
+		if errors.Is(err, ErrEXIT) {
+			err = nil
+		}
+
+	case models.NonMemberUser:
+		fmt.Println(`
+	Переводим в меню пользователя..`)
+		err = userLoop(a, user, log)
+		if errors.Is(err, ErrEXIT) {
+			err = nil
+		}
+	}
+
+	return
 }

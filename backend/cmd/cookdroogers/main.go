@@ -1,86 +1,53 @@
 package main
 
 import (
+	"context"
 	"cookdroogers/app"
 	"cookdroogers/cmd/techUI"
 	"cookdroogers/config"
-	"errors"
-	"fmt"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"cookdroogers/pkg/logger"
+	"github.com/pkg/errors"
+	"log/slog"
 )
 
-//
-//func main() {
-//
-//	dsnPGConn := fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
-//		"rauzh", "cook_droogers", "1337",
-//		"localhost", "5432")
-//	fmt.Println(dsnPGConn)
-//
-//	db, err := sql.Open("pgx", dsnPGConn)
-//
-//	fmt.Println(err)
-//
-//	err = db.Ping()
-//
-//	fmt.Println(err)
-//
-//	db.SetMaxOpenConns(10)
-//
-//	artRepo := postgres.NewArtistPgRepo(db)
-//
-//	//artist := &models.Artist{
-//	//	UserID:       6,
-//	//	Nickname:     "tulenik-rocker",
-//	//	ContractTerm: time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-//	//	Activity:     true,
-//	//	ManagerID:    5,
-//	//}
-//	//
-//	//fmt.Println(artRepo.Create(artist))
-//	//
-//	//fmt.Println(artist)
-//
-//	//artist := &models.Artist{
-//	//	ArtistID:     6,
-//	//	UserID:       6,
-//	//	Nickname:     "tulenik-rocker-228",
-//	//	ContractTerm: time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC),
-//	//	Activity:     true,
-//	//	ManagerID:    5,
-//	//}
-//	//fmt.Println(artRepo.Update(artist))
-//	//fmt.Println(artist)
-//
-//	a, e := artRepo.Get(context.TODO(), uint64(6))
-//	fmt.Println(a, e)
-//}
-
 func main() {
+
+	runApplication(&logger.LoggerFactorySlog{})
+
+}
+
+func runApplication(loggerFactory logger.LoggerFactory) {
+
+	ctx := context.Background()
+
+	log := loggerFactory.Logger(ctx)
+
 	appConfig := config.ParseConfig()
 	if appConfig == nil {
+		log.Error("Failed to parse config")
 		return
 	}
 
-	cd_app := app.App{Config: appConfig}
+	cdApp := app.App{Config: appConfig}
 
-	err := cd_app.Init()
+	err := cdApp.Init(log)
 	if err != nil {
-		fmt.Println(err)
+		log.Error("Failed to initialize app: ", slog.Any("error", err))
 		return
 	}
 
-	switch cd_app.Config.Mode {
+	switch cdApp.Config.Mode {
 	case "techUI":
 		for {
-			err := techUI.RunMenu(&cd_app)
+			err := techUI.RunMenu(&cdApp, log)
 			if errors.Is(err, techUI.ErrEXIT) {
 				break
 			}
 			if err != nil {
-				fmt.Println(err)
+				log.Error("Error running techUI: ", slog.Any("error", err))
 			}
 		}
+	default:
+		log.Info("Unknown mode")
 	}
-
 }

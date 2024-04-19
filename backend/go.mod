@@ -10,6 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.30.0
+	go.uber.org/fx v1.21.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -76,8 +77,9 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.9.0 // indirect
+	go.uber.org/dig v1.17.1 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea // indirect
 	golang.org/x/mod v0.16.0 // indirect

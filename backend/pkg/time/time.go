@@ -27,3 +27,7 @@ func RelevantPeriod() time.Time {
 func CheckDateWeekLater(expectedDate time.Time) bool {
 	return expectedDate.After(GetToday().Add(Week))
 }
+
+func Date(year, month, day int) time.Time {
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+}
