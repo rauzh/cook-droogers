@@ -52,7 +52,7 @@ func (sb *SyncBroker) Close() error {
 }
 
 func (sb *SyncBroker) AddHandler(topics []string, handler broker.IConsumerGroupHandler) {
-
+	sb.ctx = context.Background()
 	go func() {
 		for {
 			// `Consume` should be called inside an infinite loop, when a

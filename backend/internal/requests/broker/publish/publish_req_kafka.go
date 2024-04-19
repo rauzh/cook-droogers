@@ -42,11 +42,13 @@ func InitPublishProceedToManagerConsumerHandler(
 		publishRepo: publishRepo,
 		artistRepo:  artistRepo,
 		criterias:   criterias,
+		ready:       make(chan bool),
 	}
 }
 
 func (handler *PublishProceedToManagerConsumerHandler) Ready() {
 	handler.ready = make(chan bool)
+	handler.ready <- true
 }
 
 func (handler *PublishProceedToManagerConsumerHandler) WaitReady() {

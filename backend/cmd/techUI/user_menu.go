@@ -72,11 +72,11 @@ func lookupReqs(a *app.App, user *models.User) {
 			"\n\t status:%s"+
 			"\n\t date:%s"+
 			"\n\t manager:%d"+
-			"\n\t applier:%d", req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
+			"\n\t applier:%d\n", req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
 		reqMap[req.RequestID] = req
 	}
 
-	fmt.Printf("%s", "Введите id заявки, которую хотите посмотреть (0, если не хотите): ")
+	fmt.Printf("\n%s", "Введите id заявки, которую хотите посмотреть (0, если не хотите): ")
 	var reqID uint64
 	_, _ = fmt.Scanf("%d", &reqID)
 	if reqID == 0 {
@@ -93,7 +93,7 @@ func lookupReqs(a *app.App, user *models.User) {
 			return
 		}
 
-		fmt.Printf("\n\t nickname: %s \n\t decription: %s", signreq.Nickname, signreq.Description)
+		fmt.Printf("\n\t nickname: %s \n\t decription: %s\n", signreq.Nickname, signreq.Description)
 	case publish.PubReq:
 		pubReqUC := a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 
@@ -106,7 +106,7 @@ func lookupReqs(a *app.App, user *models.User) {
 		fmt.Printf("\n\t expected date:%s"+
 			"\n\t decription: %s"+
 			"\n\t grade: %d"+
-			"\n\t release id: %d", pubreq.ExpectedDate, pubreq.Description, pubreq.Grade, pubreq.ReleaseID)
+			"\n\t release id: %d\n", pubreq.ExpectedDate, pubreq.Description, pubreq.Grade, pubreq.ReleaseID)
 	}
 
 }

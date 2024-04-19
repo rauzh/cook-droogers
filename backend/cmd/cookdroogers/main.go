@@ -1,7 +1,10 @@
 package main
 
 import (
+	"cookdroogers/app"
+	"cookdroogers/cmd/techUI"
 	"cookdroogers/config"
+	"errors"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -55,5 +58,29 @@ import (
 
 func main() {
 	appConfig := config.ParseConfig()
-	fmt.Println(appConfig.Postgres.DBName)
+	if appConfig == nil {
+		return
+	}
+
+	cd_app := app.App{Config: appConfig}
+
+	err := cd_app.Init()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	switch cd_app.Config.Mode {
+	case "techUI":
+		for {
+			err := techUI.RunMenu(&cd_app)
+			if errors.Is(err, techUI.ErrEXIT) {
+				break
+			}
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+
 }

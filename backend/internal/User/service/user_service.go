@@ -5,7 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
-	repoErrors "cookdroogers/pkg/errors/repo"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/mail"
@@ -53,9 +53,12 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 		return err
 	}
 
-	_, err = usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
-	if err != nil && !errors.Is(err, repoErrors.ErrorNotExists) {
+	usr, err := usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("can't create user: %w", err)
+	}
+	if usr != nil {
+		return userErrors.ErrAlreadyTaken
 	}
 
 	newUser.Type = models.NonMemberUser

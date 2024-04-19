@@ -1,12 +1,16 @@
 ---
 
+mode: "techUI"
+
 stat_fetcher_url: "127.0.0.1:1337"
+
 postgres:
   host: "postgres"
   port: 5432
   user: "rauzh"
   password: "1337"
   db_name: "cook_droogers"
+
 kafka:
   kafka_endpoints: ["kafka:9092"]
   kafka_settings: null

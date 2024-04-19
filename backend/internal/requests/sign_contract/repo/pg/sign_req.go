@@ -62,14 +62,19 @@ func (sctRepo *SignContractRequestPgRepo) Get(ctx context.Context, id uint64) (*
 
 	q := "SELECT * FROM requests WHERE request_id=$1"
 
+	var mngID sql.NullInt64
 	signRequest := sign_contract.SignContractRequest{}
 	var metaJson []byte
 	err := sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q, id).Scan(
 		&signRequest.RequestID, &signRequest.Status, &signRequest.Type,
-		&signRequest.Date, &metaJson, &signRequest.ManagerID, &signRequest.ApplierID)
+		&signRequest.Date, &metaJson, &mngID, &signRequest.ApplierID)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if mngID.Valid {
+		signRequest.ManagerID = uint64(mngID.Int64)
 	}
 
 	meta := SignContractReqMetaPgDTO{}
@@ -104,6 +109,9 @@ func (sctRepo *SignContractRequestPgRepo) Update(ctx context.Context, signReq *s
 
 	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
 		signReq.RequestID, signReq.Status, signReq.Type, metaJson, signReq.ManagerID, signReq.ApplierID).Scan()
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
 
 	return err
 }
@@ -122,8 +130,16 @@ func (sctRepo *SignContractRequestPgRepo) Create(ctx context.Context, signReq *s
 
 	q := "INSERT INTO requests (status, type, creation_date, meta, manager_id, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING request_id"
 
+	var mngID sql.NullInt64
+	if signReq.ManagerID == 0 {
+		mngID.Valid = false
+	} else {
+		mngID.Valid = true
+		mngID.Int64 = int64(signReq.ManagerID)
+	}
+
 	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
-		signReq.Status, signReq.Type, signReq.Date, metaJson, signReq.ManagerID, signReq.ApplierID).Scan(&signReq.RequestID)
+		signReq.Status, signReq.Type, signReq.Date, metaJson, mngID, signReq.ApplierID).Scan(&signReq.RequestID)
 
 	return err
 }

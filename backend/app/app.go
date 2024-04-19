@@ -14,7 +14,11 @@ import (
 	"cookdroogers/internal/requests/base/repo/pg"
 	requestService "cookdroogers/internal/requests/base/service"
 	"cookdroogers/internal/requests/broker"
+	"cookdroogers/internal/requests/broker/publish"
+	"cookdroogers/internal/requests/broker/sign_contract"
 	"cookdroogers/internal/requests/broker/sync_broker"
+	criteria "cookdroogers/internal/requests/criteria_controller"
+	publish_criteria "cookdroogers/internal/requests/criteria_controller/publish"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	pg2 "cookdroogers/internal/requests/publish/repo/pg"
 	usecase2 "cookdroogers/internal/requests/publish/usecase"
@@ -29,6 +33,7 @@ import (
 	userService "cookdroogers/internal/user/service"
 	"database/sql"
 	"fmt"
+	"github.com/IBM/sarama"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/jmoiron/sqlx"
@@ -176,6 +181,11 @@ func (a *App) Init() error {
 
 	a.Transactor = trmng
 
+	a.repos = a.initRepositories()
+
+	a.Config.Kafka.KafkaSettings = sarama.NewConfig()
+	a.Config.Kafka.KafkaSettings.Producer.Return.Successes = true
+
 	syncbroker, err := sync_broker.NewSyncBroker(a.Config.Kafka.KafkaEndpoints, a.Config.Kafka.KafkaSettings)
 	if err != nil {
 		return err
@@ -183,8 +193,21 @@ func (a *App) Init() error {
 
 	a.Broker = syncbroker
 
-	a.repos = a.initRepositories()
 	a.Services = a.initServices()
+
+	critCollection, _ := criteria.BuildCollection(
+		&publish_criteria.ArtistReleaseLimitPerSeasonCriteriaFabric{PublicationRepo: a.repos.publicationRepo, ArtistRepo: a.repos.artistRepo},
+		&publish_criteria.RelevantGenreCriteriaFabric{ReleaseService: a.Services.ReleaseService, StatService: a.Services.StatService},
+		&publish_criteria.OneReleasePerDayCriteriaFabric{PublicationRepo: a.repos.publicationRepo})
+
+	pubreqConsumerHandler := publish.InitPublishProceedToManagerConsumerHandler(
+		syncbroker, a.repos.pubReqRepo, a.repos.artistRepo, critCollection)
+
+	a.Broker.AddHandler([]string{publish.PublishRequestProceedToManager}, pubreqConsumerHandler)
+
+	signReqConsumerHandler := sign_contract.InitSignContractProceedToManagerHandler(syncbroker, a.repos.signReqRepo, a.repos.managerRepo)
+
+	a.Broker.AddHandler([]string{sign_contract.SignRequestProceedToManager}, signReqConsumerHandler)
 
 	ucs, err := a.initUseCases()
 	if err != nil {

@@ -40,12 +40,16 @@ func (reqrepo *RequestPgRepo) GetAllByManagerID(ctx context.Context, mngID uint6
 	for rows.Next() {
 
 		req := base.Request{}
+		var mngID sql.NullInt64
 
-		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &req.ManagerID, &req.ApplierID)
+		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
 		if err != nil {
 			return nil, err
 		}
 
+		if mngID.Valid {
+			req.ManagerID = uint64(mngID.Int64)
+		}
 		reqs = append(reqs, req)
 	}
 
@@ -72,9 +76,15 @@ func (reqrepo *RequestPgRepo) GetAllByUserID(ctx context.Context, userID uint64)
 
 		req := base.Request{}
 
-		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &req.ManagerID, &req.ApplierID)
+		var mngID sql.NullInt64
+
+		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
 		if err != nil {
 			return nil, err
+		}
+
+		if mngID.Valid {
+			req.ManagerID = uint64(mngID.Int64)
 		}
 
 		reqs = append(reqs, req)

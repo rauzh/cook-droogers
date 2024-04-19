@@ -37,11 +37,13 @@ func InitSignContractProceedToManagerHandler(
 		broker:      broker,
 		signReqRepo: signReqRepo,
 		mngRepo:     mngRepo,
+		ready:       make(chan bool),
 	}
 }
 
 func (handler *SignContractProceedToManagerHandler) Ready() {
 	handler.ready = make(chan bool)
+	handler.ready <- true
 }
 
 func (handler *SignContractProceedToManagerHandler) WaitReady() {
@@ -92,15 +94,23 @@ func (handler *SignContractProceedToManagerHandler) processProceedToManagerMsg(m
 
 	signReq := signContractReqMsg.ToSignContractReq()
 
+	fmt.Println("!!!!", signReq.Nickname)
+
 	if err := signReq.Validate(sign_contract.SignRequest); err != nil {
 		return handler.closeProceedToManagerReq(signReq, err.Error())
 	}
+
+	fmt.Println("VALIDATED !!! ", signReq.Nickname)
 
 	if msg.Timestamp.Before(cdtime.RelevantPeriod()) {
 		return handler.closeProceedToManagerReq(signReq, RequestTimeOutExplanation)
 	}
 
+	fmt.Println("TIME OK !!! ", signReq.Nickname)
+
 	if err := handler.proceedToManager(signReq); err != nil {
+
+		fmt.Println("EERR PROCEED !!! ", signReq.Nickname, err)
 
 		retryProducerMsg := &sarama.ProducerMessage{
 			Topic:     SignRequestProceedToManager,

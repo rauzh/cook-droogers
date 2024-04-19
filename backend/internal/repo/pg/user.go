@@ -43,7 +43,7 @@ func (usr *UserPgRepo) GetByEmail(ctx context.Context, email string) (*models.Us
 	user := models.User{}
 
 	err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).QueryRowxContext(ctx, q, email).Scan(
-		&user.UserID, &user.Name, &user.Email, user.Password, user.Type)
+		&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
 
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (usr *UserPgRepo) Get(ctx context.Context, id uint64) (*models.User, error)
 	user := models.User{}
 
 	err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).QueryRowxContext(ctx, q, id).Scan(
-		&user.UserID, &user.Name, &user.Email, user.Password, user.Type)
+		&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
 
 	if err != nil {
 		return nil, err
