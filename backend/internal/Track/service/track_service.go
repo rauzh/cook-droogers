@@ -6,6 +6,7 @@ import (
 	trackErrors "cookdroogers/internal/track/errors"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
 type ITrackService interface {
@@ -15,10 +16,12 @@ type ITrackService interface {
 
 type TrackService struct {
 	repo repo.TrackRepo
+
+	logger *slog.Logger
 }
 
-func NewTrackService(r repo.TrackRepo) ITrackService {
-	return &TrackService{repo: r}
+func NewTrackService(r repo.TrackRepo, logger *slog.Logger) ITrackService {
+	return &TrackService{repo: r, logger: logger}
 }
 
 func (trkSvc *TrackService) validate(track *models.Track) error {

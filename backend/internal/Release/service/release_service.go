@@ -8,6 +8,7 @@ import (
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
 type IReleaseService interface {
@@ -23,13 +24,15 @@ type ReleaseService struct {
 	trkSvc     trackService.ITrackService
 	repo       repo.ReleaseRepo
 	transactor transactor.Transactor
+	logger     *slog.Logger
 }
 
 func NewReleaseService(
 	trkSvc trackService.ITrackService,
 	transactor transactor.Transactor,
-	r repo.ReleaseRepo) IReleaseService {
-	return &ReleaseService{trkSvc: trkSvc, repo: r, transactor: transactor}
+	r repo.ReleaseRepo,
+	logger *slog.Logger) IReleaseService {
+	return &ReleaseService{trkSvc: trkSvc, repo: r, transactor: transactor, logger: logger}
 }
 
 func (rlsSvc *ReleaseService) validate(release *models.Release) error {

@@ -58,6 +58,7 @@ func (menu *managerMenu) Loop() error {
 		case 1:
 			err := menu.lookupReqs()
 			if err != nil {
+				fmt.Println("Не удается обработать заявки по причине ", err)
 				menu.log.Error("Can't look up requests: ", slog.Any("error", err))
 			}
 		case 2:
@@ -90,7 +91,11 @@ func (menu *managerMenu) stats() {
 		menu.log.Error("Can't get stats: ", slog.Any("error", err))
 	}
 
-	fmt.Println(report)
+	fmt.Printf("%s: %s\n\n", "relevant_genre", string(report["relevant_genre"]))
+
+	//for release, releaseStats := range report {
+	//	fmt.Printf("%s:\n%s\n\n", release, string(releaseStats[:]))
+	//}
 }
 
 func (menu *managerMenu) lookupReqs() error {

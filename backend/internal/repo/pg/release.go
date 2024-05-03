@@ -151,7 +151,7 @@ func (rel *ReleasePgRepo) GetAllTracks(ctx context.Context, release *models.Rele
 	q1 := "SELECT track_id, title, genre, duration, type FROM tracks WHERE track_id=$1"
 	q2 := "SELECT artist_id FROM track_artist WHERE track_id=$1"
 
-	tracks := make([]models.Track, 1)
+	tracks := make([]models.Track, 0)
 
 	for _, trackID := range release.Tracks {
 

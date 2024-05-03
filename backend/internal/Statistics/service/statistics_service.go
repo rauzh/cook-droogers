@@ -10,6 +10,7 @@ import (
 	cdtime "cookdroogers/pkg/time"
 	"errors"
 	"fmt"
+	"log/slog"
 )
 
 type IStatisticsService interface {
@@ -26,18 +27,22 @@ type StatisticsService struct {
 	releaseService releaseService.IReleaseService
 	fetcher        fetcher.StatFetcher
 	repo           repo.StatisticsRepo
+
+	logger *slog.Logger
 }
 
 func NewStatisticsService(
 	ts ts.ITrackService,
 	f fetcher.StatFetcher,
 	r repo.StatisticsRepo,
-	rls releaseService.IReleaseService) IStatisticsService {
+	rls releaseService.IReleaseService,
+	logger *slog.Logger) IStatisticsService {
 	return &StatisticsService{
 		trackService:   ts,
 		releaseService: rls,
 		fetcher:        f,
 		repo:           r,
+		logger:         logger,
 	}
 }
 
@@ -61,6 +66,10 @@ func (statSvc *StatisticsService) GetByID(statID uint64) (*models.Statistics, er
 }
 
 func (statSvc *StatisticsService) GetForTrack(trackID uint64) ([]models.Statistics, error) {
+
+	statSvc.logger.Info("STATS SERVICE",
+		"get for track", trackID)
+
 	stats, err := statSvc.repo.GetForTrack(context.Background(), trackID)
 
 	if err != nil {
@@ -130,12 +139,17 @@ func (statSvc *StatisticsService) GetRelevantGenre() (string, error) {
 
 func (statSvc *StatisticsService) GetLatestStatForTrack(trackID uint64) (*models.Statistics, error) {
 
+	statSvc.logger.Info("STATS SERVICE",
+		"get latest stat for track", trackID)
+
 	stats, err := statSvc.GetForTrack(trackID)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(stats)
+	statSvc.logger.Debug("STATS SERVICE",
+		"get latest stat for track", trackID,
+		"stats len", len(stats))
 
 	latestStatDate := stats[0].Date
 	latestStat := stats[0]

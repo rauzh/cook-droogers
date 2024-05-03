@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
+	"log/slog"
 )
 
 const (
@@ -26,18 +27,22 @@ type SignContractProceedToManagerHandler struct {
 	mngRepo     repo.ManagerRepo
 
 	ready chan bool
+
+	logger *slog.Logger
 }
 
 func InitSignContractProceedToManagerHandler(
 	broker broker.IBroker,
 	signReqRepo signRepo.SignContractRequestRepo,
 	mngRepo repo.ManagerRepo,
+	logger *slog.Logger,
 ) broker.IConsumerGroupHandler {
 	return &SignContractProceedToManagerHandler{
 		broker:      broker,
 		signReqRepo: signReqRepo,
 		mngRepo:     mngRepo,
 		ready:       make(chan bool),
+		logger:      logger,
 	}
 }
 

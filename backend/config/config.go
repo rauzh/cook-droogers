@@ -27,7 +27,7 @@ type KafkaConfig struct {
 }
 
 func ParseConfig() *Config {
-	b, err := os.ReadFile("config/config.yaml")
+	b, err := os.ReadFile("config.yaml")
 	if err != nil {
 		return nil
 	}

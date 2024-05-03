@@ -101,14 +101,14 @@ func (a *App) initRepositories() *AppRepositories {
 
 func (a *App) initServices() *AppServices {
 
-	trackSvc := trackService.NewTrackService(a.repos.trackRepo)
-	rlsSvc := releaseService.NewReleaseService(trackSvc, a.Transactor, a.repos.releaseRepo)
-	statFetcher := adapters.NewStatFetcherAdapter(a.Config.StatFetchURLrauzh, a.repos.artistRepo, a.repos.releaseRepo)
-	statSvc := statService.NewStatisticsService(trackSvc, statFetcher, a.repos.statRepo, rlsSvc)
+	trackSvc := trackService.NewTrackService(a.repos.trackRepo, a.Logger)
+	rlsSvc := releaseService.NewReleaseService(trackSvc, a.Transactor, a.repos.releaseRepo, a.Logger)
+	statFetcher := adapters.NewStatFetcherAdapter(a.Config.StatFetchURLrauzh, a.repos.artistRepo, a.repos.releaseRepo, a.Logger)
+	statSvc := statService.NewStatisticsService(trackSvc, statFetcher, a.repos.statRepo, rlsSvc, a.Logger)
 
-	artSvc := artistService.NewArtistService(a.repos.artistRepo)
-	mngSvc := managerService.NewManagerService(a.repos.managerRepo)
-	pbcSvc := publicationService.NewPublicationService(a.repos.publicationRepo)
+	artSvc := artistService.NewArtistService(a.repos.artistRepo, a.Logger)
+	mngSvc := managerService.NewManagerService(a.repos.managerRepo, a.Logger)
+	pbcSvc := publicationService.NewPublicationService(a.repos.publicationRepo, a.Logger)
 
 	svcs := &AppServices{
 		ArtistService:      artSvc,
@@ -117,9 +117,9 @@ func (a *App) initServices() *AppServices {
 		TrackService:       trackSvc,
 		ReleaseService:     rlsSvc,
 		StatService:        statSvc,
-		UserService:        userService.NewUserService(a.repos.userRepo),
-		RequestService:     requestService.NewRequestService(a.repos.requestRepo),
-		ReportService:      service.NewReportService(mngSvc, statSvc, artSvc, pbcSvc, rlsSvc),
+		UserService:        userService.NewUserService(a.repos.userRepo, a.Logger),
+		RequestService:     requestService.NewRequestService(a.repos.requestRepo, a.Logger),
+		ReportService:      service.NewReportService(mngSvc, statSvc, artSvc, pbcSvc, rlsSvc, a.Logger),
 	}
 
 	return svcs
@@ -128,13 +128,13 @@ func (a *App) initServices() *AppServices {
 func (a *App) initUseCases() (*AppUseCases, error) {
 
 	signUC, err := usecase.NewSignContractRequestUseCase(a.repos.userRepo, a.repos.artistRepo,
-		a.Transactor, a.Broker, a.repos.signReqRepo)
+		a.Transactor, a.Broker, a.repos.signReqRepo, a.Logger)
 	if err != nil {
 		return nil, err
 	}
 
 	pubUC, err := usecase2.NewPublishRequestUseCase(a.Services.StatService, a.repos.publicationRepo, a.repos.releaseRepo,
-		a.repos.artistRepo, a.Transactor, a.Broker, a.repos.pubReqRepo)
+		a.repos.artistRepo, a.Transactor, a.Broker, a.repos.pubReqRepo, a.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,6 @@ func (a *App) initDB() (*sql.DB, error) {
 	dsnPGConn := fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
 		a.Config.Postgres.User, a.Config.Postgres.DBName, a.Config.Postgres.Password,
 		a.Config.Postgres.Host, a.Config.Postgres.Port)
-	//fmt.Println(dsnPGConn)
 
 	db, err := sql.Open("pgx", dsnPGConn)
 	if err != nil {
@@ -190,7 +189,7 @@ func (a *App) Init(log *slog.Logger) error {
 	a.Config.Kafka.KafkaSettings = sarama.NewConfig()
 	a.Config.Kafka.KafkaSettings.Producer.Return.Successes = true
 
-	syncbroker, err := sync_broker.NewSyncBroker(a.Config.Kafka.KafkaEndpoints, a.Config.Kafka.KafkaSettings)
+	syncbroker, err := sync_broker.NewSyncBroker(a.Config.Kafka.KafkaEndpoints, a.Config.Kafka.KafkaSettings, a.Logger)
 	if err != nil {
 		return err
 	}
@@ -205,13 +204,14 @@ func (a *App) Init(log *slog.Logger) error {
 		&publish_criteria.OneReleasePerDayCriteriaFabric{PublicationRepo: a.repos.publicationRepo})
 
 	pubreqConsumerHandler := publish.InitPublishProceedToManagerConsumerHandler(
-		syncbroker, a.repos.pubReqRepo, a.repos.artistRepo, critCollection)
+		syncbroker, a.repos.pubReqRepo, a.repos.artistRepo, critCollection, a.Logger)
 	a.Logger.Info("init pubreq consumer handler")
 
 	_ = a.Broker.AddHandler([]string{publish.PublishRequestProceedToManager}, pubreqConsumerHandler)
 	a.Logger.Info("add pubreq consumer handler")
 
-	signReqConsumerHandler := sign_contract.InitSignContractProceedToManagerHandler(syncbroker, a.repos.signReqRepo, a.repos.managerRepo)
+	signReqConsumerHandler := sign_contract.InitSignContractProceedToManagerHandler(
+		syncbroker, a.repos.signReqRepo, a.repos.managerRepo, a.Logger)
 	a.Logger.Info("init signreq consumer handler")
 
 	_ = a.Broker.AddHandler([]string{sign_contract.SignRequestProceedToManager}, signReqConsumerHandler)

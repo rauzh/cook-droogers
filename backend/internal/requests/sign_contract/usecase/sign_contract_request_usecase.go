@@ -13,6 +13,7 @@ import (
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
 	"fmt"
+	"log/slog"
 )
 
 type SignContractRequestUseCase struct {
@@ -22,6 +23,8 @@ type SignContractRequestUseCase struct {
 	scBroker   broker.IBroker
 
 	repo signContractRepo.SignContractRequestRepo
+
+	logger *slog.Logger
 }
 
 func NewSignContractRequestUseCase(
@@ -30,6 +33,7 @@ func NewSignContractRequestUseCase(
 	transactor transactor.Transactor,
 	scBroker broker.IBroker,
 	repo signContractRepo.SignContractRequestRepo,
+	logger *slog.Logger,
 ) (base.IRequestUseCase, error) {
 
 	sctUseCase := &SignContractRequestUseCase{
@@ -38,6 +42,7 @@ func NewSignContractRequestUseCase(
 		repo:       repo,
 		transactor: transactor,
 		scBroker:   scBroker,
+		logger:     logger,
 	}
 
 	return sctUseCase, nil

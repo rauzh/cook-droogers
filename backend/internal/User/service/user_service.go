@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/mail"
 )
 
@@ -22,10 +23,12 @@ type IUserService interface {
 
 type UserService struct {
 	repo repo.UserRepo
+
+	logger *slog.Logger
 }
 
-func NewUserService(repo repo.UserRepo) IUserService {
-	return &UserService{repo: repo}
+func NewUserService(repo repo.UserRepo, logger *slog.Logger) IUserService {
+	return &UserService{repo: repo, logger: logger}
 }
 
 func (usrSvc *UserService) validate(usr *models.User) error {

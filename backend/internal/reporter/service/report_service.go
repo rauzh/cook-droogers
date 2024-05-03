@@ -9,6 +9,7 @@ import (
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
 	"encoding/json"
+	"log/slog"
 	"time"
 )
 
@@ -23,6 +24,8 @@ type ReportServiceJSON struct {
 	artSvc  artistService.IArtistService
 	pbcSvc  publicationService.IPublicationService
 	rlsSvc  releaseService.IReleaseService
+
+	logger *slog.Logger
 }
 
 func NewReportService(
@@ -31,6 +34,7 @@ func NewReportService(
 	artSvc artistService.IArtistService,
 	pbcSvc publicationService.IPublicationService,
 	rlsSvc releaseService.IReleaseService,
+	logger *slog.Logger,
 ) IReportService {
 	return &ReportServiceJSON{
 		mngSvc:  mngSvc,
@@ -38,6 +42,7 @@ func NewReportService(
 		artSvc:  artSvc,
 		pbcSvc:  pbcSvc,
 		rlsSvc:  rlsSvc,
+		logger:  logger,
 	}
 }
 
@@ -62,6 +67,9 @@ func (rptSvc *ReportServiceJSON) GetReportForManager(mngID uint64) (map[string][
 }
 
 func (rptSvc *ReportServiceJSON) GetReportForArtist(artistID uint64) (map[string][]byte, error) {
+
+	rptSvc.logger.Info("REPORT SERVICE",
+		"get report for artist", artistID)
 
 	report := make(map[string][]byte)
 	releases, err := rptSvc.rlsSvc.GetAllByArtist(artistID)

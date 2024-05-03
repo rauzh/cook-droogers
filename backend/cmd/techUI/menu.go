@@ -31,7 +31,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 	case 1:
 		user, err := loginCLI(a)
 		if err != nil {
-			log.Error("Login error: ", slog.Any("error", err))
+			log.Error("Ошибка при авторизации: ", slog.Any("error", err))
 			fmt.Println("Login error: ", err)
 			break
 		}
@@ -41,7 +41,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 	case 2:
 		user, err := registerCLI(a)
 		if err != nil {
-			log.Error("Register error: ", slog.Any("error", err))
+			log.Error("Ошибка при регистрации: ", slog.Any("error", err))
 			fmt.Println("Register error: ", err)
 			break
 		}
@@ -65,12 +65,12 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 }
 
 func printInfo() {
-	file, _ := os.Open("/go/src/app/backend/cmd/techUI/label_info.txt")
+	file, _ := os.Open("label_info.txt")
 
 	defer func() { _ = file.Close() }()
 
 	b, _ := io.ReadAll(file)
-	fmt.Print(b)
+	fmt.Print(string(b))
 }
 
 func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {

@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/base/repo"
 	"fmt"
+	"log/slog"
 )
 
 type IRequestService interface {
@@ -14,10 +15,12 @@ type IRequestService interface {
 
 type RequestService struct {
 	repo repo.RequestRepo
+
+	logger *slog.Logger
 }
 
-func NewRequestService(r repo.RequestRepo) IRequestService {
-	return &RequestService{repo: r}
+func NewRequestService(r repo.RequestRepo, logger *slog.Logger) IRequestService {
+	return &RequestService{repo: r, logger: logger}
 }
 
 func (reqSvc *RequestService) GetAllByManagerID(id uint64) ([]base.Request, error) {

@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
+	"log/slog"
 )
 
 const (
@@ -29,6 +30,8 @@ type PublishProceedToManagerConsumerHandler struct {
 	criterias criteria.ICriteriaCollection
 
 	ready chan bool
+
+	logger *slog.Logger
 }
 
 func InitPublishProceedToManagerConsumerHandler(
@@ -36,6 +39,7 @@ func InitPublishProceedToManagerConsumerHandler(
 	publishRepo publishReqRepo.PublishRequestRepo,
 	artistRepo repo.ArtistRepo,
 	criterias criteria.ICriteriaCollection,
+	logger *slog.Logger,
 ) broker.IConsumerGroupHandler {
 	return &PublishProceedToManagerConsumerHandler{
 		broker:      broker,
@@ -43,6 +47,7 @@ func InitPublishProceedToManagerConsumerHandler(
 		artistRepo:  artistRepo,
 		criterias:   criterias,
 		ready:       make(chan bool),
+		logger:      logger,
 	}
 }
 

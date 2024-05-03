@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
 type IArtistService interface {
@@ -15,11 +16,12 @@ type IArtistService interface {
 }
 
 type ArtistService struct {
-	repo repo.ArtistRepo
+	repo   repo.ArtistRepo
+	logger *slog.Logger
 }
 
-func NewArtistService(r repo.ArtistRepo) IArtistService {
-	return &ArtistService{repo: r}
+func NewArtistService(r repo.ArtistRepo, logger *slog.Logger) IArtistService {
+	return &ArtistService{repo: r, logger: logger}
 }
 
 func (ars *ArtistService) Create(artist *models.Artist) error {

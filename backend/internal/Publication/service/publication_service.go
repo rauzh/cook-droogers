@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -18,11 +19,12 @@ type IPublicationService interface {
 }
 
 type PublicationService struct {
-	repo repo.PublicationRepo
+	repo   repo.PublicationRepo
+	logger *slog.Logger
 }
 
-func NewPublicationService(repo repo.PublicationRepo) IPublicationService {
-	return &PublicationService{repo: repo}
+func NewPublicationService(repo repo.PublicationRepo, logger *slog.Logger) IPublicationService {
+	return &PublicationService{repo: repo, logger: logger}
 }
 
 func (pbcSvc *PublicationService) Create(publication *models.Publication) error {

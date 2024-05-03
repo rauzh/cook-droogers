@@ -14,6 +14,7 @@ import (
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
 type PublishRequestUseCase struct {
@@ -25,6 +26,8 @@ type PublishRequestUseCase struct {
 	broker          broker.IBroker
 
 	repo publishReqRepo.PublishRequestRepo
+
+	logger *slog.Logger
 }
 
 func NewPublishRequestUseCase(
@@ -35,6 +38,7 @@ func NewPublishRequestUseCase(
 	transactor transactor.Transactor,
 	pbBroker broker.IBroker,
 	repo publishReqRepo.PublishRequestRepo,
+	logger *slog.Logger,
 ) (base.IRequestUseCase, error) {
 
 	publishUseCase := &PublishRequestUseCase{
@@ -45,6 +49,7 @@ func NewPublishRequestUseCase(
 		repo:            repo,
 		transactor:      transactor,
 		broker:          pbBroker,
+		logger:          logger,
 	}
 
 	return publishUseCase, nil

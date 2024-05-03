@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -17,6 +18,8 @@ type StatFetcherAdapter struct {
 	url         string
 	artistRepo  repo.ArtistRepo
 	releaseRepo repo.ReleaseRepo
+
+	logger *slog.Logger
 }
 
 type SendData struct {
@@ -32,11 +35,13 @@ type StatJSON struct {
 	Artist  uint64    `json:"artist"`
 }
 
-func NewStatFetcherAdapter(url string, artistRepo repo.ArtistRepo, releaseRepo repo.ReleaseRepo) fetcher.StatFetcher {
+func NewStatFetcherAdapter(url string, artistRepo repo.ArtistRepo,
+	releaseRepo repo.ReleaseRepo, logger *slog.Logger) fetcher.StatFetcher {
 	return &StatFetcherAdapter{
 		url:         url,
 		artistRepo:  artistRepo,
 		releaseRepo: releaseRepo,
+		logger:      logger,
 	}
 }
 

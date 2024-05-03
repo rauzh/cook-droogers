@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/IBM/sarama"
 	"log"
+	"log/slog"
 )
 
 const CookDroogersSyncBrokerConsumerGroup = "CDsyncB"
@@ -20,9 +21,11 @@ type SyncBroker struct {
 
 	ctx           context.Context
 	ctxCancelFunc context.CancelFunc
+
+	logger *slog.Logger
 }
 
-func NewSyncBroker(kafkaEndpoints []string, kafkaConfig *sarama.Config) (broker.IBroker, error) {
+func NewSyncBroker(kafkaEndpoints []string, kafkaConfig *sarama.Config, logger *slog.Logger) (broker.IBroker, error) {
 	producer, err := sarama.NewSyncProducer(kafkaEndpoints, kafkaConfig)
 	if err != nil {
 		return nil, fmt.Errorf("can't create sync producer with err %w", err)
@@ -33,6 +36,7 @@ func NewSyncBroker(kafkaEndpoints []string, kafkaConfig *sarama.Config) (broker.
 		ConsumerGroups: make(map[string]sarama.ConsumerGroup),
 		config:         kafkaConfig,
 		endpoints:      kafkaEndpoints,
+		logger:         logger,
 	}, nil
 }
 

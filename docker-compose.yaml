@@ -10,7 +10,7 @@ services:
     depends_on:
       - kafka
       - kafka2
-      # - kafka3
+      - kafka3
       - postgres
     networks:
       - cookdroognet

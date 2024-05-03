@@ -58,7 +58,7 @@ func (pub *PublicationPgRepo) GetAllByDate(ctx context.Context, date time.Time) 
 
 	q := "SELECT publication_id, creation_date, manager_id, release_id FROM publications WHERE creation_date=$1"
 
-	publications := make([]models.Publication, 1)
+	publications := make([]models.Publication, 0)
 
 	rows, err := pub.txResolver.DefaultTrOrDB(ctx, pub.db).QueryxContext(ctx, q, date)
 
@@ -87,7 +87,7 @@ func (pub *PublicationPgRepo) GetAllByDate(ctx context.Context, date time.Time) 
 func (pub *PublicationPgRepo) GetAllByManager(ctx context.Context, mng uint64) ([]models.Publication, error) {
 	q := "SELECT publication_id, creation_date, manager_id, release_id FROM publications WHERE manager_id=$1"
 
-	publications := make([]models.Publication, 1)
+	publications := make([]models.Publication, 0)
 
 	rows, err := pub.txResolver.DefaultTrOrDB(ctx, pub.db).QueryxContext(ctx, q, mng)
 
@@ -119,7 +119,7 @@ func (pub *PublicationPgRepo) GetAllByArtistSinceDate(ctx context.Context, date 
 		"FROM publications p JOIN releases r ON p.release_id = r.release_id" +
 		"WHERE r.artist_id=$1 AND p.creation_date>=$2;"
 
-	publications := make([]models.Publication, 1)
+	publications := make([]models.Publication, 0)
 
 	rows, err := pub.txResolver.DefaultTrOrDB(ctx, pub.db).QueryxContext(ctx, q, artistID, date)
 

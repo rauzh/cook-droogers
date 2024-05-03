@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"fmt"
+	"log/slog"
 )
 
 type IManagerService interface {
@@ -15,11 +16,12 @@ type IManagerService interface {
 }
 
 type ManagerService struct {
-	repo repo.ManagerRepo
+	repo   repo.ManagerRepo
+	logger *slog.Logger
 }
 
-func NewManagerService(r repo.ManagerRepo) IManagerService {
-	return &ManagerService{repo: r}
+func NewManagerService(r repo.ManagerRepo, logger *slog.Logger) IManagerService {
+	return &ManagerService{repo: r, logger: logger}
 }
 
 func (mngSvc *ManagerService) Create(artist *models.Manager) error {

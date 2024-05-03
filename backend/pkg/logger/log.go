@@ -21,7 +21,7 @@ func (lf *LoggerFactorySlog) Logger(ctx context.Context) *slog.Logger {
 		return nil
 	}
 
-	logger := slog.New(slog.NewTextHandler(logfile, nil))
+	logger := slog.New(slog.NewJSONHandler(logfile, nil))
 
 	return logger
 }

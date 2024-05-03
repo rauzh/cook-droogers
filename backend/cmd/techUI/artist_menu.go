@@ -59,16 +59,19 @@ func (menu *artistMenu) Loop() error {
 		case 1:
 			err := menu.applyPublishRequest()
 			if err != nil {
+				fmt.Println("Не удается создать заявку по причине ", err)
 				menu.log.Error("Can't apply request: ", slog.Any("error", err))
 			}
 		case 2:
 			err := lookupReqs(menu.a, menu.user)
 			if err != nil {
+				fmt.Println("Не просмотреть заявки по причине ", err)
 				menu.log.Error("Can't look up requests: ", slog.Any("error", err))
 			}
 		case 3:
 			err := menu.uploadRelease()
 			if err != nil {
+				fmt.Println("Не удается загрузить релиз по причине ", err)
 				menu.log.Error("Can't upload release: ", slog.Any("error", err))
 			}
 		case 4:
@@ -144,10 +147,13 @@ func (menu *artistMenu) stats() {
 
 	report, err := menu.a.Services.ReportService.GetReportForArtist(menu.artist.ArtistID)
 	if err != nil {
+		fmt.Println("Не удается посмотреть статистику по причине ", err)
 		menu.log.Error("Can't get stats: ", slog.Any("error", err))
 	}
 
-	fmt.Println(report)
+	for release, releaseStats := range report {
+		fmt.Printf("%s:\n%s\n\n", release, string(releaseStats[:]))
+	}
 }
 
 func (menu *artistMenu) releases() {
