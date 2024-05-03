@@ -13,7 +13,7 @@ var (
 //go:generate mockery --name IBroker --with-expecter
 type IBroker interface {
 	SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error)
-	AddHandler(topics []string, handler IConsumerGroupHandler)
+	AddHandler(topics []string, handler IConsumerGroupHandler) error
 	Close() error
 }
 

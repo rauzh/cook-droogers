@@ -11,7 +11,7 @@ import (
 )
 
 type IReleaseService interface {
-	Create(release *models.Release, tracks []models.Track) error
+	Create(release *models.Release, tracks []*models.Track) error
 	Get(releaseID uint64) (*models.Release, error)
 	GetMainGenre(releaseID uint64) (string, error)
 	UpdateStatus(uint64, models.ReleaseStatus) error
@@ -45,7 +45,7 @@ func (rlsSvc *ReleaseService) validate(release *models.Release) error {
 	return nil
 }
 
-func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Track) error {
+func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []*models.Track) error {
 
 	if err := rlsSvc.validate(release); err != nil {
 		return err
@@ -67,10 +67,10 @@ func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []models.Tr
 	})
 }
 
-func (rlsSvc *ReleaseService) uploadTracks(ctx context.Context, release *models.Release, tracks []models.Track) error {
+func (rlsSvc *ReleaseService) uploadTracks(ctx context.Context, release *models.Release, tracks []*models.Track) error {
 
 	for _, track := range tracks {
-		trackID, err := rlsSvc.trkSvc.Create(ctx, &track)
+		trackID, err := rlsSvc.trkSvc.Create(ctx, track)
 		if err != nil {
 			return err
 		}

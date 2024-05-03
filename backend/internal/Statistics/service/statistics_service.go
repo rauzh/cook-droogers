@@ -135,6 +135,8 @@ func (statSvc *StatisticsService) GetLatestStatForTrack(trackID uint64) (*models
 		return nil, err
 	}
 
+	fmt.Println(stats)
+
 	latestStatDate := stats[0].Date
 	latestStat := stats[0]
 

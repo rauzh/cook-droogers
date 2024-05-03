@@ -95,7 +95,7 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 
 	q := "SELECT title, status, creation_date, release_id FROM releases WHERE artist_id=$1"
 
-	releases := make([]models.Release, 1)
+	releases := make([]models.Release, 0)
 
 	rows, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).QueryxContext(ctx, q, artistID)
 
@@ -122,6 +122,7 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 
 		rowsTRK, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).QueryxContext(ctx, qTRK, release.ReleaseID)
 		if errors.Is(err, sql.ErrNoRows) {
+			continue
 		}
 		if err != nil {
 			return nil, err

@@ -12,5 +12,5 @@ postgres:
   db_name: "cook_droogers"
 
 kafka:
-  kafka_endpoints: ["kafka:9092"]
+  kafka_endpoints: ["kafka:9092", "kafka2:9092", "kafka3:9092"]
   kafka_settings: null

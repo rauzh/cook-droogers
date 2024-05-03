@@ -16,14 +16,14 @@ func (handler *PublishProceedToManagerConsumerHandler) proceedToManager(pubReq *
 
 	err := handler.publishRepo.Update(ctx, pubReq)
 	if err != nil {
-		return fmt.Errorf("cant proceed publish request to manager with err %w", err)
+		return fmt.Errorf("cant proceed publish request to manager: update repo with err %w", err)
 	}
 
 	handler.computeDegree(pubReq)
 
-	artist, err := handler.artistRepo.Get(ctx, pubReq.ApplierID)
+	artist, err := handler.artistRepo.GetByUserID(ctx, pubReq.ApplierID)
 	if err != nil {
-		return fmt.Errorf("cant proceed publish request to manager with err %w", err)
+		return fmt.Errorf("cant proceed publish request to manager: get artist with err %w", err)
 	}
 
 	pubReq.ManagerID = artist.ManagerID

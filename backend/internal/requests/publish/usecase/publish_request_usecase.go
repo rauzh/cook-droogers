@@ -59,8 +59,12 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 
 	base.InitDateStatus(&pubReq.Request)
 
+	if err := publishUseCase.checkRelease(pubReq); err != nil {
+		return fmt.Errorf("can't apply publish request with err %w", err)
+	}
+
 	if err := publishUseCase.repo.Create(context.Background(), pubReq); err != nil {
-		return fmt.Errorf("can't apply sign contract request with err %w", err)
+		return fmt.Errorf("can't apply publish request with err %w", err)
 	}
 
 	if err := publishUseCase.sendProceedToManagerMSG(pubReq); err != nil {
@@ -95,6 +99,8 @@ func (publishUseCase *PublishRequestUseCase) checkRelease(pubReq *publish.Publis
 	if artist.ContractTerm.Before(pubReq.ExpectedDate) {
 		return errors.ErrEndContract
 	}
+
+	pubReq.ManagerID = artist.ManagerID
 
 	return nil
 }

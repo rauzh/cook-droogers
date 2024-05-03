@@ -32,6 +32,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 		user, err := loginCLI(a)
 		if err != nil {
 			log.Error("Login error: ", slog.Any("error", err))
+			fmt.Println("Login error: ", err)
 			break
 		}
 
@@ -41,6 +42,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 		user, err := registerCLI(a)
 		if err != nil {
 			log.Error("Register error: ", slog.Any("error", err))
+			fmt.Println("Register error: ", err)
 			break
 		}
 
@@ -55,7 +57,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 		printInfo()
 
 	default:
-		fmt.Printf("Неверный пункт меню")
+		fmt.Println("Неверный пункт меню")
 		err = ErrCase
 	}
 
@@ -63,7 +65,7 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 }
 
 func printInfo() {
-	file, _ := os.Open("label_info.txt")
+	file, _ := os.Open("/go/src/app/backend/cmd/techUI/label_info.txt")
 
 	defer func() { _ = file.Close() }()
 
@@ -76,6 +78,15 @@ func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
 	case models.ManagerUser:
 		fmt.Println(`
 	Переводим в меню менеджера...`)
+		menu, err := initManagerMenu(a, user, log)
+		if err != nil {
+			log.Error("Can't init manager menu: ", slog.Any("error", err))
+		}
+
+		err = menu.Loop()
+		if errors.Is(err, ErrEXIT) {
+			err = nil
+		}
 
 	case models.ArtistUser:
 		fmt.Println(`

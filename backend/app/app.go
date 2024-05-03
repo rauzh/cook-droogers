@@ -206,12 +206,16 @@ func (a *App) Init(log *slog.Logger) error {
 
 	pubreqConsumerHandler := publish.InitPublishProceedToManagerConsumerHandler(
 		syncbroker, a.repos.pubReqRepo, a.repos.artistRepo, critCollection)
+	a.Logger.Info("init pubreq consumer handler")
 
-	a.Broker.AddHandler([]string{publish.PublishRequestProceedToManager}, pubreqConsumerHandler)
+	_ = a.Broker.AddHandler([]string{publish.PublishRequestProceedToManager}, pubreqConsumerHandler)
+	a.Logger.Info("add pubreq consumer handler")
 
 	signReqConsumerHandler := sign_contract.InitSignContractProceedToManagerHandler(syncbroker, a.repos.signReqRepo, a.repos.managerRepo)
+	a.Logger.Info("init signreq consumer handler")
 
-	a.Broker.AddHandler([]string{sign_contract.SignRequestProceedToManager}, signReqConsumerHandler)
+	_ = a.Broker.AddHandler([]string{sign_contract.SignRequestProceedToManager}, signReqConsumerHandler)
+	a.Logger.Info("add sign consumer handler")
 
 	ucs, err := a.initUseCases()
 	if err != nil {

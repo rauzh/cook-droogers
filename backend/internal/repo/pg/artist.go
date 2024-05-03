@@ -23,7 +23,7 @@ func NewArtistPgRepo(db *sql.DB) repo.ArtistRepo {
 
 func (art *ArtistPgRepo) Get(ctx context.Context, id uint64) (*models.Artist, error) {
 
-	q := "SELECT * FROM artists WHERE artist_id=$1"
+	q := "SELECT artist_id, nickname, contract_due, activity, user_id, manager_id FROM artists WHERE artist_id=$1"
 
 	artist := models.Artist{}
 	err := art.txResolver.DefaultTrOrDB(ctx, art.db).QueryRowxContext(ctx, q, id).Scan(
@@ -40,7 +40,7 @@ func (art *ArtistPgRepo) Get(ctx context.Context, id uint64) (*models.Artist, er
 
 func (art *ArtistPgRepo) GetByUserID(ctx context.Context, id uint64) (*models.Artist, error) {
 
-	q := "SELECT * FROM artists JOIN users ON artists.user_id=users.user_id WHERE user_id=$1"
+	q := "SELECT artist_id, nickname, contract_due, activity, user_id, manager_id FROM artists WHERE user_id=$1"
 
 	artist := models.Artist{}
 	err := art.txResolver.DefaultTrOrDB(ctx, art.db).QueryRowxContext(ctx, q, id).Scan(

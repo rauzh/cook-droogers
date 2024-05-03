@@ -12,8 +12,11 @@ import (
 const CookDroogersSyncBrokerConsumerGroup = "CDsyncB"
 
 type SyncBroker struct {
-	Producer      sarama.SyncProducer
-	ConsumerGroup sarama.ConsumerGroup
+	Producer       sarama.SyncProducer
+	ConsumerGroups map[string]sarama.ConsumerGroup
+
+	endpoints []string
+	config    *sarama.Config
 
 	ctx           context.Context
 	ctxCancelFunc context.CancelFunc
@@ -25,12 +28,12 @@ func NewSyncBroker(kafkaEndpoints []string, kafkaConfig *sarama.Config) (broker.
 		return nil, fmt.Errorf("can't create sync producer with err %w", err)
 	}
 
-	consumerGroup, err := sarama.NewConsumerGroup(kafkaEndpoints, CookDroogersSyncBrokerConsumerGroup, kafkaConfig)
-	if err != nil {
-		return nil, fmt.Errorf("can't create consumer group with err %w", err)
-	}
-
-	return &SyncBroker{Producer: producer, ConsumerGroup: consumerGroup}, nil
+	return &SyncBroker{
+		Producer:       producer,
+		ConsumerGroups: make(map[string]sarama.ConsumerGroup),
+		config:         kafkaConfig,
+		endpoints:      kafkaEndpoints,
+	}, nil
 }
 
 func (sb *SyncBroker) SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {
@@ -44,21 +47,35 @@ func (sb *SyncBroker) Close() error {
 	if err := sb.Producer.Close(); err != nil {
 		return err
 	}
-	if err := sb.ConsumerGroup.Close(); err != nil {
-		return err
+
+	for _, cg := range sb.ConsumerGroups {
+		if err := cg.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (sb *SyncBroker) AddHandler(topics []string, handler broker.IConsumerGroupHandler) {
+func (sb *SyncBroker) AddHandler(topics []string, handler broker.IConsumerGroupHandler) error {
 	sb.ctx = context.Background()
+
+	consumerGroup, err := sarama.NewConsumerGroup(sb.endpoints,
+		fmt.Sprintf("%s_%d", CookDroogersSyncBrokerConsumerGroup, len(sb.ConsumerGroups)), sb.config)
+	if err != nil {
+		return fmt.Errorf("can't create consumer group with err %w", err)
+	}
+
+	for _, topic := range topics {
+		sb.ConsumerGroups[topic] = consumerGroup
+	}
+
 	go func() {
 		for {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := sb.ConsumerGroup.Consume(sb.ctx, topics, handler); err != nil {
+			if err := consumerGroup.Consume(sb.ctx, topics, handler); err != nil {
 				if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 					return
 				}
@@ -73,4 +90,5 @@ func (sb *SyncBroker) AddHandler(topics []string, handler broker.IConsumerGroupH
 	}()
 
 	handler.WaitReady()
+	return nil
 }

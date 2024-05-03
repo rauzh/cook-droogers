@@ -97,6 +97,8 @@ func (handler *PublishProceedToManagerConsumerHandler) processProceedToManagerMs
 		return err
 	}
 
+	fmt.Println("processing pubreq message\n", pubReqMessage)
+
 	pubReq := pubReqMessage.ToPublishReq()
 
 	if err := pubReq.Validate(publish.PubReq); err != nil {
@@ -108,6 +110,8 @@ func (handler *PublishProceedToManagerConsumerHandler) processProceedToManagerMs
 	}
 
 	if err := handler.proceedToManager(pubReq); err != nil {
+
+		fmt.Println("ERROR", err)
 
 		retryProducerMsg := &sarama.ProducerMessage{
 			Topic:     PublishRequestProceedToManager,
@@ -125,12 +129,12 @@ func (handler *PublishProceedToManagerConsumerHandler) sendProceedToManagerMSG(p
 
 	msg, err := broker_dto.NewPublishRequestProducerMsg(PublishRequestProceedToManager, pubReq)
 	if err != nil {
-		return fmt.Errorf("can't apply publish request: can't proceed to manager with err %w", err)
+		return fmt.Errorf("can't apply publish request: gen msg: can't proceed to manager with err %w", err)
 	}
 
 	_, _, err = handler.broker.SendMessage(msg)
 	if err != nil {
-		return fmt.Errorf("can't apply publish request: can't proceed to manager with err %w", err)
+		return fmt.Errorf("can't apply publish request: send msg: can't proceed to manager with err %w", err)
 	}
 
 	return nil

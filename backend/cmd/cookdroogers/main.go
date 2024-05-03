@@ -19,7 +19,6 @@ func main() {
 func runApplication(loggerFactory logger.LoggerFactory) {
 
 	ctx := context.Background()
-
 	log := loggerFactory.Logger(ctx)
 
 	appConfig := config.ParseConfig()

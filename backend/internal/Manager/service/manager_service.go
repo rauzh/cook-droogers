@@ -10,6 +10,7 @@ import (
 type IManagerService interface {
 	Create(*models.Manager) error
 	Get(uint64) (*models.Manager, error)
+	GetByUserID(uint64) (*models.Manager, error)
 	GetRandomManagerID() (uint64, error)
 }
 
@@ -30,6 +31,15 @@ func (mngSvc *ManagerService) Create(artist *models.Manager) error {
 
 func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
 	manager, err := mngSvc.repo.Get(context.Background(), id)
+
+	if err != nil {
+		return nil, fmt.Errorf("can't get manager with err %w", err)
+	}
+	return manager, nil
+}
+
+func (mngSvc *ManagerService) GetByUserID(id uint64) (*models.Manager, error) {
+	manager, err := mngSvc.repo.GetByUserID(context.Background(), id)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get manager with err %w", err)

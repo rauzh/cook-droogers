@@ -42,7 +42,10 @@ func (menu *artistMenu) Loop() error {
 		3 -- загрузить релиз
 		4 -- получить статистику своих релизов
 		5 -- посмотреть информацию о лейбле
+		6 -- посмотреть свои релизы
 	Выберите пункт меню: `
+
+	fmt.Println(menu.artist.ArtistID, menu.artist.ManagerID, menu.artist.ContractTerm, menu.artist.Nickname, menu.artist.UserID)
 
 	for {
 		fmt.Printf("%s", startPosition)
@@ -72,6 +75,8 @@ func (menu *artistMenu) Loop() error {
 			menu.stats()
 		case 5:
 			printInfo()
+		case 6:
+			menu.releases()
 		default:
 			fmt.Printf("Неверный пункт меню")
 		}
@@ -99,16 +104,21 @@ func (menu *artistMenu) uploadRelease() error {
 	var title string
 	_, _ = fmt.Scanf("%s", &title)
 
+	fmt.Printf("%s", "Введите дату создания релиза, который вы хотите загрузить (год месяц день): ")
+	var year, day, month int
+	_, _ = fmt.Scanf("%d %d %d", &year, &month, &day)
+
 	release := &models.Release{
-		Title:    title,
-		ArtistID: menu.artist.ArtistID,
+		Title:        title,
+		ArtistID:     menu.artist.ArtistID,
+		DateCreation: cdtime.Date(year, month, day),
 	}
 
 	fmt.Printf("%s", "Введите количество треков: ")
 	var tracksNum int
 	_, _ = fmt.Scanf("%d", &tracksNum)
 
-	tracks := make([]models.Track, tracksNum)
+	tracks := make([]*models.Track, tracksNum)
 
 	for i := 0; i < tracksNum; i++ {
 
@@ -117,14 +127,14 @@ func (menu *artistMenu) uploadRelease() error {
 		var duration uint64
 		_, _ = fmt.Scanf("%s %d %s %s", &trackTitle, &duration, &genre, &trackType)
 
-		track := models.Track{
+		track := &models.Track{
 			Title:    trackTitle,
 			Duration: duration,
 			Genre:    genre,
 			Type:     trackType,
 			Artists:  []uint64{menu.artist.ArtistID},
 		}
-		tracks = append(tracks, track)
+		tracks[i] = track
 	}
 
 	return menu.a.Services.ReleaseService.Create(release, tracks)
@@ -138,4 +148,20 @@ func (menu *artistMenu) stats() {
 	}
 
 	fmt.Println(report)
+}
+
+func (menu *artistMenu) releases() {
+
+	releases, err := menu.a.Services.ReleaseService.GetAllByArtist(menu.artist.ArtistID)
+	if err != nil {
+		menu.log.Error("Can't get releases: ", slog.Any("error", err))
+	}
+
+	for _, release := range releases {
+		fmt.Printf("\n\t release id: %d\n\t creation date: %s\n\t status: %s\n\t title: %s",
+			release.ReleaseID, release.DateCreation, release.Status, release.Title)
+		for _, trackID := range release.Tracks {
+			fmt.Printf("\n\t track: %d", trackID)
+		}
+	}
 }

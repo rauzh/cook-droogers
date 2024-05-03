@@ -27,12 +27,23 @@ func (trk *TrackPgRepo) Create(ctx context.Context, track *models.Track) (uint64
 	var trackID uint64
 	err := trk.txResolver.DefaultTrOrDB(ctx, trk.db).QueryRowxContext(ctx, q,
 		track.Title, track.Genre, track.Duration, track.Type).Scan(&trackID)
-
 	if err != nil {
 		return 0, err
 	}
 
 	track.TrackID = trackID
+
+	q = "INSERT INTO track_artist (artist_id, track_id) VALUES ($1, $2) RETURNING track_artist_id"
+
+	for _, artistID := range track.Artists {
+		var connId uint64
+		err = trk.txResolver.DefaultTrOrDB(ctx, trk.db).QueryRowxContext(ctx, q,
+			artistID, track.TrackID).Scan(&connId)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	return trackID, nil
 }
 
