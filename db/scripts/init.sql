@@ -86,3 +86,24 @@ insert into managers (user_id) values ((select u.user_id from users u where u.em
 insert into managers (user_id) values ((select u.user_id from users u where u.email='oleg@ppo.ru'));
 insert into managers (user_id) values ((select u.user_id from users u where u.email='vova@ppo.ru'));
 insert into managers (user_id) values ((select u.user_id from users u where u.email='ilia@ppo.ru'));
+
+insert into users (name, email, password, type) values ('kodak', 'kodak@ppo.ru', '123', 2);
+insert into users (name, email, password, type) values ('uzi', 'uzi@ppo.ru', '123', 2);
+
+insert into artists (nickname, contract_due, activity, user_id, manager_id)
+        values (
+            'kodak-black',
+            '2029-10-10'::TIMESTAMP,
+            1,
+            (select u.user_id from users u where u.email='kodak@ppo.ru'),
+            (select m.manager_id from managers m JOIN users u ON u.user_id=m.user_id where u.email='pavel@ppo.ru')
+            );
+
+insert into artists (nickname, contract_due, activity, user_id, manager_id)
+        values (
+            'lil-uzi-vert',
+            '2029-12-12'::TIMESTAMP,
+            1,
+            (select u.user_id from users u where u.email='uzi@ppo.ru'),
+            (select m.manager_id from managers m JOIN users u ON u.user_id=m.user_id where u.email='pavel@ppo.ru')
+            );

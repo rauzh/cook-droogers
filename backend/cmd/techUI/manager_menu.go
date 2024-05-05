@@ -92,10 +92,7 @@ func (menu *managerMenu) stats() {
 	}
 
 	fmt.Printf("%s: %s\n\n", "relevant_genre", string(report["relevant_genre"]))
-
-	//for release, releaseStats := range report {
-	//	fmt.Printf("%s:\n%s\n\n", release, string(releaseStats[:]))
-	//}
+	fmt.Printf("%s: %s\n\n", "artists_stats", string(report["artists_stats"]))
 }
 
 func (menu *managerMenu) lookupReqs() error {

@@ -36,7 +36,10 @@ func userLoop(a *app.App, user *models.User, log *slog.Logger) error {
 			if err != nil {
 				fmt.Println("Не удается создать заявку по причине ", err)
 				log.Error("Can't apply sign request: ", slog.Any("error", err))
+			} else {
+				fmt.Println("Заявка на вступление успешно подана.")
 			}
+
 		case 2:
 			err := lookupReqs(a, user)
 			if err != nil {

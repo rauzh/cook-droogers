@@ -61,11 +61,13 @@ func (menu *artistMenu) Loop() error {
 			if err != nil {
 				fmt.Println("Не удается создать заявку по причине ", err)
 				menu.log.Error("Can't apply request: ", slog.Any("error", err))
+			} else {
+				fmt.Println("Заявка на публикацию релиза успешно подана.")
 			}
 		case 2:
 			err := lookupReqs(menu.a, menu.user)
 			if err != nil {
-				fmt.Println("Не просмотреть заявки по причине ", err)
+				fmt.Println("Не удается просмотреть заявки по причине ", err)
 				menu.log.Error("Can't look up requests: ", slog.Any("error", err))
 			}
 		case 3:
@@ -73,6 +75,8 @@ func (menu *artistMenu) Loop() error {
 			if err != nil {
 				fmt.Println("Не удается загрузить релиз по причине ", err)
 				menu.log.Error("Can't upload release: ", slog.Any("error", err))
+			} else {
+				fmt.Println("Релиз успешно загружен.")
 			}
 		case 4:
 			menu.stats()

@@ -9,6 +9,12 @@ COPY . .
 WORKDIR /go/src/app/backend
 RUN go build -o cook_droogers cmd/cookdroogers/main.go
 
+WORKDIR  /app
+
+RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
+    cp /go/src/app/backend/config/config.yaml /app/config.yaml && \
+    cp /go/src/app/backend/cmd/techUI/label_info.txt /app/label_info.txt
+
 # #=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====
 
 # FROM golang:1.22

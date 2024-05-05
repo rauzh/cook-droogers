@@ -5,7 +5,6 @@ import (
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/sign_contract"
 	"cookdroogers/internal/requests/sign_contract/errors"
-	"fmt"
 )
 
 func (handler *SignContractProceedToManagerHandler) proceedToManager(signReq *sign_contract.SignContractRequest) error {
@@ -18,7 +17,7 @@ func (handler *SignContractProceedToManagerHandler) proceedToManager(signReq *si
 		return errors.ErrCantFindManager
 	}
 
-	fmt.Println("!!! MNG ID", managerID)
+	//fmt.Println("!!! MNG ID", managerID)
 
 	signReq.ManagerID = managerID
 

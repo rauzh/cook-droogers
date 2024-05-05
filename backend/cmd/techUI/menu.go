@@ -31,8 +31,8 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 	case 1:
 		user, err := loginCLI(a)
 		if err != nil {
-			log.Error("Ошибка при авторизации: ", slog.Any("error", err))
-			fmt.Println("Login error: ", err)
+			log.Error("Login error: ", slog.Any("error", err))
+			fmt.Println("Ошибка при авторизации: ", err)
 			break
 		}
 
@@ -41,8 +41,8 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 	case 2:
 		user, err := registerCLI(a)
 		if err != nil {
-			log.Error("Ошибка при регистрации: ", slog.Any("error", err))
-			fmt.Println("Register error: ", err)
+			log.Error("Register error: ", slog.Any("error", err))
+			fmt.Println("Ошибка при регистрации: ", err)
 			break
 		}
 
