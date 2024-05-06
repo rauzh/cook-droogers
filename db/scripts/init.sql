@@ -107,3 +107,16 @@ insert into artists (nickname, contract_due, activity, user_id, manager_id)
             (select u.user_id from users u where u.email='uzi@ppo.ru'),
             (select m.manager_id from managers m JOIN users u ON u.user_id=m.user_id where u.email='pavel@ppo.ru')
             );
+
+insert into releases (title, status, creation_date, artist_id) values(
+    'old-test-album', 'Published','2020-10-10'::TIMESTAMP, 1);
+
+insert into tracks (title, genre, duration, type, release_id) values (
+    'oga-boga-1', 'rock', 222, 'song', 6);
+insert into tracks (title, genre, duration, type, release_id) values (
+    'oga-boga-2', 'rock', 322, 'song', 6);
+
+insert into track_artist (track_id, artist_id) values (
+        (select track_id from tracks where  title='oga-boga-1'), 1), (
+        (select track_id from tracks where  title='oga-boga-2'), 1
+    );

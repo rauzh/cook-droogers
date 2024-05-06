@@ -18,6 +18,12 @@ type artistMenu struct {
 
 func initArtistMenu(a *app.App, user *models.User, log *slog.Logger) (*artistMenu, error) {
 
+	err := a.Services.UserService.SetRole(models.ArtistUser)
+	if err != nil {
+		log.Error("Can't init artist menu: can't set aetist role: ", slog.Any("error", err))
+		return nil, err
+	}
+
 	artist, err := a.Services.ArtistService.GetByUserID(user.UserID)
 	if err != nil {
 		log.Error("Can't init artist menu: can't get artist: ", slog.Any("error", err))

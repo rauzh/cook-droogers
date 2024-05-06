@@ -36,6 +36,12 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 			break
 		}
 
+		err = a.Services.UserService.SetRole(models.NonMemberUser)
+		if err != nil {
+			log.Error("Can't init user menu: can't set user role: ", slog.Any("error", err))
+			return err
+		}
+
 		err = switchMenu(a, user, log)
 
 	case 2:

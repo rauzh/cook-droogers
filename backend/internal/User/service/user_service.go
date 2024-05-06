@@ -19,6 +19,8 @@ type IUserService interface {
 	Get(uint64) (*models.User, error)
 	Update(*models.User) error
 	UpdateType(uint64, models.UserType) error
+
+	SetRole(role models.UserType) error
 }
 
 type UserService struct {
@@ -114,6 +116,13 @@ func (usrSvc *UserService) Update(user *models.User) error {
 func (usrSvc *UserService) UpdateType(userID uint64, typ models.UserType) error {
 	if err := usrSvc.repo.UpdateType(context.Background(), userID, typ); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
+	}
+	return nil
+}
+
+func (usrSvc *UserService) SetRole(role models.UserType) error {
+	if err := usrSvc.repo.SetRole(context.Background(), role); err != nil {
+		return fmt.Errorf("can't set user role with err %w", err)
 	}
 	return nil
 }

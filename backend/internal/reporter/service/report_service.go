@@ -7,7 +7,6 @@ import (
 	releaseService "cookdroogers/internal/release/service"
 	statisticsServive "cookdroogers/internal/statistics/service"
 	"cookdroogers/models"
-	cdtime "cookdroogers/pkg/time"
 	"encoding/json"
 	"log/slog"
 	"time"
@@ -137,7 +136,9 @@ func (rptSvc *ReportServiceJSON) getAllArtistsStatsForManager(mngID uint64) ([]b
 		return nil, err
 	}
 
-	lastSeasonStatDate := cdtime.RelevantPeriod()
+	rptSvc.logger.Debug("get all artists stats for manager",
+		"len of pubs for manager", len(pubs))
+
 	currentDate := time.Now().UTC()
 
 	artistStats := make(map[string]map[string]map[uint64][]models.Statistics)
@@ -168,7 +169,7 @@ func (rptSvc *ReportServiceJSON) getAllArtistsStatsForManager(mngID uint64) ([]b
 			}
 
 			var closestToLastSeasonDate time.Time
-			var lastSeasonStat models.Statistics
+			lastSeasonStat := models.Statistics{}
 			latestStatDate := stats[0].Date
 			latestStat := stats[0]
 			for _, stat := range stats {
@@ -177,6 +178,7 @@ func (rptSvc *ReportServiceJSON) getAllArtistsStatsForManager(mngID uint64) ([]b
 					latestStat = stat
 				}
 
+				lastSeasonStatDate := latestStatDate.AddDate(0, -3, 0)
 				if stat.Date.Before(lastSeasonStatDate) && stat.Date.After(closestToLastSeasonDate) {
 					closestToLastSeasonDate = stat.Date
 					lastSeasonStat = stat
