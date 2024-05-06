@@ -22,12 +22,6 @@ type managerMenu struct {
 
 func initManagerMenu(a *app.App, user *models.User, log *slog.Logger) (*managerMenu, error) {
 
-	err := a.Services.UserService.SetRole(models.ManagerUser)
-	if err != nil {
-		log.Error("Can't init manager menu: can't set manager role: ", slog.Any("error", err))
-		return nil, err
-	}
-
 	manager, err := a.Services.ManagerService.GetByUserID(user.UserID)
 	if err != nil {
 		log.Error("Can't init manager menu: can't get manager: ", slog.Any("error", err))

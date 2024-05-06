@@ -94,27 +94,3 @@ func (usr *UserPgRepo) UpdateType(ctx context.Context, userID uint64, typ models
 
 	return nil
 }
-
-func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error {
-
-	var roleStr string
-
-	switch role {
-	case models.NonMemberUser:
-		roleStr = "user"
-	case models.ManagerUser:
-		roleStr = "manager"
-	case models.ArtistUser:
-		roleStr = "artist"
-	}
-
-	q := "SET ROLE $1"
-
-	_, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).ExecContext(ctx, q, roleStr)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
