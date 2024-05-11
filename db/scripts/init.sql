@@ -77,6 +77,23 @@ CREATE TABLE IF NOT EXISTS track_artist (
     track_id 	        INT REFERENCES tracks ON DELETE CASCADE
 );
 
+
+-- =========================================================================================================================
+
+
+CREATE ROLE user;
+
+GRANT SELECT, INSERT, UPDATE ON users to user;
+GRANT SELECT, INSERT, UPDATE ON requests to user;
+
+CREATE ROLE artist;
+
+
+
+CREATE ROLE manager;
+
+-- =========================================================================================================================
+
 insert into users (name, email, password, type) values ('pavel-manager', 'pavel@ppo.ru', '123123', 1);
 insert into users (name, email, password, type) values ('oleg-manager', 'oleg@ppo.ru', '123123', 1);
 insert into users (name, email, password, type) values ('vova-manager', 'vova@ppo.ru', '123123', 1);
@@ -120,3 +137,4 @@ insert into track_artist (track_id, artist_id) values (
         (select track_id from tracks where  title='oga-boga-1'), 1), (
         (select track_id from tracks where  title='oga-boga-2'), 1
     );
+

@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/requests/publish"
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
+	"errors"
 	"fmt"
 	"log/slog"
 )
@@ -115,6 +116,10 @@ func (menu *artistMenu) uploadRelease() error {
 	var year, day, month int
 	_, _ = fmt.Scanf("%d %d %d", &year, &month, &day)
 
+	if year < 1000 || month > 12 || month < 1 || day < 0 || day > 31 {
+		return errors.New("invalid date")
+	}
+
 	release := &models.Release{
 		Title:        title,
 		ArtistID:     menu.artist.ArtistID,
@@ -124,6 +129,10 @@ func (menu *artistMenu) uploadRelease() error {
 	fmt.Printf("%s", "Введите количество треков: ")
 	var tracksNum int
 	_, _ = fmt.Scanf("%d", &tracksNum)
+
+	if tracksNum < 1 {
+		return errors.New("tracks num must be positive")
+	}
 
 	tracks := make([]*models.Track, tracksNum)
 
