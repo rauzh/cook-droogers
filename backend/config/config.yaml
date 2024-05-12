@@ -2,7 +2,7 @@
 
 mode: "techUI"
 
-stat_fetcher_url: "127.0.0.1:1337"
+stat_fetcher_url: "http://data_server:1337"
 
 postgres:
   host: "postgres"

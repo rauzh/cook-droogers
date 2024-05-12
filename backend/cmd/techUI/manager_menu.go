@@ -48,7 +48,8 @@ func (menu *managerMenu) Loop() error {
 		`
 		0 -- выйти
 		1 -- открыть список заявок
-		2 -- получить статистику своих артистов
+		2 -- получить текущую статистику своих артистов
+		3 -- подгрузить статистику своих артистов
 
 	Выберите пункт меню: `
 
@@ -69,6 +70,14 @@ func (menu *managerMenu) Loop() error {
 			}
 		case 2:
 			menu.stats()
+		case 3:
+			err := menu.fetchStats()
+			if err != nil {
+				fmt.Println("Не удается подгрузить статистику по причине ", err)
+				menu.log.Error("Can't fetch stats", slog.Any("error", err))
+			} else {
+				fmt.Println("Статистика успешно подгружена.")
+			}
 		default:
 			fmt.Printf("Неверный пункт меню")
 		}
@@ -99,6 +108,25 @@ func (menu *managerMenu) stats() {
 
 	fmt.Printf("%s: %s\n\n", "relevant_genre", string(report["relevant_genre"]))
 	fmt.Printf("%s: %s\n\n", "artists_stats", string(report["artists_stats"]))
+}
+
+func (menu *managerMenu) fetchStats() error {
+	var errr error
+	for _, artistID := range menu.manager.Artists {
+		releases, err := menu.a.Services.ReleaseService.GetAllByArtist(artistID)
+		if err != nil {
+			return err
+		}
+		for _, release := range releases {
+			err = menu.a.Services.StatService.FetchByRelease(&release)
+			if err != nil {
+				fmt.Println(err, " for release ", release.ReleaseID)
+				errr = err
+			}
+		}
+	}
+
+	return errr
 }
 
 func (menu *managerMenu) lookupReqs() error {
@@ -151,7 +179,7 @@ func (menu *managerMenu) lookupReqs() error {
 		1 -- принять
 		2 -- отклонить
 
-	Выберите пункт меню: `
+	Выберите действие: `
 	fmt.Printf("%s", chooseReqAction)
 	var action int
 	_, _ = fmt.Scanf("%d", &action)
@@ -168,6 +196,10 @@ func (menu *managerMenu) lookupReqs() error {
 				return err
 			}
 			err = menu.a.UseCases.SignContractReqUC.Accept(signreq)
+			if err != nil {
+				menu.log.Error("CANT ACCEPT SIGN CONTRACT", slog.Any("error", err))
+				return err
+			}
 		case publish.PubReq:
 			pubReqUC := menu.a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 			pubreq, err := pubReqUC.Get(reqID)
@@ -175,6 +207,10 @@ func (menu *managerMenu) lookupReqs() error {
 				return err
 			}
 			err = menu.a.UseCases.PublishReqUC.Accept(pubreq)
+			if err != nil {
+				menu.log.Error("CANT ACCEPT PUBLISH", slog.Any("error", err))
+				return err
+			}
 		}
 	case 2:
 		switch reqMap[reqID].Type {
@@ -185,6 +221,9 @@ func (menu *managerMenu) lookupReqs() error {
 				return err
 			}
 			err = menu.a.UseCases.SignContractReqUC.Decline(signreq)
+			if err != nil {
+				return err
+			}
 		case publish.PubReq:
 			pubReqUC := menu.a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 			pubreq, err := pubReqUC.Get(reqID)
@@ -192,6 +231,9 @@ func (menu *managerMenu) lookupReqs() error {
 				return err
 			}
 			err = menu.a.UseCases.PublishReqUC.Decline(pubreq)
+			if err != nil {
+				return err
+			}
 		}
 	default:
 		fmt.Printf("Неверный пункт меню")

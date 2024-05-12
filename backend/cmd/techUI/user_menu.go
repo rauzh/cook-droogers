@@ -14,6 +14,12 @@ import (
 
 func userLoop(a *app.App, user *models.User, log *slog.Logger) error {
 
+	err := a.Services.UserService.SetRole(models.NonMemberUser)
+	if err != nil {
+		log.Error("Can't init user menu: can't set user role: ", slog.Any("error", err))
+		return err
+	}
+
 	startPosition :=
 		`
 		0 -- выйти

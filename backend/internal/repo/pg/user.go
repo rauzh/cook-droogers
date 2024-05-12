@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
+	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -101,16 +102,16 @@ func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error 
 
 	switch role {
 	case models.NonMemberUser:
-		roleStr = "user"
+		roleStr = "NonMemberUser"
 	case models.ManagerUser:
-		roleStr = "manager"
+		roleStr = "ManagerUser"
 	case models.ArtistUser:
-		roleStr = "artist"
+		roleStr = "ArtistUser"
 	}
 
-	q := "SET ROLE $1"
+	q := fmt.Sprintf("SET ROLE %s;", roleStr)
 
-	_, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).ExecContext(ctx, q, roleStr)
+	_, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).ExecContext(ctx, q)
 
 	if err != nil {
 		return err

@@ -36,12 +36,6 @@ func RunMenu(a *app.App, log *slog.Logger) error {
 			break
 		}
 
-		err = a.Services.UserService.SetRole(models.NonMemberUser)
-		if err != nil {
-			log.Error("Can't init user menu: can't set user role: ", slog.Any("error", err))
-			return err
-		}
-
 		err = switchMenu(a, user, log)
 
 	case 2:
@@ -87,6 +81,7 @@ func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
 		menu, err := initManagerMenu(a, user, log)
 		if err != nil {
 			log.Error("Can't init manager menu: ", slog.Any("error", err))
+			break
 		}
 
 		err = menu.Loop()
@@ -100,6 +95,7 @@ func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
 		menu, err := initArtistMenu(a, user, log)
 		if err != nil {
 			log.Error("Can't init artist menu: ", slog.Any("error", err))
+			break
 		}
 
 		err = menu.Loop()

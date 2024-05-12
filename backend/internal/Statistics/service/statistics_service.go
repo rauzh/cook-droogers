@@ -81,6 +81,7 @@ func (statSvc *StatisticsService) GetForTrack(trackID uint64) ([]models.Statisti
 func (statSvc *StatisticsService) FetchByRelease(release *models.Release) error {
 
 	tracks, err := statSvc.releaseService.GetAllTracks(release)
+
 	if err != nil {
 		return fmt.Errorf("can't fetch stats with err %w", err)
 	}
@@ -90,7 +91,10 @@ func (statSvc *StatisticsService) FetchByRelease(release *models.Release) error 
 		return fmt.Errorf("can't fetch stats with err %w", err)
 	}
 
+	statSvc.logger.Debug("FetchByRelease", "stats", stats)
+
 	if len(stats) < 1 {
+		statSvc.logger.Info("no stats to fetch", "release", release.ReleaseID)
 		return errors.New("no stats to fetch")
 	}
 
