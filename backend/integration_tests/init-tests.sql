@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS requests (
                                         request_id 		    SERIAL PRIMARY KEY,
                                         status              VARCHAR(256) CHECK (status IN ('New', 'Processing', 'On approval', 'Closed')),
                                         type                VARCHAR(256) CHECK (type IN ('Sign', 'Publish')),
-                                        creation_date       TIMESTAMP,
+                                        creation_date       TIMESTAMP NOT NULL,
                                         meta 	            JSONB,
                                         manager_id 	        INT REFERENCES managers(manager_id) ON DELETE CASCADE,
                                         user_id 	        INT NOT NULL REFERENCES users ON DELETE CASCADE
@@ -91,7 +91,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER if EXISTS insert_manager_user_type ON managers ;
 CREATE TRIGGER insert_manager_user_type
-    BEFORE INSERT ON managers
+    BEFORE INSERT OR UPDATE ON managers
     FOR EACH ROW
 EXECUTE PROCEDURE manager_user_type();
 
@@ -109,7 +109,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER if EXISTS insert_artist_user_type ON artists ;
 CREATE TRIGGER insert_artist_user_type
-    BEFORE INSERT ON artists
+    BEFORE INSERT OR UPDATE ON artists
     FOR EACH ROW
 EXECUTE PROCEDURE artist_user_type();
 
@@ -118,9 +118,9 @@ EXECUTE PROCEDURE artist_user_type();
 CREATE OR REPLACE FUNCTION publication_manager_owner()
     RETURNS trigger AS $$
 BEGIN
-    IF NOT ((SELECT a.manager_id
+    IF NOT ((SELECT DISTINCT a.manager_id
              FROM artists a JOIN releases r ON r.artist_id=a.artist_id
-             WHERE r.release_id=release_id)=NEW.manager_id) THEN
+             WHERE r.release_id=NEW.release_id)=NEW.manager_id) THEN
         RAISE EXCEPTION 'ответственным менеджером за публикацию должен быть менеджер артиста-владельца релиза';
     END IF;
     return new;
@@ -129,7 +129,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER if EXISTS insert_publication_manager_owner ON publications ;
 CREATE TRIGGER insert_publication_manager_owner
-    BEFORE INSERT ON publications
+    BEFORE INSERT OR UPDATE ON publications
     FOR EACH ROW
 EXECUTE PROCEDURE publication_manager_owner();
 
@@ -188,11 +188,11 @@ BEGIN
         NEW.meta = NEW.meta || '{"description": ""}';
     END IF;
 
-    IF (EXISTS (SELECT 1
-                FROM publications
-                WHERE creation_date=(NEW.meta->>'expected_date')::timestamp)) THEN
-        NEW.meta = jsonb_set(meta, '{grade}', (((NEW.meta->'grade')::integer)-1)::jsonb, true);
-    END IF;
+    --   IF (EXISTS (SELECT 1
+--         FROM publications
+--         WHERE creation_date=(NEW.meta->>'expected_date')::timestamp)) THEN
+--     NEW.meta = jsonb_set(meta, '{grade}', (((NEW.meta->'grade')::integer)-1)::jsonb, true);
+--   END IF;
 
     RETURN NEW;  -- Вернуть обновленную строку
 END;
@@ -224,10 +224,47 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS ensure_sign_request_meta ON requests;
 CREATE TRIGGER ensure_sign_request_meta
-    BEFORE INSERT ON requests
+    BEFORE INSERT OR UPDATE ON requests
     FOR EACH ROW
     WHEN (NEW.type = 'Sign')
 EXECUTE PROCEDURE ensure_sign_request_meta_proc();
+
+-- ================== РОЛИ ==================
+
+CREATE ROLE NonMemberUser LOGIN;
+GRANT SELECT, INSERT, UPDATE ON users TO NonMemberUser;
+GRANT SELECT, INSERT, UPDATE ON requests TO NonMemberUser;
+GRANT USAGE, SELECT ON requests_request_id_seq to NonMemberUser;
+GRANT SELECT ON managers TO NonMemberUser;
+
+CREATE ROLE ManagerUser LOGIN;
+GRANT SELECT, INSERT, UPDATE ON users TO ManagerUser;
+GRANT SELECT, INSERT, UPDATE ON artists TO ManagerUser;
+GRANT USAGE, SELECT ON artists_artist_id_seq TO ManagerUser;
+GRANT SELECT, INSERT, UPDATE ON requests TO ManagerUser;
+GRANT SELECT, INSERT, UPDATE ON managers TO ManagerUser;
+GRANT SELECT, INSERT ON stats TO ManagerUser;
+GRANT USAGE, SELECT ON stats_stat_id_seq TO ManagerUser;
+GRANT SELECT ON tracks TO ManagerUser;
+GRANT SELECT ON track_artist TO ManagerUser;
+GRANT SELECT, INSERT ON publications TO ManagerUser;
+GRANT SELECT, UPDATE ON releases TO ManagerUser;
+GRANT USAGE, SELECT ON publications_publication_id_seq TO ManagerUser;
+
+CREATE ROLE ArtistUser LOGIN;
+GRANT SELECT, INSERT, UPDATE ON users TO ArtistUser;
+GRANT SELECT, INSERT, UPDATE ON artists TO ArtistUser;
+GRANT SELECT, INSERT, UPDATE ON requests TO ArtistUser;
+GRANT USAGE, SELECT ON requests_request_id_seq TO ArtistUser;
+GRANT SELECT ON managers TO ArtistUser;
+GRANT SELECT ON stats TO ArtistUser;
+GRANT SELECT, INSERT, UPDATE ON releases TO ArtistUser;
+GRANT USAGE, SELECT ON releases_release_id_seq TO ArtistUser;
+GRANT SELECT, INSERT, UPDATE ON tracks TO ArtistUser;
+GRANT USAGE, SELECT ON tracks_track_id_seq TO ArtistUser;
+GRANT USAGE, SELECT ON track_artist_track_artist_id_seq TO ArtistUser;
+GRANT SELECT, INSERT, UPDATE ON track_artist TO ArtistUser;
+
 
 -- ЗАПОЛНЕНИЕ ТЕСТОВЫМИ ДАННЫМИ
 
@@ -263,14 +300,17 @@ values (
        );
 
 insert into releases (title, status, creation_date, artist_id) values(
-                                                                         'old-test-album', 'Published','2020-10-10'::TIMESTAMP, 1);
+                                                                         'old-test-album', 'Unpublished','2020-10-10'::TIMESTAMP, 1);
 
 insert into tracks (title, genre, duration, type, release_id) values (
                                                                          'oga-boga-1', 'rock', 222, 'song', 1);
 insert into tracks (title, genre, duration, type, release_id) values (
                                                                          'oga-boga-2', 'rock', 322, 'song', 1);
 
-insert into track_artist (track_id, artist_id) values (
-                                                          (select track_id from tracks where  title='oga-boga-1'), 1), (
-                                                          (select track_id from tracks where  title='oga-boga-2'), 1
-                                                      );
+-- insert into track_artist (track_id, artist_id) values (
+--         (select track_id from tracks where  title='oga-boga-1'), 1), (
+--         (select track_id from tracks where  title='oga-boga-2'), 1
+--     );
+
+insert into users (name, email, password, type) values ('topka', 'topka@ppo.ru', '123', 0);
+insert into users (name, email, password, type) values ('korka', 'korka@ppo.ru', '123', 0);
