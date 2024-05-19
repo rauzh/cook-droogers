@@ -1,0 +1,3 @@
+{"time":"2024-05-19T13:49:39.467172+03:00","level":"INFO","msg":"Serving swagger cook droogers at http://%s","!BADKEY":{"IP":"127.0.0.1","Port":8090,"Zone":""}}
+{"time":"2024-05-19T15:14:42.185132+03:00","level":"INFO","msg":"Shutting down... "}
+{"time":"2024-05-19T15:14:42.188394+03:00","level":"INFO","msg":"Stopped serving swagger cook droogers at http://%s","!BADKEY":{"IP":"127.0.0.1","Port":8090,"Zone":""}}

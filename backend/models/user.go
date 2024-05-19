@@ -6,6 +6,7 @@ const (
 	NonMemberUser UserType = iota
 	ManagerUser   UserType = iota
 	ArtistUser    UserType = iota
+	AdminUser     UserType = iota
 )
 
 type User struct {

@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "13337:13337"
     depends_on:
       - kafka
       - kafka2

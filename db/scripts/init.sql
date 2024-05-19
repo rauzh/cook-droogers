@@ -77,6 +77,93 @@ CREATE TABLE IF NOT EXISTS stats (
     track_id 	        INT REFERENCES tracks ON DELETE CASCADE
 );
 
+
+CREATE OR REPLACE FUNCTION key_exists(some_json jsonb, outer_key text)
+RETURNS boolean AS $$
+BEGIN
+    RETURN (some_json->outer_key) IS NOT NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- динамическая хранимая процедура ХРАНИМКА
+
+CREATE OR REPLACE PROCEDURE set_grade_to_request(IN request_id INT) AS $$
+DECLARE
+  request RECORD;
+  cur_artist int;
+  cur_grade int;
+BEGIN
+  SELECT * INTO request FROM requests r WHERE r.request_id = $1;
+
+  IF (request.type<>'Publish') THEN
+    RAISE EXCEPTION 'заявка должна быть типа Publish';
+  END IF;
+
+    -- Добавить поле "grade" со значением 0, если его нет
+  IF NOT (key_exists(request.meta, 'grade')) THEN
+    request.meta = request.meta || '{"grade": 0}'::jsonb;
+  END IF;
+
+  cur_artist := ( SELECT artist_id FROM artists a NATURAL JOIN releases r
+                  WHERE (r.release_id)::text=request.meta->>'release_id' LIMIT 1);
+
+  cur_grade := (request.meta->>'grade')::integer;
+
+  raise notice 'cur grade is %', cur_grade;
+
+  -- Если в желаемый день публикации уже есть релиз, снизить оценку
+  IF (EXISTS (SELECT 1
+        FROM publications
+        WHERE creation_date=(request.meta->>'expected_date')::timestamp)) THEN
+    cur_grade := cur_grade-1;
+  END IF;
+
+  -- Если у артиста было больше трех публикаций за последние три месяца, снизить оценку
+  IF (EXISTS (SELECT COUNT(p.publication_id)
+              FROM artists AS a
+              NATURAL JOIN releases AS r
+              JOIN publications AS p
+                ON r.release_id = p.release_id
+              WHERE a.artist_id = cur_artist AND p.creation_date >= NOW() - INTERVAL '3 MONTH'
+              HAVING COUNT(p.publication_id) > 3)) THEN
+    cur_grade := cur_grade-1;
+  END IF;
+
+  -- Если жанр неактуален, снизить оценку
+  IF ((WITH MonthlyStats AS (
+        SELECT genre, SUM(streams) AS total_streams
+        FROM tracks AS t
+        NATURAL JOIN stats AS s
+        WHERE s.creation_date >= NOW() - INTERVAL '3 MONTH'
+        GROUP BY 1
+      ), MostPopularGenre AS (
+        SELECT genre, total_streams
+        FROM MonthlyStats
+        ORDER BY total_streams DESC
+        LIMIT 1
+      )
+      SELECT mg.genre
+      FROM MostPopularGenre AS mg)=(
+        SELECT tmp.genre FROM (SELECT genre, COUNT(*) AS genre_count
+        FROM tracks
+        WHERE (release_id)::text = request.meta->>'release_id'
+        GROUP BY genre
+        ORDER BY genre_count DESC
+        LIMIT 1
+      ) AS tmp )) THEN
+    cur_grade := cur_grade-1;
+  END IF;
+
+  request.meta = request.meta || ('{"grade": ' || cur_grade || '}')::jsonb;
+
+  raise notice 'new grade is %', cur_grade;
+
+  UPDATE requests AS r SET meta=request.meta WHERE r.request_id=request.request_id;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- триггер целостность менеджера-юзера
 
 CREATE OR REPLACE FUNCTION manager_user_type()
@@ -188,12 +275,6 @@ BEGIN
     NEW.meta = NEW.meta || '{"description": ""}';
   END IF;
 
---   IF (EXISTS (SELECT 1
---         FROM publications
---         WHERE creation_date=(NEW.meta->>'expected_date')::timestamp)) THEN
---     NEW.meta = jsonb_set(meta, '{grade}', (((NEW.meta->'grade')::integer)-1)::jsonb, true);
---   END IF;
-
   RETURN NEW;  -- Вернуть обновленную строку
 END;
 $$ LANGUAGE plpgsql;
@@ -264,6 +345,11 @@ GRANT SELECT, INSERT, UPDATE ON tracks TO ArtistUser;
 GRANT USAGE, SELECT ON tracks_track_id_seq TO ArtistUser;
 GRANT USAGE, SELECT ON track_artist_track_artist_id_seq TO ArtistUser;
 GRANT SELECT, INSERT, UPDATE ON track_artist TO ArtistUser;
+
+CREATE ROLE AdminUser LOGIN;
+GRANT SELECT, UPDATE ON users TO AdminUser;
+GRANT SELECT, INSERT, UPDATE ON managers TO AdminUser;
+GRANT USAGE, SELECT ON managers_manager_id_seq TO AdminUser;
 
 
 -- ЗАПОЛНЕНИЕ ТЕСТОВЫМИ ДАННЫМИ
