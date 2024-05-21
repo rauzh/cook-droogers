@@ -314,6 +314,7 @@ EXECUTE PROCEDURE ensure_sign_request_meta_proc();
 
 CREATE ROLE NonMemberUser LOGIN;
 GRANT SELECT, INSERT, UPDATE ON users TO NonMemberUser;
+GRANT USAGE, SELECT ON users_user_id_seq to NonMemberUser;
 GRANT SELECT, INSERT, UPDATE ON requests TO NonMemberUser;
 GRANT USAGE, SELECT ON requests_request_id_seq to NonMemberUser;
 GRANT SELECT ON managers TO NonMemberUser;

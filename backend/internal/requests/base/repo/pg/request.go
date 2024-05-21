@@ -57,7 +57,7 @@ func (reqrepo *RequestPgRepo) GetAllByManagerID(ctx context.Context, mngID uint6
 }
 
 func (reqrepo *RequestPgRepo) GetByID(ctx context.Context, reqID uint64) (*base.Request, error) {
-	q := "SELECT request_id, status, type, creation_date, manager_id, user_id FROM requests WHERE user_id=$1"
+	q := "SELECT request_id, status, type, creation_date, manager_id, user_id FROM requests WHERE request_id=$1"
 
 	req := base.Request{}
 

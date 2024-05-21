@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
@@ -107,6 +108,8 @@ func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error 
 		roleStr = "ManagerUser"
 	case models.ArtistUser:
 		roleStr = "ArtistUser"
+	case models.AdminUser:
+		roleStr = "AdminUser"
 	}
 
 	q := fmt.Sprintf("SET ROLE %s;", roleStr)
@@ -118,4 +121,34 @@ func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error 
 	}
 
 	return nil
+}
+
+func (usr *UserPgRepo) GetForAdmin(ctx context.Context) ([]models.User, error) {
+	q := "SELECT user_id, name, email, password, type FROM users"
+
+	users := make([]models.User, 0)
+
+	rows, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).QueryxContext(ctx, q)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return users, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		user := models.User{}
+
+		err := rows.Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }

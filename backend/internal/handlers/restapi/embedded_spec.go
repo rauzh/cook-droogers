@@ -113,7 +113,8 @@ func init() {
         "operationId": "addManager",
         "parameters": [
           {
-            "type": "string",
+            "type": "integer",
+            "format": "uint64",
             "description": "ID пользователя",
             "name": "user_id",
             "in": "query",
@@ -551,18 +552,6 @@ func init() {
     }
   },
   "definitions": {
-    "Category": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
     "ManagerDTO": {
       "type": "object",
       "properties": {
@@ -580,47 +569,6 @@ func init() {
         "user_id": {
           "type": "integer",
           "format": "uint64"
-        }
-      }
-    },
-    "Pet": {
-      "type": "object",
-      "required": [
-        "name",
-        "photoUrls"
-      ],
-      "properties": {
-        "category": {
-          "$ref": "#/definitions/Category"
-        },
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string",
-          "example": "doggie"
-        },
-        "photoUrls": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "status": {
-          "description": "pet status in the store",
-          "type": "string",
-          "enum": [
-            "available",
-            "pending",
-            "sold"
-          ]
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Tag"
-          }
         }
       }
     },
@@ -773,18 +721,6 @@ func init() {
         "track_id": {
           "type": "integer",
           "format": "uint64"
-        }
-      }
-    },
-    "Tag": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
         }
       }
     },
@@ -978,7 +914,8 @@ func init() {
         "operationId": "addManager",
         "parameters": [
           {
-            "type": "string",
+            "type": "integer",
+            "format": "uint64",
             "description": "ID пользователя",
             "name": "user_id",
             "in": "query",
@@ -1416,18 +1353,6 @@ func init() {
     }
   },
   "definitions": {
-    "Category": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
     "ManagerDTO": {
       "type": "object",
       "properties": {
@@ -1445,47 +1370,6 @@ func init() {
         "user_id": {
           "type": "integer",
           "format": "uint64"
-        }
-      }
-    },
-    "Pet": {
-      "type": "object",
-      "required": [
-        "name",
-        "photoUrls"
-      ],
-      "properties": {
-        "category": {
-          "$ref": "#/definitions/Category"
-        },
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string",
-          "example": "doggie"
-        },
-        "photoUrls": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "status": {
-          "description": "pet status in the store",
-          "type": "string",
-          "enum": [
-            "available",
-            "pending",
-            "sold"
-          ]
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Tag"
-          }
         }
       }
     },
@@ -1638,18 +1522,6 @@ func init() {
         "track_id": {
           "type": "integer",
           "format": "uint64"
-        }
-      }
-    },
-    "Tag": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
         }
       }
     },

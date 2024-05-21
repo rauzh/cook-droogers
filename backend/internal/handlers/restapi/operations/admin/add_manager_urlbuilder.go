@@ -9,11 +9,13 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/swag"
 )
 
 // AddManagerURL generates an URL for the add manager operation
 type AddManagerURL struct {
-	UserID string
+	UserID uint64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -49,7 +51,7 @@ func (o *AddManagerURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	userIDQ := o.UserID
+	userIDQ := swag.FormatUint64(o.UserID)
 	if userIDQ != "" {
 		qs.Set("user_id", userIDQ)
 	}

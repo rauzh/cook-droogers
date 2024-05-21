@@ -12,11 +12,14 @@ import (
 	"cookdroogers/internal/requests/publish"
 	usecase2 "cookdroogers/internal/requests/publish/usecase"
 	"cookdroogers/internal/requests/sign_contract"
+	sctErrors "cookdroogers/internal/requests/sign_contract/errors"
 	"cookdroogers/internal/requests/sign_contract/usecase"
+	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
 	"cookdroogers/pkg/logger"
 	"crypto/tls"
 	"database/sql"
+	"encoding/json"
 	goerrors "errors"
 	"github.com/go-openapi/strfmt"
 	"log/slog"
@@ -80,6 +83,10 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 	// Applies when the Authorization header is set with the Basic scheme
 	api.BasicAuthAuth = func(username string, pass string) (interface{}, error) {
 
+		if username == cdApp.Config.Root.Username {
+			return username, nil
+		}
+
 		user, err := cdApp.Services.UserService.Login(username, pass)
 		if err != nil {
 			if goerrors.Is(err, sql.ErrNoRows) {
@@ -106,7 +113,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
 			rw.WriteHeader(http.StatusOK)
 			if _, err := rw.Write([]byte("OK")); err != nil {
-				errors.New(500, "Internal error")
+				_ = errors.New(500, "internal error")
 			}
 		})
 	})
@@ -159,11 +166,29 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	if api.AdminAddManagerHandler == nil {
-		api.AdminAddManagerHandler = admin.AddManagerHandlerFunc(func(params admin.AddManagerParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.AddManager has not yet been implemented")
+	api.AdminAddManagerHandler = admin.AddManagerHandlerFunc(func(params admin.AddManagerParams, principal interface{}) middleware.Responder {
+
+		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(403, err.Error())
+		}
+
+		err = cdApp.Services.UserService.UpdateType(params.UserID, models.ManagerUser)
+		if err != nil {
+			return middleware.Error(500, "can't create manager")
+		}
+
+		man := models.Manager{UserID: params.UserID}
+
+		err = cdApp.Services.ManagerService.Create(&man)
+		if err != nil {
+			return middleware.Error(500, "can't create manager")
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusCreated)
 		})
-	}
+	})
 
 	api.ArtistAddReleaseHandler = artist.AddReleaseHandlerFunc(func(params artist.AddReleaseParams, principal interface{}) middleware.Responder {
 
@@ -274,11 +299,33 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	if api.AdminGetManagersHandler == nil {
-		api.AdminGetManagersHandler = admin.GetManagersHandlerFunc(func(params admin.GetManagersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.GetManagers has not yet been implemented")
+	api.AdminGetManagersHandler = admin.GetManagersHandlerFunc(func(params admin.GetManagersParams, principal interface{}) middleware.Responder {
+
+		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(403, err.Error())
+		}
+
+		managers, err := cdApp.Services.ManagerService.GetForAdmin()
+		if err != nil {
+			return middleware.Error(500, "can't get managers")
+		}
+
+		managersDTO := make([]modelsDTO.ManagerDTO, len(managers))
+
+		for i, man := range managers {
+			managersDTO[i] = modelsDTO.ManagerDTO{
+				UserID:    man.UserID,
+				ManagerID: man.ManagerID,
+				Artists:   man.Artists,
+			}
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusOK)
+			_ = p.Produce(rw, managersDTO)
 		})
-	}
+	})
 
 	api.ArtistGetReleaseHandler = artist.GetReleaseHandlerFunc(func(params artist.GetReleaseParams, principal interface{}) middleware.Responder {
 
@@ -339,7 +386,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			pubReqUC := cdApp.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 			pubreq, err := pubReqUC.Get(params.ReqID)
 			if err != nil {
-				return middleware.Error(500, "Can't get request")
+				return middleware.Error(500, "Can't get publish request")
 			}
 			pubreqDTO = &modelsDTO.PublishRequestDTO{
 				Base: &modelsDTO.RequestDTO{
@@ -360,7 +407,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			signReqUC := cdApp.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
 			signreq, err := signReqUC.Get(params.ReqID)
 			if err != nil {
-				return middleware.Error(500, "Can't get request")
+				return middleware.Error(500, "Can't get sign request")
 			}
 
 			signreqDTO = &modelsDTO.SignRequestDTO{
@@ -398,10 +445,12 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		reqs := make([]base.Request, 0)
 
 		if user.Type == models.ManagerUser {
-			mngr, err := cdApp.Services.ManagerService.GetByUserID(user.UserID)
+
+			mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 			if err != nil {
-				return middleware.Error(500, "can't get manager info")
+				return middleware.Error(400, err.Error())
 			}
+
 			reqs, err = cdApp.Services.RequestService.GetAllByManagerID(mngr.ManagerID)
 			if err != nil {
 				return middleware.Error(500, "can't get manager reqs")
@@ -432,31 +481,158 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	if api.ArtistGetStatsHandler == nil {
-		api.ArtistGetStatsHandler = artist.GetStatsHandlerFunc(func(params artist.GetStatsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.GetStats has not yet been implemented")
+	api.ArtistGetStatsHandler = artist.GetStatsHandlerFunc(func(params artist.GetStatsParams, principal interface{}) middleware.Responder {
+
+		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(400, err.Error())
+		}
+
+		stats := make(map[string][]byte)
+
+		if user.Type == models.ManagerUser {
+			mngr, err := cdApp.Services.ManagerService.GetByUserID(user.UserID)
+			if err != nil {
+				return middleware.Error(500, "can't get manager info")
+			}
+			stats, err = cdApp.Services.ReportService.GetReportForManager(mngr.ManagerID)
+
+			type statsManagerDTOstruct struct {
+				RelevantGenre json.RawMessage `json:"relevant_genre"`
+				ArtistsStats  json.RawMessage `json:"artists_stats"`
+			}
+
+			statsManagerDTO := statsManagerDTOstruct{
+				RelevantGenre: stats["relevant_genre"],
+				ArtistsStats:  stats["artists_stats"],
+			}
+
+			return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+				rw.WriteHeader(http.StatusOK)
+				_ = p.Produce(rw, statsManagerDTO)
+			})
+
+		} else if user.Type == models.ArtistUser {
+			artistuser, err := cdApp.Services.ArtistService.GetByUserID(user.UserID)
+			if err != nil {
+				return middleware.Error(500, "can't get artist info")
+			}
+			stats, err = cdApp.Services.ReportService.GetReportForArtist(artistuser.ManagerID)
+
+			jsonMap := make(map[string]interface{})
+
+			// Преобразуем каждый "сырой" json-объект в json-объект
+			for key, rawJson := range stats {
+				var jsonObject interface{}
+				if err := json.Unmarshal(rawJson, &jsonObject); err != nil {
+					return middleware.Error(500, "error unmarshalling json")
+				}
+
+				jsonMap[key] = jsonObject
+			}
+			return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+				rw.WriteHeader(http.StatusOK)
+				_ = p.Produce(rw, jsonMap)
+			})
+		} else {
+			return middleware.Error(403, "you have no rights to get statistics")
+		}
+	})
+
+	api.AdminGetUsersHandler = admin.GetUsersHandlerFunc(func(params admin.GetUsersParams, principal interface{}) middleware.Responder {
+		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(403, err.Error())
+		}
+
+		users, err := cdApp.Services.UserService.GetForAdmin()
+		if err != nil {
+			return middleware.Error(500, "can't get users")
+		}
+
+		usersDTO := make([]modelsDTO.UserDTO, len(users))
+
+		for i, user := range users {
+			usersDTO[i] = modelsDTO.UserDTO{
+				UserID:   user.UserID,
+				Name:     user.Name,
+				Password: user.Password,
+				Type:     int64(user.Type),
+				Email:    strfmt.Email(user.Email),
+			}
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusOK)
+			_ = p.Produce(rw, usersDTO)
 		})
-	}
-	if api.AdminGetUsersHandler == nil {
-		api.AdminGetUsersHandler = admin.GetUsersHandlerFunc(func(params admin.GetUsersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.GetUsers has not yet been implemented")
+	})
+
+	api.ArtistPublishReqHandler = artist.PublishReqHandlerFunc(func(params artist.PublishReqParams, principal interface{}) middleware.Responder {
+
+		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(403, err.Error())
+		}
+
+		if params.ReleaseID <= 0 {
+			return middleware.Error(400, "invalid releaseID")
+		}
+
+		pubReq := publish.NewPublishRequest(artistUser.UserID, params.ReleaseID, time.Time(params.Date))
+
+		err = cdApp.UseCases.PublishReqUC.Apply(pubReq)
+		if err != nil {
+			return middleware.Error(500, err.Error())
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusCreated)
 		})
-	}
-	if api.ArtistPublishReqHandler == nil {
-		api.ArtistPublishReqHandler = artist.PublishReqHandlerFunc(func(params artist.PublishReqParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.PublishReq has not yet been implemented")
+	})
+
+	api.GuestRegisterHandler = guest.RegisterHandlerFunc(func(params guest.RegisterParams) middleware.Responder {
+		user := &models.User{
+			Name:     params.Username,
+			Email:    string(params.Email),
+			Password: params.Password,
+		}
+
+		err := cdApp.Services.UserService.SetRole(models.NonMemberUser)
+
+		err = cdApp.Services.UserService.Create(user)
+		if goerrors.Is(err, userErrors.ErrAlreadyTaken) {
+			return middleware.Error(403, "user already exists")
+		}
+		if err != nil {
+			return middleware.Error(500, "can't create user")
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusCreated)
 		})
-	}
-	if api.GuestRegisterHandler == nil {
-		api.GuestRegisterHandler = guest.RegisterHandlerFunc(func(params guest.RegisterParams) middleware.Responder {
-			return middleware.NotImplemented("operation guest.Register has not yet been implemented")
+	})
+
+	api.NonMemberSignContractHandler = non_member.SignContractHandlerFunc(func(params non_member.SignContractParams, principal interface{}) middleware.Responder {
+		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		if err != nil {
+			return middleware.Error(403, err.Error())
+		}
+
+		signReq := sign_contract.NewSignContractRequest(user.UserID, params.Nickname)
+
+		err = cdApp.UseCases.SignContractReqUC.Apply(signReq)
+		if goerrors.Is(err, sctErrors.ErrNickname) {
+			return middleware.Error(400, "invalid nickname")
+		}
+		if err != nil {
+			return middleware.Error(500, err.Error())
+		}
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			rw.WriteHeader(http.StatusCreated)
 		})
-	}
-	if api.NonMemberSignContractHandler == nil {
-		api.NonMemberSignContractHandler = non_member.SignContractHandlerFunc(func(params non_member.SignContractParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation non_member.SignContract has not yet been implemented")
-		})
-	}
+	})
 
 	api.PreServerShutdown = func() {}
 

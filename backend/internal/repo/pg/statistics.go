@@ -5,6 +5,7 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
+	"errors"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -59,6 +60,10 @@ func (stat *StatisticsPgRepo) GetForTrack(ctx context.Context, trackID uint64) (
 		}
 
 		stats = append(stats, curStat)
+	}
+
+	if len(stats) == 0 {
+		return nil, errors.New("no stats")
 	}
 
 	return stats, nil

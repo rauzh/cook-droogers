@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
@@ -36,7 +37,7 @@ type AddManagerParams struct {
 	  Required: true
 	  In: query
 	*/
-	UserID string
+	UserID uint64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -76,7 +77,12 @@ func (o *AddManagerParams) bindUserID(rawData []string, hasKey bool, formats str
 	if err := validate.RequiredString("user_id", "query", raw); err != nil {
 		return err
 	}
-	o.UserID = raw
+
+	value, err := swag.ConvertUint64(raw)
+	if err != nil {
+		return errors.InvalidType("user_id", "query", "uint64", raw)
+	}
+	o.UserID = value
 
 	return nil
 }

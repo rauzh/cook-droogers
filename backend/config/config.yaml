@@ -14,3 +14,10 @@ postgres:
 kafka:
   kafka_endpoints: ["kafka:9092", "kafka2:9092", "kafka3:9092"]
   kafka_settings: null
+
+root:
+  username: "root"
+  password: "1337"
+
+log:
+  level: "info"

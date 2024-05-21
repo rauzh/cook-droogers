@@ -19,6 +19,7 @@ type IUserService interface {
 	Get(uint64) (*models.User, error)
 	Update(*models.User) error
 	UpdateType(uint64, models.UserType) error
+	GetForAdmin() ([]models.User, error)
 
 	SetRole(role models.UserType) error
 }
@@ -60,6 +61,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 
 	usr, err := usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can't create user: %w", err)
 	}
 	if usr != nil {
@@ -70,6 +72,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 
 	err = usrSvc.repo.Create(context.Background(), newUser)
 	if err != nil {
+		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can'r create user: %w", err)
 	}
 
@@ -125,4 +128,12 @@ func (usrSvc *UserService) SetRole(role models.UserType) error {
 		return fmt.Errorf("can't set user role with err %w", err)
 	}
 	return nil
+}
+
+func (usrSvc *UserService) GetForAdmin() ([]models.User, error) {
+	users, err := usrSvc.repo.GetForAdmin(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("can't get users with err %w", err)
+	}
+	return users, nil
 }

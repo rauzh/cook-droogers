@@ -301,13 +301,12 @@ paths:
         - in: query
           name: user_id
           required: true
-          type: string
+          type: integer
+          format: uint64
           description: "ID пользователя"
       responses:
         201:
           description: Manager successfully created
-          schema:
-            $ref: '#/definitions/ManagerDTO'
         403:
           description: Manager alredy exists
         500:

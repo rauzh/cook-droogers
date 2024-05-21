@@ -11,6 +11,8 @@ type Config struct {
 	StatFetchURLrauzh string        `yaml:"stat_fetcher_url"`
 	Postgres          PostgresFlags `yaml:"postgres"`
 	Kafka             KafkaConfig   `yaml:"kafka"`
+	Root              RootConfig    `yaml:"root"`
+	Log               LogConfig     `yaml:"log"`
 }
 
 type PostgresFlags struct {
@@ -24,6 +26,15 @@ type PostgresFlags struct {
 type KafkaConfig struct {
 	KafkaEndpoints []string       `yaml:"kafka_endpoints"`
 	KafkaSettings  *sarama.Config `yaml:"kafka_settings"`
+}
+
+type RootConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+type LogConfig struct {
+	Level string `yaml:"level"`
 }
 
 func ParseConfig() *Config {

@@ -80,6 +80,43 @@ func (mng *ManagerPgRepo) getManagedArtists(ctx context.Context, mngID uint64) (
 	return artists, nil
 }
 
+func (mng *ManagerPgRepo) GetForAdmin(ctx context.Context) ([]models.Manager, error) {
+	q := "SELECT manager_id, user_id FROM managers"
+
+	mans := make([]models.Manager, 0)
+
+	rows, err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryxContext(ctx, q)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return mans, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		man := models.Manager{}
+
+		err := rows.Scan(&man.ManagerID, &man.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		artists, err := mng.getManagedArtists(ctx, man.ManagerID)
+		if err != nil {
+			return nil, err
+		}
+
+		man.Artists = artists
+
+		mans = append(mans, man)
+	}
+
+	return mans, nil
+}
+
 func (mng *ManagerPgRepo) GetByUserID(ctx context.Context, userID uint64) (*models.Manager, error) {
 	q := "SELECT manager_id, user_id FROM managers WHERE user_id=$1"
 

@@ -12,6 +12,7 @@ type UserRepo interface {
 	Get(context.Context, uint64) (*models.User, error)
 	Update(context.Context, *models.User) error
 	UpdateType(ctx context.Context, userID uint64, typ models.UserType) error
+	GetForAdmin(ctx context.Context) ([]models.User, error)
 
 	SetRole(ctx context.Context, role models.UserType) error
 }
