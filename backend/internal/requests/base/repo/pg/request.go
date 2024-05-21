@@ -56,6 +56,26 @@ func (reqrepo *RequestPgRepo) GetAllByManagerID(ctx context.Context, mngID uint6
 	return reqs, nil
 }
 
+func (reqrepo *RequestPgRepo) GetByID(ctx context.Context, reqID uint64) (*base.Request, error) {
+	q := "SELECT request_id, status, type, creation_date, manager_id, user_id FROM requests WHERE user_id=$1"
+
+	req := base.Request{}
+
+	var mngID sql.NullInt64
+
+	err := reqrepo.txResolver.DefaultTrOrDB(ctx, reqrepo.db).QueryRowxContext(ctx, q, reqID).
+		Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
+	if err != nil {
+		return nil, err
+	}
+
+	if mngID.Valid {
+		req.ManagerID = uint64(mngID.Int64)
+	}
+
+	return &req, nil
+}
+
 func (reqrepo *RequestPgRepo) GetAllByUserID(ctx context.Context, userID uint64) ([]base.Request, error) {
 
 	q := "SELECT request_id, status, type, creation_date, manager_id, user_id FROM requests WHERE user_id=$1"

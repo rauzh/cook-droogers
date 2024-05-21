@@ -8,7 +8,6 @@ import (
 	"cookdroogers/internal/requests/sign_contract"
 	"cookdroogers/internal/requests/sign_contract/usecase"
 	"cookdroogers/models"
-	cdtime "cookdroogers/pkg/time"
 	"fmt"
 	"log/slog"
 )
@@ -82,21 +81,6 @@ func (menu *managerMenu) Loop() error {
 			fmt.Printf("Неверный пункт меню")
 		}
 	}
-}
-
-func (menu *managerMenu) applyPublishRequest() error {
-
-	fmt.Printf("%s", "Введите id релиза, который вы хотите опубликовать: ")
-	var releaseID uint64
-	_, _ = fmt.Scanf("%d", &releaseID)
-
-	fmt.Printf("%s", "Введите желаемую дату публикации (год месяц день): ")
-	var year, day, month int
-	_, _ = fmt.Scanf("%d %d %d", &year, &month, &day)
-
-	pubReq := publish.NewPublishRequest(menu.user.UserID, releaseID, cdtime.Date(year, month, day))
-
-	return menu.a.UseCases.PublishReqUC.Apply(pubReq)
 }
 
 func (menu *managerMenu) stats() {

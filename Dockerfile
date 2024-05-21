@@ -28,7 +28,7 @@ RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
 
 ENV PORT=8080
 
-# WORKDIR /app
+WORKDIR /app
 
-# CMD ["./cook_droogers"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
+# CMD ["tail", "-f", "/dev/null"]
