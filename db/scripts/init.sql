@@ -109,8 +109,6 @@ BEGIN
 
   cur_grade := (request.meta->>'grade')::integer;
 
-  raise notice 'cur grade is %', cur_grade;
-
   -- Если в желаемый день публикации уже есть релиз, снизить оценку
   IF (EXISTS (SELECT 1
         FROM publications
@@ -131,32 +129,27 @@ BEGIN
 
   -- Если жанр неактуален, снизить оценку
   IF ((WITH MonthlyStats AS (
-        SELECT genre, SUM(streams) AS total_streams
-        FROM tracks AS t
-        NATURAL JOIN stats AS s
+        SELECT genre, SUM(streams) AS total_streams FROM tracks AS t
+          NATURAL JOIN stats AS s
         WHERE s.creation_date >= NOW() - INTERVAL '3 MONTH'
         GROUP BY 1
       ), MostPopularGenre AS (
-        SELECT genre, total_streams
-        FROM MonthlyStats
+        SELECT genre, total_streams FROM MonthlyStats
         ORDER BY total_streams DESC
         LIMIT 1
       )
-      SELECT mg.genre
-      FROM MostPopularGenre AS mg)=(
-        SELECT tmp.genre FROM (SELECT genre, COUNT(*) AS genre_count
-        FROM tracks
-        WHERE (release_id)::text = request.meta->>'release_id'
-        GROUP BY genre
-        ORDER BY genre_count DESC
-        LIMIT 1
-      ) AS tmp )) THEN
+      SELECT mg.genre FROM MostPopularGenre AS mg)=(
+        SELECT tmp.genre FROM
+                  ( SELECT genre, COUNT(*) AS genre_count FROM tracks
+                    WHERE (release_id)::text = request.meta->>'release_id'
+                    GROUP BY genre
+                    ORDER BY genre_count DESC
+                    LIMIT 1
+                  ) AS tmp )) THEN
     cur_grade := cur_grade-1;
   END IF;
 
   request.meta = request.meta || ('{"grade": ' || cur_grade || '}')::jsonb;
-
-  raise notice 'new grade is %', cur_grade;
 
   UPDATE requests AS r SET meta=request.meta WHERE r.request_id=request.request_id;
 

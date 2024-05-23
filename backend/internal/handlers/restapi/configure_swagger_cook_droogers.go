@@ -372,7 +372,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		}
 
 		if req.ApplierID != user.UserID {
-			mngr, err := cdApp.Services.ManagerService.GetByUserID(user.UserID)
+			mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 			if err != nil || mngr.ManagerID != req.ManagerID {
 				return middleware.Error(403, "you have no rights to see this request")
 			}
@@ -491,9 +491,9 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		stats := make(map[string][]byte)
 
 		if user.Type == models.ManagerUser {
-			mngr, err := cdApp.Services.ManagerService.GetByUserID(user.UserID)
+			mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 			if err != nil {
-				return middleware.Error(500, "can't get manager info")
+				return middleware.Error(400, err.Error())
 			}
 			stats, err = cdApp.Services.ReportService.GetReportForManager(mngr.ManagerID)
 
@@ -513,11 +513,11 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			})
 
 		} else if user.Type == models.ArtistUser {
-			artistuser, err := cdApp.Services.ArtistService.GetByUserID(user.UserID)
+			artistuser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 			if err != nil {
-				return middleware.Error(500, "can't get artist info")
+				return middleware.Error(400, err.Error())
 			}
-			stats, err = cdApp.Services.ReportService.GetReportForArtist(artistuser.ManagerID)
+			stats, err = cdApp.Services.ReportService.GetReportForArtist(artistuser.ArtistID)
 
 			jsonMap := make(map[string]interface{})
 

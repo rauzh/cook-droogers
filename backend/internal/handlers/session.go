@@ -46,14 +46,14 @@ func LoginManager(authHeader string, app *app.App) (*models.Manager, error) {
 		return nil, errors.New("can't authorize")
 	}
 
-	mngr, err := app.Services.ManagerService.GetByUserID(user.UserID)
-	if err != nil {
-		return nil, errors.New("can't find manager")
-	}
-
 	err = app.Services.UserService.SetRole(models.ManagerUser)
 	if err != nil {
 		return nil, errors.New("can't set manager role")
+	}
+
+	mngr, err := app.Services.ManagerService.GetByUserID(user.UserID)
+	if err != nil {
+		return nil, errors.New("not a manager")
 	}
 
 	return mngr, nil
@@ -70,14 +70,14 @@ func LoginArtist(authHeader string, app *app.App) (*models.Artist, error) {
 		return nil, errors.New("can't authorize")
 	}
 
-	artist, err := app.Services.ArtistService.GetByUserID(user.UserID)
-	if err != nil {
-		return nil, errors.New("can't find artist")
-	}
-
 	err = app.Services.UserService.SetRole(models.ArtistUser)
 	if err != nil {
 		return nil, errors.New("can't set artist role")
+	}
+
+	artist, err := app.Services.ArtistService.GetByUserID(user.UserID)
+	if err != nil {
+		return nil, errors.New("not an artist")
 	}
 
 	return artist, nil
