@@ -85,12 +85,12 @@ func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) erro
 
 	ctx := context.Background()
 	return sctUseCase.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
-		if err := sctUseCase.artistRepo.Create(ctx, &artist); err != nil {
-			return fmt.Errorf("can't create artist %s with err %w", artist.Nickname, err)
-		}
-
 		if err := sctUseCase.userRepo.UpdateType(ctx, artist.UserID, models.ArtistUser); err != nil {
 			return fmt.Errorf("can't update user with err %w", err)
+		}
+
+		if err := sctUseCase.artistRepo.Create(ctx, &artist); err != nil {
+			return fmt.Errorf("can't create artist %s with err %w", artist.Nickname, err)
 		}
 
 		signReq.Status = base.ClosedRequest

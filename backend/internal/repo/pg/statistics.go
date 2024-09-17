@@ -46,9 +46,6 @@ func (stat *StatisticsPgRepo) GetForTrack(ctx context.Context, trackID uint64) (
 
 	rows, err := stat.txResolver.DefaultTrOrDB(ctx, stat.db).QueryxContext(ctx, q, trackID)
 
-	if errors.Is(err, sql.ErrNoRows) {
-		return stats, nil
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +60,10 @@ func (stat *StatisticsPgRepo) GetForTrack(ctx context.Context, trackID uint64) (
 		}
 
 		stats = append(stats, curStat)
+	}
+
+	if len(stats) == 0 {
+		return nil, errors.New("no stats")
 	}
 
 	return stats, nil

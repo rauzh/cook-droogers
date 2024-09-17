@@ -81,6 +81,7 @@ func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
 		menu, err := initManagerMenu(a, user, log)
 		if err != nil {
 			log.Error("Can't init manager menu: ", slog.Any("error", err))
+			break
 		}
 
 		err = menu.Loop()
@@ -94,6 +95,7 @@ func switchMenu(a *app.App, user *models.User, log *slog.Logger) (err error) {
 		menu, err := initArtistMenu(a, user, log)
 		if err != nil {
 			log.Error("Can't init artist menu: ", slog.Any("error", err))
+			break
 		}
 
 		err = menu.Loop()

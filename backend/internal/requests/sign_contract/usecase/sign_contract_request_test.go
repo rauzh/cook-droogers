@@ -12,6 +12,7 @@ import (
 	cdtime "cookdroogers/pkg/time"
 	"errors"
 	"github.com/stretchr/testify/mock"
+	"log/slog"
 	"testing"
 )
 
@@ -131,7 +132,7 @@ func TestSignContractRequestUseCase_Decline(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo)
+			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo, slog.Default())
 
 			// act
 			err = signReqUseCase.Decline(tt.in.signReq)
@@ -242,7 +243,7 @@ func TestSignContractRequestUseCase_Accept(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo)
+			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo, slog.Default())
 
 			// act
 			err = signReqUseCase.Accept(tt.in.signReq)
@@ -354,7 +355,7 @@ func TestSignContractRequestUseCase_Apply(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo)
+			signReqUseCase, err := NewSignContractRequestUseCase(f.userRepo, f.artistRepo, f.transactor, f.scBroker, f.signReqRepo, slog.Default())
 
 			// act
 			err = signReqUseCase.Apply(tt.in.signReq)

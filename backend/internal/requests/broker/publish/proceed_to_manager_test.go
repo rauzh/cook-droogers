@@ -17,8 +17,10 @@ import (
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
 	"errors"
-	"github.com/stretchr/testify/mock"
+	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type _depFields struct {
@@ -47,9 +49,9 @@ func _newMockPublishReqDepFields(t *testing.T) *_depFields {
 
 	statMockFetcher := statFetcher.NewStatFetcher(t)
 
-	trkSvc := trackService.NewTrackService(trkMockRepo)
-	rlsSvc := rlsService.NewReleaseService(trkSvc, transactionMock, rlsMockRepo)
-	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo, rlsSvc)
+	trkSvc := trackService.NewTrackService(trkMockRepo, slog.Default())
+	rlsSvc := rlsService.NewReleaseService(trkSvc, transactionMock, rlsMockRepo, slog.Default())
+	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo, rlsSvc, slog.Default())
 
 	critCollection, _ := criteria.BuildCollection(
 		&publish_criteria.ArtistReleaseLimitPerSeasonCriteriaFabric{PublicationRepo: pbcMockRepo, ArtistRepo: mockArtRepo},

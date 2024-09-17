@@ -2,7 +2,7 @@
 
 mode: "techUI"
 
-stat_fetcher_url: "127.0.0.1:1337"
+stat_fetcher_url: "http://data_server:1337"
 
 postgres:
   host: "postgres"
@@ -14,3 +14,10 @@ postgres:
 kafka:
   kafka_endpoints: ["kafka:9092", "kafka2:9092", "kafka3:9092"]
   kafka_settings: null
+
+root:
+  username: "root"
+  password: "1337"
+
+log:
+  level: "debug"

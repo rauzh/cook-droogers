@@ -1,0 +1,564 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Swagger-Cook-Droogers
+host: 0.0.0.0:13337
+basePath: /api
+tags:
+  - name: artist
+  - name: manager
+  - name: non-member
+  - name: guest
+
+securityDefinitions:
+  basicAuth:
+    type: basic
+
+schemes:
+  - http
+paths:
+
+# =================== STATS ====================
+
+  /stats:
+    get:
+      summary: Get stats
+      tags:
+        - artist
+        - manager
+      security:
+        - basicAuth: [ ]
+      operationId: getStats
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal error
+
+# =================== REQUESTS ===================
+
+  /requests:
+    get:
+      summary: Get requests
+      tags:
+        - non-member
+        - manager
+        - artist
+      security:
+        - basicAuth: [ ]
+      operationId: getRequests
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RequestDTO'
+        500:
+          description: Internal error
+
+  /requests/{req_id}:
+    get:
+      summary: Get specified request
+      tags:
+        - non-member
+        - manager
+        - artist
+      security:
+        - basicAuth: [ ]
+      operationId: getRequest
+      parameters:
+        - in: path
+          name: req_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID заявки"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/PublishRequestDTO'
+        500:
+          description: Internal error
+
+# =================== ARTIST ====================
+
+  /publish:
+    post:
+      summary: Create publish request
+      security:
+        - basicAuth: [ ]
+      tags:
+        - artist
+      operationId: publishReq
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: release_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID релиза"
+        - in: query
+          name: date
+          required: true
+          type: string
+          format: date
+          description: "Желаемая дата публикации"
+      responses:
+        201:
+          description: Request successfully created
+        403:
+          description: Invalid user type
+        400:
+          description: Invalid request fields
+        500:
+          description: Internal error
+
+  /releases:
+
+    get:
+      summary: Get releases
+      security:
+        - basicAuth: [ ]
+      tags:
+        - artist
+      operationId: getRelease
+      consumes:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReleaseDTO'
+        500:
+          description: Internal error
+
+    post:
+      summary: Upload release
+      security:
+        - basicAuth: [ ]
+      tags:
+        - artist
+      operationId: addRelease
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: title
+          required: true
+          type: string
+          description: "Название релиза"
+        - in: query
+          name: date
+          required: true
+          type: string
+          format: date
+          description: "Дата написания релиза"
+        - in: body
+          name: tracks
+          description: "Треки данного релиза"
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TrackDTO'
+      responses:
+        201:
+          description: Request successfully created
+        403:
+          description: Invalid user type
+        400:
+          description: Invalid request fields
+        500:
+          description: Internal error
+
+# =================== MANAGER ===================
+
+  /requests/{req_id}/accept:
+    post:
+      summary: Accept specified request
+      tags:
+        - manager
+      security:
+        - basicAuth: [ ]
+      operationId: acceptRequest
+      parameters:
+        - in: path
+          name: req_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID заявки"
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal error
+
+  /requests/{req_id}/decline:
+    post:
+      summary: Decline specified request
+      tags:
+        - manager
+      security:
+        - basicAuth: [ ]
+      operationId: declineRequest
+      parameters:
+        - in: path
+          name: req_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID заявки"
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal error
+
+  /fetch-stats:
+    post:
+      summary: Fetch statistics for manager's artists
+      tags:
+        - manager
+      security:
+        - basicAuth: [ ]
+      operationId: fetchStats
+      responses:
+        200:
+          description: Success
+        500:
+          description: Internal error
+
+# ================== NON-MEMBER ==================
+
+  /sign-contract:
+    post:
+      summary: Create sign request
+      security:
+        - basicAuth: [ ]
+      tags:
+        - non-member
+      operationId: signContract
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: nickname
+          required: true
+          type: string
+          description: "Псевдоним"
+      responses:
+        201:
+          description: Request successfully created
+        403:
+          description: Invalid user type
+        400:
+          description: Invalid request fields
+        500:
+          description: Internal error
+
+# ================== ADMIN ==================
+
+  /managers:
+    get:
+      summary: Get list of managers
+      tags:
+        - admin
+      operationId: getManagers
+      security:
+        - basicAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ManagerDTO'
+        500:
+          description: Internal error
+    post:
+      summary: Create manager
+      tags:
+        - admin
+      operationId: addManager
+      security:
+        - basicAuth: [ ]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID пользователя"
+      responses:
+        201:
+          description: Manager successfully created
+        403:
+          description: Manager alredy exists
+        500:
+          description: Internal error
+
+  /users:
+    get:
+      summary: Get list of users
+      tags:
+        - admin
+      operationId: getUsers
+      security:
+        - basicAuth: [ ]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDTO'
+        500:
+          description: Internal error
+
+# ================== GUEST ==================
+
+  /register:
+    post:
+      summary: Create new user
+      tags:
+        - guest
+      operationId: register
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: username
+          required: true
+          type: string
+          description: "Имя пользователя"
+        - in: query
+          name: email
+          required: true
+          type: string
+          format: email
+          description: "Email пользователя"
+        - in: query
+          name: password
+          required: true
+          type: string
+          description: "Пароль пользователя"
+
+      responses:
+        201:
+          description: User successfully created
+        403:
+          description: User alredy exists
+        500:
+          description: Internal error
+
+# ================== ALL ==================
+
+  /heartbeat:
+    get:
+      summary: Check health
+      responses:
+        200:
+          description: Success
+
+definitions:
+
+  RegUserDTO:
+    type: object
+    required:
+      - name
+      - email
+      - password
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      password:
+        type: string
+
+  UserDTO:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: uint64
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      password:
+        type: string
+      type:
+        type: integer
+        enum:
+          - 0  # NonMemberUser
+          - 1  # ManagerUser
+          - 2  # ArtistUser
+          - 3  # Admin
+
+  ManagerDTO:
+    type: object
+    properties:
+      manager_id:
+        type: integer
+        format: uint64
+      user_id:
+        type: integer
+        format: uint64
+      artists:
+        type: array
+        items:
+          type: integer
+          format: uint64
+
+  StatsDTO:
+    type: object
+    properties:
+      stat_id:
+        type: integer
+        format: uint64
+      date:
+        type: string
+        format: date
+      streams:
+        type: integer
+        format: uint64
+      likes:
+        type: integer
+        format: uint64
+      track_id:
+        type: integer
+        format: uint64
+
+  TrackDTO:
+    type: object
+    required:
+      - title
+      - duration
+      - genre
+      - type
+    properties:
+      track_id:
+        type: integer
+        format: uint64
+      title:
+        type: string
+      duration:
+        type: integer
+        format: uint64
+      genre:
+        type: string
+      type:
+        type: string
+      artists:
+        type: array
+        items:
+          type: integer
+          format: uint64
+
+  ReleaseDTO:
+    type: object
+    properties:
+      release_id:
+        type: integer
+        format: uint64
+      title:
+        type: string
+      status:
+        type: string
+        enum:
+          - Unpublished
+          - Published
+      date_creation:
+        type: string
+        format: date
+      tracks:
+        type: array
+        items:
+          type: integer
+          format: uint64
+      artist_id:
+        type: integer
+        format: uint64
+
+  RequestDTO:
+    type: object
+    properties:
+      request_id:
+        type: integer
+        format: uint64
+      type:
+        type: string
+        enum:
+          - Publish
+          - Sign
+      status:
+        type: string
+        enum:
+          - New
+          - Processing
+          - On approval
+          - Closed
+      date:
+        type: string
+        format: date
+      applier_id:
+        type: integer
+        format: uint64
+      manager_id:
+        type: integer
+        format: uint64
+
+  PublishRequestDTO:
+    type: object
+    properties:
+      base:
+        $ref: '#/definitions/RequestDTO'
+      release_id:
+        type: integer
+        format: uint64
+      grade:
+        type: integer
+      expected_date:
+        type: string
+        format: date
+      description:
+        type: string
+
+  SignRequestDTO:
+    type: object
+    properties:
+      base:
+        $ref: '#/definitions/RequestDTO'
+      nickname:
+        type: string
+      description:
+        type: string
+
+responses:
+  UnauthorizedError:
+    description: Authentication information is missing or invalid
+    headers:
+      WWW_Authenticate:
+        type: string

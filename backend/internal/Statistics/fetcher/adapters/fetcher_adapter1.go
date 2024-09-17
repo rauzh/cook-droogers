@@ -64,13 +64,13 @@ func (fetcher *StatFetcherAdapter) Fetch(tracks []models.Track) ([]models.Statis
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
-	statsExternal := []StatJSON{}
+	statsExternal := make([]StatJSON, 0)
 	err = json.Unmarshal(body, &statsExternal)
 	if err != nil {
 		return nil, err
 	}
 
-	statsInternal := make([]models.Statistics, len(statsExternal))
+	statsInternal := make([]models.Statistics, 0)
 	for idx, stat := range statsExternal {
 		statsInternal = append(statsInternal, models.Statistics{
 			Date:    stat.Date,

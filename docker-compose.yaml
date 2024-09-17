@@ -6,12 +6,24 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "13337:13337"
+    volumes:
+      - ./cook_droogers.log:/app/cook_droogers.log
+      - ./backend/config/config.yaml:/app/config.yaml
     depends_on:
       - kafka
       - kafka2
       - kafka3
       - postgres
+    networks:
+      - cookdroognet
+    
+  data_server:
+    build:
+      context: ./fetcher-host
+      dockerfile: Dockerfile
+    ports:
+      - "1337:1337"
     networks:
       - cookdroognet
 

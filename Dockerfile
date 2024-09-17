@@ -8,12 +8,15 @@ COPY . .
 
 WORKDIR /go/src/app/backend
 RUN go build -o cook_droogers cmd/cookdroogers/main.go
+RUN  go build -o rest-api internal/handlers/cmd/swagger-cook-droogers-server/main.go 
 
 WORKDIR  /app
 
 RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
     cp /go/src/app/backend/config/config.yaml /app/config.yaml && \
-    cp /go/src/app/backend/cmd/techUI/label_info.txt /app/label_info.txt
+    cp /go/src/app/backend/cmd/techUI/label_info.txt /app/label_info.txt && \
+    cp /go/src/app/backend/rest-api /app/rest-api
+    
 
 # #=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====
 
@@ -25,7 +28,7 @@ RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
 
 ENV PORT=8080
 
-# WORKDIR /app
+WORKDIR /app
 
-# CMD ["./cook_droogers"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
+# CMD ["tail", "-f", "/dev/null"]

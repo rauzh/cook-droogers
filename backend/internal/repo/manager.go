@@ -10,5 +10,6 @@ type ManagerRepo interface {
 	Create(context.Context, *models.Manager) error
 	Get(context.Context, uint64) (*models.Manager, error)
 	GetRandManagerID(context.Context) (uint64, error)
-	GetByUserID(ctx context.Context, userID uint64) (*models.Manager, error) // was implemented in "artist", but forgot to emplement here
+	GetByUserID(ctx context.Context, userID uint64) (*models.Manager, error)
+	GetForAdmin(ctx context.Context) ([]models.Manager, error)
 }
