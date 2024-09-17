@@ -123,10 +123,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Manager successfully created",
-            "schema": {
-              "$ref": "#/definitions/ManagerDTO"
-            }
+            "description": "Manager successfully created"
           },
           "403": {
             "description": "Manager alredy exists"
@@ -924,10 +921,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Manager successfully created",
-            "schema": {
-              "$ref": "#/definitions/ManagerDTO"
-            }
+            "description": "Manager successfully created"
           },
           "403": {
             "description": "Manager alredy exists"

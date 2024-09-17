@@ -10,8 +10,10 @@ import (
 	transacMock "cookdroogers/internal/transactor/mocks"
 	cdtime "cookdroogers/pkg/time"
 	"errors"
-	"github.com/stretchr/testify/mock"
+	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type _depFields struct {
@@ -141,7 +143,7 @@ func TestPublishRequestUseCase_proceedToManager(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			signReqHandler := InitSignContractProceedToManagerHandler(f.scBroker, f.signReqRepo, f.managerRepo)
+			signReqHandler := InitSignContractProceedToManagerHandler(f.scBroker, f.signReqRepo, f.managerRepo, slog.Default())
 
 			// act
 			err := signReqHandler.(*SignContractProceedToManagerHandler).proceedToManager(tt.in.signReq)

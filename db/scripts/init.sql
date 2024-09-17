@@ -149,6 +149,8 @@ BEGIN
     cur_grade := cur_grade-1;
   END IF;
 
+  RAISE NOTICE 'cur_grade = %', cur_grade;
+
   request.meta = request.meta || ('{"grade": ' || cur_grade || '}')::jsonb;
 
   UPDATE requests AS r SET meta=request.meta WHERE r.request_id=request.request_id;
@@ -215,23 +217,23 @@ EXECUTE PROCEDURE publication_manager_owner();
 
 -- ТРИГГЕР НА СОЗДАНИЕ ТРЕКА
 
-CREATE OR REPLACE FUNCTION insert_track_main_artist()
-RETURNS trigger AS $$
-BEGIN
-  -- Вставить новую запись в track_artist с владельцем трека (по релизу)
-  INSERT INTO track_artist (track_id, artist_id)
-  VALUES (NEW.track_id,(SELECT r.artist_id
-                    FROM tracks t JOIN releases r ON t.release_id=r.release_id
-                    WHERE t.track_id=NEW.track_id));
-  return new;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION insert_track_main_artist()
+-- RETURNS trigger AS $$
+-- BEGIN
+--   -- Вставить новую запись в track_artist с владельцем трека (по релизу)
+--   INSERT INTO track_artist (track_id, artist_id)
+--   VALUES (NEW.track_id,(SELECT r.artist_id
+--                     FROM tracks t JOIN releases r ON t.release_id=r.release_id
+--                     WHERE t.track_id=NEW.track_id));
+--   return new;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 DROP TRIGGER if EXISTS track_insert_track_artist ON tracks ;
-CREATE TRIGGER track_insert_track_artist
-AFTER INSERT ON tracks
-FOR EACH ROW
-EXECUTE PROCEDURE insert_track_main_artist();
+-- CREATE TRIGGER track_insert_track_artist
+-- AFTER INSERT ON tracks
+-- FOR EACH ROW
+-- EXECUTE PROCEDURE insert_track_main_artist();
 
 -- ТРИГГЕР НА ПРОВЕРКУ ВХОДНОЙ ЗАЯВКИ НА ПУБЛИКАЦИЮ
 

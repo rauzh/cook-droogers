@@ -3,8 +3,10 @@ package service
 import (
 	mocks "cookdroogers/internal/repo/mocks"
 	"cookdroogers/models"
-	"github.com/stretchr/testify/mock"
+	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +22,7 @@ func TestTrackService_Get(t *testing.T) {
 		Artists:  []uint64{82, 4},
 	}, nil).Once()
 
-	ts := NewTrackService(mockTrackRepo)
+	ts := NewTrackService(mockTrackRepo, slog.Default())
 
 	track, err := ts.Get(1234)
 	assert.Nil(t, err)

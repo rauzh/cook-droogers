@@ -20,4 +20,4 @@ root:
   password: "1337"
 
 log:
-  level: "info"
+  level: "debug"

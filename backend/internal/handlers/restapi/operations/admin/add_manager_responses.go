@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	"cookdroogers/internal/handlers/models"
 )
 
 // AddManagerCreatedCode is the HTTP code returned for type AddManagerCreated
@@ -22,11 +20,6 @@ AddManagerCreated Manager successfully created
 swagger:response addManagerCreated
 */
 type AddManagerCreated struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.ManagerDTO `json:"body,omitempty"`
 }
 
 // NewAddManagerCreated creates AddManagerCreated with default headers values
@@ -35,27 +28,12 @@ func NewAddManagerCreated() *AddManagerCreated {
 	return &AddManagerCreated{}
 }
 
-// WithPayload adds the payload to the add manager created response
-func (o *AddManagerCreated) WithPayload(payload *models.ManagerDTO) *AddManagerCreated {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the add manager created response
-func (o *AddManagerCreated) SetPayload(payload *models.ManagerDTO) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *AddManagerCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(201)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // AddManagerForbiddenCode is the HTTP code returned for type AddManagerForbidden

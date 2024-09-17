@@ -7,6 +7,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "13337:13337"
+    volumes:
+      - ./cook_droogers.log:/app/cook_droogers.log
+      - ./backend/config/config.yaml:/app/config.yaml
     depends_on:
       - kafka
       - kafka2
