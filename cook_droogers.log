@@ -1,7 +1,7 @@
-{"time":"2024-09-14T11:08:51.446897794Z","level":"INFO","msg":"init pubreq consumer handler"}
-{"time":"2024-09-14T11:08:56.029224004Z","level":"INFO","msg":"add pubreq consumer handler"}
-{"time":"2024-09-14T11:08:56.032089963Z","level":"INFO","msg":"init signreq consumer handler"}
-{"time":"2024-09-14T11:08:59.383063714Z","level":"INFO","msg":"add sign consumer handler"}
-{"time":"2024-09-14T11:08:59.395012714Z","level":"INFO","msg":"Serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":13337,"Zone":""}}
-{"time":"2024-09-14T17:59:19.758402543Z","level":"INFO","msg":"Shutting down... "}
-{"time":"2024-09-14T17:59:19.768284543Z","level":"INFO","msg":"Stopped serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":13337,"Zone":""}}
+{"time":"2024-09-20T14:01:21.702021711Z","level":"INFO","msg":"init pubreq consumer handler"}
+{"time":"2024-09-20T14:01:26.220717588Z","level":"INFO","msg":"add pubreq consumer handler"}
+{"time":"2024-09-20T14:01:26.221605172Z","level":"INFO","msg":"init signreq consumer handler"}
+{"time":"2024-09-20T14:01:29.608968548Z","level":"INFO","msg":"add sign consumer handler"}
+{"time":"2024-09-20T14:01:29.613240798Z","level":"INFO","msg":"Serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":13337,"Zone":""}}
+{"time":"2024-09-20T16:17:20.998281297Z","level":"INFO","msg":"Shutting down... "}
+{"time":"2024-09-20T16:17:21.00735363Z","level":"INFO","msg":"Stopped serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":13337,"Zone":""}}
