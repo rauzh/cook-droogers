@@ -2,80 +2,44 @@ package base
 
 import (
 	baseReqErrors "cookdroogers/internal/requests/base/errors"
-	cdtime "cookdroogers/pkg/time"
-	"errors"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"testing"
 )
 
-var dberr = errors.New("db err")
+// TEST_HW: mock-less test
+type BaseRequestSuite struct {
+	suite.Suite
+}
 
-// TEST WITHOUT MOCK / STUB
-func TestBaseRequest_Validate(t *testing.T) {
+func (s *BaseRequestSuite) TestBaseRequest_ValidateOK(t provider.T) {
+	t.Title("Validate: OK")
+	t.Tags("BaseRequest")
+	t.Parallel()
+	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
 
-	type args struct {
-		reqType RequestType
-	}
+		req := GetBaseRequestObject()
 
-	tests := []struct {
-		name   string
-		actor  *Request
-		in     *args
-		outErr error
+		err := req.Validate("Sign")
 
-		assert func(*testing.T)
-	}{
-		{
-			name: "OK",
-			actor: &Request{
-				RequestID: 1,
-				Type:      "Sign",
-				Status:    OnApprovalRequest,
-				Date:      cdtime.GetToday(),
-				ApplierID: 12,
-				ManagerID: 9,
-			},
-			in: &args{
-				reqType: "Sign",
-			},
-			outErr: nil,
+		sCtx.Assert().NoError(err)
+	})
+}
 
-			assert: func(t *testing.T) {
+func (s *BaseRequestSuite) TestBaseRequest_ValidateErrInvalidType(t provider.T) {
+	t.Title("Validate: OK")
+	t.Tags("BaseRequest")
+	t.Parallel()
+	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
 
-			},
-		},
-		{
-			name: "ErrInvalidType",
-			actor: &Request{
-				RequestID: 1,
-				Type:      "Sign",
-				Status:    OnApprovalRequest,
-				Date:      cdtime.GetToday(),
-				ApplierID: 12,
-				ManagerID: 9,
-			},
-			in: &args{
-				reqType: "Publish",
-			},
-			outErr: baseReqErrors.ErrInvalidType,
+		req := GetBaseRequestObject()
 
-			assert: func(t *testing.T) {
+		err := req.Validate("Publish")
 
-			}},
-	}
+		sCtx.Assert().ErrorIs(err, baseReqErrors.ErrInvalidType)
+	})
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			// act
-			err := tt.actor.Validate(tt.in.reqType)
-
-			// assert
-			if !errors.Is(err, tt.outErr) {
-				t.Errorf("got %v, want %v", err, tt.outErr)
-			}
-			if tt.assert != nil {
-				tt.assert(t)
-			}
-		})
-	}
+func TestBaseRequestSuiteRunner(t *testing.T) {
+	suite.RunSuite(t, new(BaseRequestSuite))
 }

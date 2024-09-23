@@ -3,10 +3,9 @@ package service
 import (
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/base/repo/mocks"
-	"cookdroogers/internal/requests/sign_contract"
-	cdtime "cookdroogers/pkg/time"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
+	"errors"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
 	"log/slog"
 	"testing"
@@ -19,7 +18,12 @@ type _depFields struct {
 	res interface{}
 }
 
-func _newMockSignReqDepFields(t *testing.T) *_depFields {
+// TEST_HW: default test
+type RequestServiceSuite struct {
+	suite.Suite
+}
+
+func _newMockSignReqDepFields(t provider.T) *_depFields {
 
 	mockReqRepo := mocks.NewRequestRepo(t)
 
@@ -31,251 +35,137 @@ func _newMockSignReqDepFields(t *testing.T) *_depFields {
 	return f
 }
 
-var testDBerr error = errors.New("some db err")
+func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDOK(t provider.T) {
+	t.Title("GetAllByManagerID: OK")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
 
-func TestRequestService_GetAllByManagerID(t *testing.T) {
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetAllByManagerID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
+			Return([]base.Request{
+				*base.GetBaseRequestObject(),
+			}, nil).Once()
 
-	type args struct {
-		id uint64
-	}
+		reqService := NewRequestService(df.reqRepo, df.logger)
 
-	tests := []struct {
-		name   string
-		in     *args
-		outErr error
+		reqs, err := reqService.GetAllByManagerID(uint64(7))
 
-		dependencies func(*_depFields)
-		assert       func(*testing.T, *_depFields, []base.Request)
-	}{
-		{
-			name: "OK",
-			in: &args{
-				id: 7,
-			},
-			outErr: nil,
-			dependencies: func(df *_depFields) {
-
-				df.reqRepo.EXPECT().GetAllByManagerID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return([]base.Request{
-						base.Request{
-							RequestID: 1,
-							Type:      sign_contract.SignRequest,
-							Status:    base.OnApprovalRequest,
-							Date:      cdtime.GetToday(),
-							ApplierID: 12,
-							ManagerID: 9,
-						},
-					}, nil).Once()
-			},
-			assert: func(t *testing.T, df *_depFields, reqs []base.Request) {
-				assert.Equal(t, []base.Request{
-					base.Request{
-						RequestID: 1,
-						Type:      sign_contract.SignRequest,
-						Status:    base.OnApprovalRequest,
-						Date:      cdtime.GetToday(),
-						ApplierID: 12,
-						ManagerID: 9,
-					},
-				}, reqs)
-			},
-		},
-		{
-			name: "DB err",
-			in: &args{
-				id: 7,
-			},
-			outErr: DBerr,
-			dependencies: func(df *_depFields) {
-				df.reqRepo.EXPECT().GetAllByManagerID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return(nil, testDBerr).Once()
-			},
-			assert: func(t *testing.T, df *_depFields, reqs []base.Request) {
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			f := _newMockSignReqDepFields(t)
-			if tt.dependencies != nil {
-				tt.dependencies(f)
-			}
-
-			reqService := NewRequestService(f.reqRepo, f.logger)
-
-			// act
-			reqs, err := reqService.GetAllByManagerID(tt.in.id)
-
-			// assert
-			if !errors.Is(err, tt.outErr) {
-				t.Errorf("got %v, want %v", err, tt.outErr)
-			}
-			if tt.assert != nil {
-				tt.assert(t, f, reqs)
-			}
-		})
-	}
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().NotNil(reqs)
+		sCtx.Assert().Equal([]base.Request{
+			*base.GetBaseRequestObject(),
+		}, reqs)
+	})
 }
 
-func TestRequestService_GetAllByUserID(t *testing.T) {
+func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDDbErr(t provider.T) {
+	t.Title("GetAllByManagerID: DBerr")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
 
-	type args struct {
-		id uint64
-	}
+		someDBerr := errors.New("some db err")
 
-	tests := []struct {
-		name   string
-		in     *args
-		outErr error
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetAllByManagerID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
+			Return(nil, someDBerr).Once()
 
-		dependencies func(*_depFields)
-		assert       func(*testing.T, *_depFields, []base.Request)
-	}{
-		{
-			name: "OK",
-			in: &args{
-				id: 7,
-			},
-			outErr: nil,
-			dependencies: func(df *_depFields) {
+		reqService := NewRequestService(df.reqRepo, df.logger)
 
-				df.reqRepo.EXPECT().GetAllByUserID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return([]base.Request{
-						base.Request{
-							RequestID: 1,
-							Type:      sign_contract.SignRequest,
-							Status:    base.OnApprovalRequest,
-							Date:      cdtime.GetToday(),
-							ApplierID: 12,
-							ManagerID: 9,
-						},
-					}, nil).Once()
-			},
-			assert: func(t *testing.T, df *_depFields, reqs []base.Request) {
-				assert.Equal(t, []base.Request{
-					base.Request{
-						RequestID: 1,
-						Type:      sign_contract.SignRequest,
-						Status:    base.OnApprovalRequest,
-						Date:      cdtime.GetToday(),
-						ApplierID: 12,
-						ManagerID: 9,
-					},
-				}, reqs)
-			},
-		},
-		{
-			name: "DB err",
-			in: &args{
-				id: 7,
-			},
-			outErr: DBerr,
-			dependencies: func(df *_depFields) {
-				df.reqRepo.EXPECT().GetAllByUserID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return(nil, testDBerr).Once()
-			},
-			assert: func(t *testing.T, df *_depFields, reqs []base.Request) {
-			},
-		},
-	}
+		reqs, err := reqService.GetAllByManagerID(uint64(7))
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			f := _newMockSignReqDepFields(t)
-			if tt.dependencies != nil {
-				tt.dependencies(f)
-			}
-
-			reqService := NewRequestService(f.reqRepo, f.logger)
-
-			// act
-			reqs, err := reqService.GetAllByUserID(tt.in.id)
-
-			// assert
-			if !errors.Is(err, tt.outErr) {
-				t.Errorf("got %v, want %v", err, tt.outErr)
-			}
-			if tt.assert != nil {
-				tt.assert(t, f, reqs)
-			}
-		})
-	}
+		sCtx.Assert().Nil(reqs)
+		sCtx.Assert().ErrorIs(err, DBerr)
+	})
 }
 
-func TestRequestService_GetByID(t *testing.T) {
+func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDOK(t provider.T) {
+	t.Title("GetAllByUserID: OK")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
 
-	type args struct {
-		id uint64
-	}
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetAllByUserID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
+			Return([]base.Request{
+				*base.GetBaseRequestObject(),
+			}, nil).Once()
 
-	mockRetReq := &base.Request{
-		RequestID: 1,
-		Type:      sign_contract.SignRequest,
-		Status:    base.OnApprovalRequest,
-		Date:      cdtime.GetToday(),
-		ApplierID: 12,
-		ManagerID: 9,
-	}
+		reqService := NewRequestService(df.reqRepo, df.logger)
 
-	tests := []struct {
-		name   string
-		in     *args
-		outErr error
+		reqs, err := reqService.GetAllByUserID(uint64(7))
 
-		dependencies func(*_depFields)
-		assert       func(*testing.T, *_depFields, *base.Request)
-	}{
-		{
-			name: "OK",
-			in: &args{
-				id: 7,
-			},
-			outErr: nil,
-			dependencies: func(df *_depFields) {
-				df.reqRepo.EXPECT().GetByID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return(mockRetReq, nil).Once()
-			},
-			assert: func(t *testing.T, df *_depFields, req *base.Request) {
-				assert.Equal(t, mockRetReq, req)
-			},
-		},
-		{
-			name: "DB err",
-			in: &args{
-				id: 7,
-			},
-			outErr: DBerr,
-			dependencies: func(df *_depFields) {
-				df.reqRepo.EXPECT().GetByID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
-					Return(nil, testDBerr).Once()
-			},
-			assert: nil,
-		},
-	}
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().NotNil(reqs)
+		sCtx.Assert().Equal([]base.Request{
+			*base.GetBaseRequestObject(),
+		}, reqs)
+	})
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDDbErr(t provider.T) {
+	t.Title("GetAllByUserID: DBerr")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
 
-			f := _newMockSignReqDepFields(t)
-			if tt.dependencies != nil {
-				tt.dependencies(f)
-			}
+		someDBerr := errors.New("some db err")
 
-			reqService := NewRequestService(f.reqRepo, f.logger)
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetAllByUserID(mock.AnythingOfType("context.backgroundCtx"), uint64(7)).
+			Return(nil, someDBerr).Once()
 
-			// act
-			req, err := reqService.GetByID(tt.in.id)
+		reqService := NewRequestService(df.reqRepo, df.logger)
 
-			// assert
-			if !errors.Is(err, tt.outErr) {
-				t.Errorf("got %v, want %v", err, tt.outErr)
-			}
-			if tt.assert != nil {
-				tt.assert(t, f, req)
-			}
-		})
-	}
+		reqs, err := reqService.GetAllByUserID(uint64(7))
+
+		sCtx.Assert().Nil(reqs)
+		sCtx.Assert().ErrorIs(err, DBerr)
+	})
+}
+
+func (s *RequestServiceSuite) TestGetCoach_GetByIDOK(t provider.T) {
+	t.Title("GetByID: OK")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
+
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetByID(mock.AnythingOfType("context.backgroundCtx"), uint64(1)).
+			Return(base.GetBaseRequestObject(), nil).Once()
+
+		reqService := NewRequestService(df.reqRepo, df.logger)
+
+		req, err := reqService.GetByID(uint64(1))
+
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().NotNil(req)
+		sCtx.Assert().Equal(base.GetBaseRequestObject(), req)
+	})
+}
+
+func (s *RequestServiceSuite) TestGetCoach_GetByIDDbErr(t provider.T) {
+	t.Title("GetByID: DBerr")
+	t.Tags("RequestService")
+	t.Parallel()
+	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
+
+		someDBerr := errors.New("some db err")
+
+		df := _newMockSignReqDepFields(t)
+		df.reqRepo.EXPECT().GetByID(mock.AnythingOfType("context.backgroundCtx"), uint64(1)).
+			Return(nil, someDBerr).Once()
+
+		reqService := NewRequestService(df.reqRepo, df.logger)
+
+		reqs, err := reqService.GetByID(uint64(1))
+
+		sCtx.Assert().Nil(reqs)
+		sCtx.Assert().ErrorIs(err, DBerr)
+	})
+}
+
+func TestRequestServiceSuiteRunner(t *testing.T) {
+	suite.RunSuite(t, new(RequestServiceSuite))
 }

@@ -62,3 +62,15 @@ func InitDateStatus(req *Request) {
 	req.Status = NewRequest
 	req.Date = cdtime.GetToday()
 }
+
+// TEST_HW: object_mother
+func GetBaseRequestObject() *Request {
+	return &Request{
+		RequestID: 1,
+		Type:      "Sign",
+		Status:    OnApprovalRequest,
+		Date:      cdtime.GetToday(),
+		ApplierID: 12,
+		ManagerID: 9,
+	}
+}
