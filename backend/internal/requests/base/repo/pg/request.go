@@ -5,15 +5,17 @@ import (
 	"cookdroogers/internal/requests/base"
 	repo "cookdroogers/internal/requests/base/repo"
 	"database/sql"
-	"errors"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type RequestPgRepo struct {
 	db         *sqlx.DB
 	txResolver *trmsqlx.CtxGetter
 }
+
+var PgDbErr = errors.New("error in postgres repo")
 
 func NewRequestPgRepo(db *sql.DB) repo.RequestRepo {
 	dbx := sqlx.NewDb(db, "pgx")
@@ -33,7 +35,7 @@ func (reqrepo *RequestPgRepo) GetAllByManagerID(ctx context.Context, mngID uint6
 		return reqs, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -44,7 +46,7 @@ func (reqrepo *RequestPgRepo) GetAllByManagerID(ctx context.Context, mngID uint6
 
 		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		if mngID.Valid {
@@ -66,7 +68,7 @@ func (reqrepo *RequestPgRepo) GetByID(ctx context.Context, reqID uint64) (*base.
 	err := reqrepo.txResolver.DefaultTrOrDB(ctx, reqrepo.db).QueryRowxContext(ctx, q, reqID).
 		Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	if mngID.Valid {
@@ -88,7 +90,7 @@ func (reqrepo *RequestPgRepo) GetAllByUserID(ctx context.Context, userID uint64)
 		return reqs, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -100,7 +102,7 @@ func (reqrepo *RequestPgRepo) GetAllByUserID(ctx context.Context, userID uint64)
 
 		err := rows.Scan(&req.RequestID, &req.Status, &req.Type, &req.Date, &mngID, &req.ApplierID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		if mngID.Valid {
