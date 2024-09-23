@@ -20,7 +20,6 @@ const (
 	MaxNicknameLen = 128
 )
 
-// added because it's better to create via constructor
 func NewSignContractRequest(applierID uint64, nickname string) base.IRequest {
 
 	return &SignContractRequest{
