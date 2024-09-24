@@ -3,6 +3,7 @@ module cookdroogers
 go 1.22.1
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/IBM/sarama v1.43.1
 	github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2 v2.0.0-rc8
 	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.0-rc8

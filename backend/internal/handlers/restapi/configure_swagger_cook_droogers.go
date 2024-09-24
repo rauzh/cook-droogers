@@ -122,7 +122,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 
 		mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
-			return middleware.Error(400, err.Error())
+			return middleware.Error(403, err.Error())
 		}
 
 		reqs, err := cdApp.Services.RequestService.GetAllByManagerID(mngr.ManagerID)
@@ -194,7 +194,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 
 		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
-			return middleware.Error(400, err.Error())
+			return middleware.Error(403, err.Error())
 		}
 
 		release := &models.Release{
@@ -331,12 +331,12 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 
 		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
-			return middleware.Error(400, err.Error())
+			return middleware.Error(403, err.Error())
 		}
 
 		releases, err := cdApp.Services.ReleaseService.GetAllByArtist(artistUser.ArtistID)
 		if err != nil {
-			return middleware.Error(400, "can't get releases")
+			return middleware.Error(500, "can't get releases")
 		}
 
 		releasesDTO := make([]modelsDTO.ReleaseDTO, len(releases))

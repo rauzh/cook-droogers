@@ -17,7 +17,7 @@ func GetToday() time.Time {
 }
 
 func GetEndOfContract() time.Time {
-	return time.Now().AddDate(YearsContract, MonthsContract, DaysContract)
+	return GetToday().AddDate(YearsContract, MonthsContract, DaysContract)
 }
 
 func RelevantPeriod() time.Time {

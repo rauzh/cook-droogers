@@ -8,6 +8,7 @@ import (
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	sqlx "github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type ArtistPgRepo struct {
@@ -32,7 +33,7 @@ func (art *ArtistPgRepo) Get(ctx context.Context, id uint64) (*models.Artist, er
 		&artist.UserID, &artist.ManagerID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &artist, nil
@@ -49,7 +50,7 @@ func (art *ArtistPgRepo) GetByUserID(ctx context.Context, id uint64) (*models.Ar
 		&artist.UserID, &artist.ManagerID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &artist, nil
@@ -65,7 +66,7 @@ func (art *ArtistPgRepo) Update(ctx context.Context, artist *models.Artist) erro
 		&artist.UserID, &artist.ManagerID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return nil
@@ -80,7 +81,7 @@ func (art *ArtistPgRepo) Create(ctx context.Context, artist *models.Artist) erro
 		artist.UserID, artist.Nickname, artist.ContractTerm, artist.Activity, artist.ManagerID).Scan(&artistID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	artist.ArtistID = artistID

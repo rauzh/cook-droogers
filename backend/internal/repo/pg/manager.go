@@ -6,7 +6,8 @@ import (
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"database/sql"
-	"errors"
+	"github.com/pkg/errors"
+
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -33,7 +34,7 @@ func (mng *ManagerPgRepo) Create(ctx context.Context, manager *models.Manager) e
 			manager.UserID).Scan(&managerID)
 
 		if err != nil {
-			return err
+			return errors.Wrap(PgDbErr, err.Error())
 		}
 
 		for _, artistID := range manager.Artists {
@@ -43,7 +44,7 @@ func (mng *ManagerPgRepo) Create(ctx context.Context, manager *models.Manager) e
 				managerID, artistID)
 
 			if err != nil {
-				return err
+				return errors.Wrap(PgDbErr, err.Error())
 			}
 		}
 
@@ -64,7 +65,7 @@ func (mng *ManagerPgRepo) getManagedArtists(ctx context.Context, mngID uint64) (
 		return artists, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
