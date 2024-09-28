@@ -14,8 +14,6 @@ import (
 type _depFields struct {
 	reqRepo *mocks.RequestRepo
 	logger  *slog.Logger
-
-	res interface{}
 }
 
 // TEST_HW: default test
@@ -35,7 +33,7 @@ func _newMockSignReqDepFields(t provider.T) *_depFields {
 	return f
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDOK(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetAllByManagerIDOK(t provider.T) {
 	t.Title("GetAllByManagerID: OK")
 	t.Tags("RequestService")
 	t.Parallel()
@@ -59,7 +57,7 @@ func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDOK(t provider.T) {
 	})
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDDbErr(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetAllByManagerIDDbErr(t provider.T) {
 	t.Title("GetAllByManagerID: DBerr")
 	t.Tags("RequestService")
 	t.Parallel()
@@ -80,7 +78,7 @@ func (s *RequestServiceSuite) TestGetCoach_GetAllByManagerIDDbErr(t provider.T) 
 	})
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDOK(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetAllByUserIDOK(t provider.T) {
 	t.Title("GetAllByUserID: OK")
 	t.Tags("RequestService")
 	t.Parallel()
@@ -104,7 +102,7 @@ func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDOK(t provider.T) {
 	})
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDDbErr(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetAllByUserIDDbErr(t provider.T) {
 	t.Title("GetAllByUserID: DBerr")
 	t.Tags("RequestService")
 	t.Parallel()
@@ -125,7 +123,7 @@ func (s *RequestServiceSuite) TestGetCoach_GetAllByUserIDDbErr(t provider.T) {
 	})
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetByIDOK(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetByIDOK(t provider.T) {
 	t.Title("GetByID: OK")
 	t.Tags("RequestService")
 	t.Parallel()
@@ -145,7 +143,7 @@ func (s *RequestServiceSuite) TestGetCoach_GetByIDOK(t provider.T) {
 	})
 }
 
-func (s *RequestServiceSuite) TestGetCoach_GetByIDDbErr(t provider.T) {
+func (s *RequestServiceSuite) TestRequestService_GetByIDDbErr(t provider.T) {
 	t.Title("GetByID: DBerr")
 	t.Tags("RequestService")
 	t.Parallel()

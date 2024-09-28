@@ -5,10 +5,10 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
-	"errors"
 	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type UserPgRepo struct {
@@ -31,7 +31,7 @@ func (usr *UserPgRepo) Create(ctx context.Context, user *models.User) error {
 		user.Name, user.Email, user.Type, user.Password).Scan(&userID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	user.UserID = userID
@@ -48,7 +48,7 @@ func (usr *UserPgRepo) GetByEmail(ctx context.Context, email string) (*models.Us
 		&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &user, nil
