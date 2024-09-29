@@ -79,32 +79,12 @@ func (menu *managerMenu) Loop() error {
 
 func (menu *managerMenu) stats() {
 
-	report, err := menu.a.Services.ReportService.GetReportForManager(menu.manager.ManagerID)
-	if err != nil {
-		menu.log.Error("Can't get stats: ", slog.Any("error", err))
-	}
-
-	fmt.Printf("%s: %s\n\n", "relevant_genre", string(report["relevant_genre"]))
-	fmt.Printf("%s: %s\n\n", "artists_stats", string(report["artists_stats"]))
 }
 
 func (menu *managerMenu) fetchStats() error {
-	var errr error
-	for _, artistID := range menu.manager.Artists {
-		releases, err := menu.a.Services.ReleaseService.GetAllByArtist(artistID)
-		if err != nil {
-			return err
-		}
-		for _, release := range releases {
-			err = menu.a.Services.StatService.FetchByRelease(&release)
-			if err != nil {
-				fmt.Println(err, " for release ", release.ReleaseID)
-				errr = err
-			}
-		}
-	}
 
-	return errr
+	return nil
+
 }
 
 func (menu *managerMenu) lookupReqs() error {

@@ -10,7 +10,6 @@ import (
 	"cookdroogers/internal/requests/publish"
 	"cookdroogers/internal/requests/publish/errors"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
-	statService "cookdroogers/internal/statistics/service"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"fmt"
@@ -18,7 +17,6 @@ import (
 )
 
 type PublishRequestUseCase struct {
-	statService     statService.IStatisticsService
 	publicationRepo repo.PublicationRepo
 	releaseRepo     repo.ReleaseRepo
 	artistRepo      repo.ArtistRepo
@@ -31,7 +29,6 @@ type PublishRequestUseCase struct {
 }
 
 func NewPublishRequestUseCase(
-	statService statService.IStatisticsService,
 	publicationRepo repo.PublicationRepo,
 	releaseRepo repo.ReleaseRepo,
 	artistRepo repo.ArtistRepo,
@@ -42,7 +39,6 @@ func NewPublishRequestUseCase(
 ) (base.IRequestUseCase, error) {
 
 	publishUseCase := &PublishRequestUseCase{
-		statService:     statService,
 		publicationRepo: publicationRepo,
 		releaseRepo:     releaseRepo,
 		artistRepo:      artistRepo,

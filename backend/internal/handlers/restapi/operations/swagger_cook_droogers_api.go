@@ -19,11 +19,14 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"cookdroogers/internal/handlers/restapi/operations/admin"
 	"cookdroogers/internal/handlers/restapi/operations/artist"
-	"cookdroogers/internal/handlers/restapi/operations/guest"
+	"cookdroogers/internal/handlers/restapi/operations/auth"
 	"cookdroogers/internal/handlers/restapi/operations/manager"
-	"cookdroogers/internal/handlers/restapi/operations/non_member"
+	"cookdroogers/internal/handlers/restapi/operations/releases"
+	"cookdroogers/internal/handlers/restapi/operations/requests"
+	"cookdroogers/internal/handlers/restapi/operations/tracks"
+	"cookdroogers/internal/handlers/restapi/operations/user"
+	"cookdroogers/internal/handlers/restapi/operations/users"
 )
 
 // NewSwaggerCookDroogersAPI creates a new SwaggerCookDroogers instance
@@ -51,47 +54,59 @@ func NewSwaggerCookDroogersAPI(spec *loads.Document) *SwaggerCookDroogersAPI {
 		GetHeartbeatHandler: GetHeartbeatHandlerFunc(func(params GetHeartbeatParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetHeartbeat has not yet been implemented")
 		}),
-		ManagerAcceptRequestHandler: manager.AcceptRequestHandlerFunc(func(params manager.AcceptRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.AcceptRequest has not yet been implemented")
+		RequestsAcceptRequestHandler: requests.AcceptRequestHandlerFunc(func(params requests.AcceptRequestParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.AcceptRequest has not yet been implemented")
 		}),
-		AdminAddManagerHandler: admin.AddManagerHandlerFunc(func(params admin.AddManagerParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.AddManager has not yet been implemented")
+		ManagerAddManagerHandler: manager.AddManagerHandlerFunc(func(params manager.AddManagerParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation manager.AddManager has not yet been implemented")
 		}),
-		ArtistAddReleaseHandler: artist.AddReleaseHandlerFunc(func(params artist.AddReleaseParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.AddRelease has not yet been implemented")
+		ReleasesAddReleaseHandler: releases.AddReleaseHandlerFunc(func(params releases.AddReleaseParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation releases.AddRelease has not yet been implemented")
 		}),
-		ManagerDeclineRequestHandler: manager.DeclineRequestHandlerFunc(func(params manager.DeclineRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.DeclineRequest has not yet been implemented")
+		RequestsDeclineRequestHandler: requests.DeclineRequestHandlerFunc(func(params requests.DeclineRequestParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.DeclineRequest has not yet been implemented")
 		}),
-		ManagerFetchStatsHandler: manager.FetchStatsHandlerFunc(func(params manager.FetchStatsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.FetchStats has not yet been implemented")
+		ArtistGetArtistByIDHandler: artist.GetArtistByIDHandlerFunc(func(params artist.GetArtistByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation artist.GetArtistByID has not yet been implemented")
 		}),
-		AdminGetManagersHandler: admin.GetManagersHandlerFunc(func(params admin.GetManagersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.GetManagers has not yet been implemented")
+		ManagerGetManagerByIDHandler: manager.GetManagerByIDHandlerFunc(func(params manager.GetManagerByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation manager.GetManagerByID has not yet been implemented")
 		}),
-		ArtistGetReleaseHandler: artist.GetReleaseHandlerFunc(func(params artist.GetReleaseParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.GetRelease has not yet been implemented")
+		ManagerGetManagersHandler: manager.GetManagersHandlerFunc(func(params manager.GetManagersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation manager.GetManagers has not yet been implemented")
 		}),
-		NonMemberGetRequestHandler: non_member.GetRequestHandlerFunc(func(params non_member.GetRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation non_member.GetRequest has not yet been implemented")
+		ReleasesGetReleaseHandler: releases.GetReleaseHandlerFunc(func(params releases.GetReleaseParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation releases.GetRelease has not yet been implemented")
 		}),
-		NonMemberGetRequestsHandler: non_member.GetRequestsHandlerFunc(func(params non_member.GetRequestsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation non_member.GetRequests has not yet been implemented")
+		ReleasesGetReleaseByIDHandler: releases.GetReleaseByIDHandlerFunc(func(params releases.GetReleaseByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation releases.GetReleaseByID has not yet been implemented")
 		}),
-		ArtistGetStatsHandler: artist.GetStatsHandlerFunc(func(params artist.GetStatsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.GetStats has not yet been implemented")
+		RequestsGetRequestHandler: requests.GetRequestHandlerFunc(func(params requests.GetRequestParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.GetRequest has not yet been implemented")
 		}),
-		AdminGetUsersHandler: admin.GetUsersHandlerFunc(func(params admin.GetUsersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation admin.GetUsers has not yet been implemented")
+		RequestsGetRequestsHandler: requests.GetRequestsHandlerFunc(func(params requests.GetRequestsParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.GetRequests has not yet been implemented")
 		}),
-		ArtistPublishReqHandler: artist.PublishReqHandlerFunc(func(params artist.PublishReqParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.PublishReq has not yet been implemented")
+		TracksGetTrackByIDHandler: tracks.GetTrackByIDHandlerFunc(func(params tracks.GetTrackByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tracks.GetTrackByID has not yet been implemented")
 		}),
-		GuestRegisterHandler: guest.RegisterHandlerFunc(func(params guest.RegisterParams) middleware.Responder {
-			return middleware.NotImplemented("operation guest.Register has not yet been implemented")
+		UsersGetUserByIDHandler: users.GetUserByIDHandlerFunc(func(params users.GetUserByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation users.GetUserByID has not yet been implemented")
 		}),
-		NonMemberSignContractHandler: non_member.SignContractHandlerFunc(func(params non_member.SignContractParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation non_member.SignContract has not yet been implemented")
+		UserGetUsersHandler: user.GetUsersHandlerFunc(func(params user.GetUsersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation user.GetUsers has not yet been implemented")
+		}),
+		AuthLoginHandler: auth.LoginHandlerFunc(func(params auth.LoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation auth.Login has not yet been implemented")
+		}),
+		RequestsPublishReqHandler: requests.PublishReqHandlerFunc(func(params requests.PublishReqParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.PublishReq has not yet been implemented")
+		}),
+		AuthRegisterHandler: auth.RegisterHandlerFunc(func(params auth.RegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation auth.Register has not yet been implemented")
+		}),
+		RequestsSignContractHandler: requests.SignContractHandlerFunc(func(params requests.SignContractParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation requests.SignContract has not yet been implemented")
 		}),
 
 		// Applies when the Authorization header is set with the Basic scheme
@@ -145,34 +160,42 @@ type SwaggerCookDroogersAPI struct {
 
 	// GetHeartbeatHandler sets the operation handler for the get heartbeat operation
 	GetHeartbeatHandler GetHeartbeatHandler
-	// ManagerAcceptRequestHandler sets the operation handler for the accept request operation
-	ManagerAcceptRequestHandler manager.AcceptRequestHandler
-	// AdminAddManagerHandler sets the operation handler for the add manager operation
-	AdminAddManagerHandler admin.AddManagerHandler
-	// ArtistAddReleaseHandler sets the operation handler for the add release operation
-	ArtistAddReleaseHandler artist.AddReleaseHandler
-	// ManagerDeclineRequestHandler sets the operation handler for the decline request operation
-	ManagerDeclineRequestHandler manager.DeclineRequestHandler
-	// ManagerFetchStatsHandler sets the operation handler for the fetch stats operation
-	ManagerFetchStatsHandler manager.FetchStatsHandler
-	// AdminGetManagersHandler sets the operation handler for the get managers operation
-	AdminGetManagersHandler admin.GetManagersHandler
-	// ArtistGetReleaseHandler sets the operation handler for the get release operation
-	ArtistGetReleaseHandler artist.GetReleaseHandler
-	// NonMemberGetRequestHandler sets the operation handler for the get request operation
-	NonMemberGetRequestHandler non_member.GetRequestHandler
-	// NonMemberGetRequestsHandler sets the operation handler for the get requests operation
-	NonMemberGetRequestsHandler non_member.GetRequestsHandler
-	// ArtistGetStatsHandler sets the operation handler for the get stats operation
-	ArtistGetStatsHandler artist.GetStatsHandler
-	// AdminGetUsersHandler sets the operation handler for the get users operation
-	AdminGetUsersHandler admin.GetUsersHandler
-	// ArtistPublishReqHandler sets the operation handler for the publish req operation
-	ArtistPublishReqHandler artist.PublishReqHandler
-	// GuestRegisterHandler sets the operation handler for the register operation
-	GuestRegisterHandler guest.RegisterHandler
-	// NonMemberSignContractHandler sets the operation handler for the sign contract operation
-	NonMemberSignContractHandler non_member.SignContractHandler
+	// RequestsAcceptRequestHandler sets the operation handler for the accept request operation
+	RequestsAcceptRequestHandler requests.AcceptRequestHandler
+	// ManagerAddManagerHandler sets the operation handler for the add manager operation
+	ManagerAddManagerHandler manager.AddManagerHandler
+	// ReleasesAddReleaseHandler sets the operation handler for the add release operation
+	ReleasesAddReleaseHandler releases.AddReleaseHandler
+	// RequestsDeclineRequestHandler sets the operation handler for the decline request operation
+	RequestsDeclineRequestHandler requests.DeclineRequestHandler
+	// ArtistGetArtistByIDHandler sets the operation handler for the get artist by ID operation
+	ArtistGetArtistByIDHandler artist.GetArtistByIDHandler
+	// ManagerGetManagerByIDHandler sets the operation handler for the get manager by ID operation
+	ManagerGetManagerByIDHandler manager.GetManagerByIDHandler
+	// ManagerGetManagersHandler sets the operation handler for the get managers operation
+	ManagerGetManagersHandler manager.GetManagersHandler
+	// ReleasesGetReleaseHandler sets the operation handler for the get release operation
+	ReleasesGetReleaseHandler releases.GetReleaseHandler
+	// ReleasesGetReleaseByIDHandler sets the operation handler for the get release by ID operation
+	ReleasesGetReleaseByIDHandler releases.GetReleaseByIDHandler
+	// RequestsGetRequestHandler sets the operation handler for the get request operation
+	RequestsGetRequestHandler requests.GetRequestHandler
+	// RequestsGetRequestsHandler sets the operation handler for the get requests operation
+	RequestsGetRequestsHandler requests.GetRequestsHandler
+	// TracksGetTrackByIDHandler sets the operation handler for the get track by ID operation
+	TracksGetTrackByIDHandler tracks.GetTrackByIDHandler
+	// UsersGetUserByIDHandler sets the operation handler for the get user by ID operation
+	UsersGetUserByIDHandler users.GetUserByIDHandler
+	// UserGetUsersHandler sets the operation handler for the get users operation
+	UserGetUsersHandler user.GetUsersHandler
+	// AuthLoginHandler sets the operation handler for the login operation
+	AuthLoginHandler auth.LoginHandler
+	// RequestsPublishReqHandler sets the operation handler for the publish req operation
+	RequestsPublishReqHandler requests.PublishReqHandler
+	// AuthRegisterHandler sets the operation handler for the register operation
+	AuthRegisterHandler auth.RegisterHandler
+	// RequestsSignContractHandler sets the operation handler for the sign contract operation
+	RequestsSignContractHandler requests.SignContractHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -257,47 +280,59 @@ func (o *SwaggerCookDroogersAPI) Validate() error {
 	if o.GetHeartbeatHandler == nil {
 		unregistered = append(unregistered, "GetHeartbeatHandler")
 	}
-	if o.ManagerAcceptRequestHandler == nil {
-		unregistered = append(unregistered, "manager.AcceptRequestHandler")
+	if o.RequestsAcceptRequestHandler == nil {
+		unregistered = append(unregistered, "requests.AcceptRequestHandler")
 	}
-	if o.AdminAddManagerHandler == nil {
-		unregistered = append(unregistered, "admin.AddManagerHandler")
+	if o.ManagerAddManagerHandler == nil {
+		unregistered = append(unregistered, "manager.AddManagerHandler")
 	}
-	if o.ArtistAddReleaseHandler == nil {
-		unregistered = append(unregistered, "artist.AddReleaseHandler")
+	if o.ReleasesAddReleaseHandler == nil {
+		unregistered = append(unregistered, "releases.AddReleaseHandler")
 	}
-	if o.ManagerDeclineRequestHandler == nil {
-		unregistered = append(unregistered, "manager.DeclineRequestHandler")
+	if o.RequestsDeclineRequestHandler == nil {
+		unregistered = append(unregistered, "requests.DeclineRequestHandler")
 	}
-	if o.ManagerFetchStatsHandler == nil {
-		unregistered = append(unregistered, "manager.FetchStatsHandler")
+	if o.ArtistGetArtistByIDHandler == nil {
+		unregistered = append(unregistered, "artist.GetArtistByIDHandler")
 	}
-	if o.AdminGetManagersHandler == nil {
-		unregistered = append(unregistered, "admin.GetManagersHandler")
+	if o.ManagerGetManagerByIDHandler == nil {
+		unregistered = append(unregistered, "manager.GetManagerByIDHandler")
 	}
-	if o.ArtistGetReleaseHandler == nil {
-		unregistered = append(unregistered, "artist.GetReleaseHandler")
+	if o.ManagerGetManagersHandler == nil {
+		unregistered = append(unregistered, "manager.GetManagersHandler")
 	}
-	if o.NonMemberGetRequestHandler == nil {
-		unregistered = append(unregistered, "non_member.GetRequestHandler")
+	if o.ReleasesGetReleaseHandler == nil {
+		unregistered = append(unregistered, "releases.GetReleaseHandler")
 	}
-	if o.NonMemberGetRequestsHandler == nil {
-		unregistered = append(unregistered, "non_member.GetRequestsHandler")
+	if o.ReleasesGetReleaseByIDHandler == nil {
+		unregistered = append(unregistered, "releases.GetReleaseByIDHandler")
 	}
-	if o.ArtistGetStatsHandler == nil {
-		unregistered = append(unregistered, "artist.GetStatsHandler")
+	if o.RequestsGetRequestHandler == nil {
+		unregistered = append(unregistered, "requests.GetRequestHandler")
 	}
-	if o.AdminGetUsersHandler == nil {
-		unregistered = append(unregistered, "admin.GetUsersHandler")
+	if o.RequestsGetRequestsHandler == nil {
+		unregistered = append(unregistered, "requests.GetRequestsHandler")
 	}
-	if o.ArtistPublishReqHandler == nil {
-		unregistered = append(unregistered, "artist.PublishReqHandler")
+	if o.TracksGetTrackByIDHandler == nil {
+		unregistered = append(unregistered, "tracks.GetTrackByIDHandler")
 	}
-	if o.GuestRegisterHandler == nil {
-		unregistered = append(unregistered, "guest.RegisterHandler")
+	if o.UsersGetUserByIDHandler == nil {
+		unregistered = append(unregistered, "users.GetUserByIDHandler")
 	}
-	if o.NonMemberSignContractHandler == nil {
-		unregistered = append(unregistered, "non_member.SignContractHandler")
+	if o.UserGetUsersHandler == nil {
+		unregistered = append(unregistered, "user.GetUsersHandler")
+	}
+	if o.AuthLoginHandler == nil {
+		unregistered = append(unregistered, "auth.LoginHandler")
+	}
+	if o.RequestsPublishReqHandler == nil {
+		unregistered = append(unregistered, "requests.PublishReqHandler")
+	}
+	if o.AuthRegisterHandler == nil {
+		unregistered = append(unregistered, "auth.RegisterHandler")
+	}
+	if o.RequestsSignContractHandler == nil {
+		unregistered = append(unregistered, "requests.SignContractHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -399,62 +434,78 @@ func (o *SwaggerCookDroogersAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/heartbeat"] = NewGetHeartbeat(o.context, o.GetHeartbeatHandler)
+	if o.handlers["PATCH"] == nil {
+		o.handlers["PATCH"] = make(map[string]http.Handler)
+	}
+	o.handlers["PATCH"]["/requests/{req_id}/accept"] = requests.NewAcceptRequest(o.context, o.RequestsAcceptRequestHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/requests/{req_id}/accept"] = manager.NewAcceptRequest(o.context, o.ManagerAcceptRequestHandler)
+	o.handlers["POST"]["/managers"] = manager.NewAddManager(o.context, o.ManagerAddManagerHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/managers"] = admin.NewAddManager(o.context, o.AdminAddManagerHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
+	o.handlers["POST"]["/releases"] = releases.NewAddRelease(o.context, o.ReleasesAddReleaseHandler)
+	if o.handlers["PATCH"] == nil {
+		o.handlers["PATCH"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/releases"] = artist.NewAddRelease(o.context, o.ArtistAddReleaseHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/requests/{req_id}/decline"] = manager.NewDeclineRequest(o.context, o.ManagerDeclineRequestHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/fetch-stats"] = manager.NewFetchStats(o.context, o.ManagerFetchStatsHandler)
+	o.handlers["PATCH"]["/requests/{req_id}/decline"] = requests.NewDeclineRequest(o.context, o.RequestsDeclineRequestHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/managers"] = admin.NewGetManagers(o.context, o.AdminGetManagersHandler)
+	o.handlers["GET"]["/artists/{artist_id}"] = artist.NewGetArtistByID(o.context, o.ArtistGetArtistByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/releases"] = artist.NewGetRelease(o.context, o.ArtistGetReleaseHandler)
+	o.handlers["GET"]["/managers/{manager_id}"] = manager.NewGetManagerByID(o.context, o.ManagerGetManagerByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/requests/{req_id}"] = non_member.NewGetRequest(o.context, o.NonMemberGetRequestHandler)
+	o.handlers["GET"]["/managers"] = manager.NewGetManagers(o.context, o.ManagerGetManagersHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/requests"] = non_member.NewGetRequests(o.context, o.NonMemberGetRequestsHandler)
+	o.handlers["GET"]["/releases"] = releases.NewGetRelease(o.context, o.ReleasesGetReleaseHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/stats"] = artist.NewGetStats(o.context, o.ArtistGetStatsHandler)
+	o.handlers["GET"]["/releases/{release_id}"] = releases.NewGetReleaseByID(o.context, o.ReleasesGetReleaseByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users"] = admin.NewGetUsers(o.context, o.AdminGetUsersHandler)
+	o.handlers["GET"]["/requests/{req_id}"] = requests.NewGetRequest(o.context, o.RequestsGetRequestHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/requests"] = requests.NewGetRequests(o.context, o.RequestsGetRequestsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/tracks/{track_id}"] = tracks.NewGetTrackByID(o.context, o.TracksGetTrackByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/{user_id}"] = users.NewGetUserByID(o.context, o.UsersGetUserByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users"] = user.NewGetUsers(o.context, o.UserGetUsersHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/publish"] = artist.NewPublishReq(o.context, o.ArtistPublishReqHandler)
+	o.handlers["POST"]["/login"] = auth.NewLogin(o.context, o.AuthLoginHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/register"] = guest.NewRegister(o.context, o.GuestRegisterHandler)
+	o.handlers["POST"]["/requests/publications"] = requests.NewPublishReq(o.context, o.RequestsPublishReqHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/sign-contract"] = non_member.NewSignContract(o.context, o.NonMemberSignContractHandler)
+	o.handlers["POST"]["/register"] = auth.NewRegister(o.context, o.AuthRegisterHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/requests/contracts"] = requests.NewSignContract(o.context, o.RequestsSignContractHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

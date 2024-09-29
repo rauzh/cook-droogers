@@ -158,15 +158,6 @@ func (menu *artistMenu) uploadRelease() error {
 
 func (menu *artistMenu) stats() {
 
-	report, err := menu.a.Services.ReportService.GetReportForArtist(menu.artist.ArtistID)
-	if err != nil {
-		fmt.Println("Не удается посмотреть статистику по причине ", err)
-		menu.log.Error("Can't get stats: ", slog.Any("error", err))
-	}
-
-	for release, releaseStats := range report {
-		fmt.Printf("%s:\n%s\n\n", release, string(releaseStats[:]))
-	}
 }
 
 func (menu *artistMenu) releases() {

@@ -7,8 +7,11 @@ basePath: /api
 tags:
   - name: artist
   - name: manager
-  - name: non-member
-  - name: guest
+  - name: user
+  - name: requests
+  - name: tracks
+  - name: releases
+  - name: auth
 
 securityDefinitions:
   basicAuth:
@@ -18,32 +21,13 @@ schemes:
   - http
 paths:
 
-# =================== STATS ====================
-
-  /stats:
-    get:
-      summary: Get stats
-      tags:
-        - artist
-        - manager
-      security:
-        - basicAuth: [ ]
-      operationId: getStats
-      responses:
-        200:
-          description: Success
-        500:
-          description: Internal error
-
-# =================== REQUESTS ===================
+  # =================== REQUESTS ===================
 
   /requests:
     get:
       summary: Get requests
       tags:
-        - non-member
-        - manager
-        - artist
+        - requests
       security:
         - basicAuth: [ ]
       operationId: getRequests
@@ -54,6 +38,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/RequestDTO'
+        401:
+          description: Auth error
+        403:
+          description: Invalid user type
         500:
           description: Internal error
 
@@ -61,9 +49,7 @@ paths:
     get:
       summary: Get specified request
       tags:
-        - non-member
-        - manager
-        - artist
+        - requests
       security:
         - basicAuth: [ ]
       operationId: getRequest
@@ -79,43 +65,106 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/PublishRequestDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such request
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# =================== ARTIST ====================
+  # =================== ARTIST ====================
 
-  /publish:
+  /artists/{artist_id}:
+    get:
+      summary: Get artist data
+      tags:
+        - artist
+      security:
+        - basicAuth: [ ]
+      operationId: getArtistByID
+      parameters:
+        - in: path
+          name: artist_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID артиста"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ArtistDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such artist
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+
+  /requests/publications:
     post:
       summary: Create publish request
       security:
         - basicAuth: [ ]
       tags:
-        - artist
+        - requests
       operationId: publishReq
       consumes:
         - application/json
       parameters:
-        - in: query
-          name: release_id
+        - in: body
+          name: publication_info
+          description: "Поля заявки на публикацию релиза"
           required: true
-          type: integer
-          format: uint64
-          description: "ID релиза"
-        - in: query
-          name: date
-          required: true
-          type: string
-          format: date
-          description: "Желаемая дата публикации"
+          schema:
+            $ref: '#/definitions/PublishRequestInput'
       responses:
         201:
           description: Request successfully created
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         403:
           description: Invalid user type
-        400:
-          description: Invalid request fields
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
   /releases:
 
@@ -124,7 +173,7 @@ paths:
       security:
         - basicAuth: [ ]
       tags:
-        - artist
+        - releases
       operationId: getRelease
       consumes:
         - application/json
@@ -135,15 +184,25 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ReleaseDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
     post:
       summary: Upload release
       security:
         - basicAuth: [ ]
       tags:
-        - artist
+        - releases
       operationId: addRelease
       consumes:
         - application/json
@@ -170,20 +229,153 @@ paths:
       responses:
         201:
           description: Request successfully created
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         403:
           description: Invalid user type
-        400:
-          description: Invalid request fields
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# =================== MANAGER ===================
+  /releases/{release_id}:
+    get:
+      summary: Get release data
+      tags:
+        - releases
+      security:
+        - basicAuth: [ ]
+      operationId: getReleaseByID
+      parameters:
+        - in: path
+          name: release_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID релиза"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ReleaseDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such release
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-  /requests/{req_id}/accept:
-    post:
-      summary: Accept specified request
+  /tracks/{track_id}:
+    get:
+      summary: Get track data
+      tags:
+        - tracks
+      security:
+        - basicAuth: [ ]
+      operationId: getTrackByID
+      parameters:
+        - in: path
+          name: track_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID трека"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/TrackDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such track
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+
+  # =================== MANAGER ===================
+
+  /managers/{manager_id}:
+    get:
+      summary: Get manager data
       tags:
         - manager
+      security:
+        - basicAuth: [ ]
+      operationId: getManagerByID
+      parameters:
+        - in: path
+          name: manager_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID менеджера"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ManagerDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such manager
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+
+  /requests/{req_id}/accept:
+    patch:
+      summary: Accept specified request
+      tags:
+        - requests
       security:
         - basicAuth: [ ]
       operationId: acceptRequest
@@ -197,14 +389,32 @@ paths:
       responses:
         200:
           description: Success
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type (or this manager is not maintainer of the request)
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such request
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
   /requests/{req_id}/decline:
-    post:
+    patch:
       summary: Decline specified request
       tags:
-        - manager
+        - requests
       security:
         - basicAuth: [ ]
       operationId: declineRequest
@@ -218,32 +428,77 @@ paths:
       responses:
         200:
           description: Success
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type (or this manager is not maintainer of the request)
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such request
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-  /fetch-stats:
-    post:
-      summary: Fetch statistics for manager's artists
+  # ================== NON-MEMBER ==================
+
+  /users/{user_id}:
+    get:
+      summary: Get user data
       tags:
-        - manager
+        - users
       security:
         - basicAuth: [ ]
-      operationId: fetchStats
+      operationId: getUserByID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          type: integer
+          format: uint64
+          description: "ID юзера"
       responses:
         200:
           description: Success
+          schema:
+            $ref: '#/definitions/UserDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such user
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# ================== NON-MEMBER ==================
-
-  /sign-contract:
+  /requests/contracts:
     post:
       summary: Create sign request
       security:
         - basicAuth: [ ]
       tags:
-        - non-member
+        - requests
       operationId: signContract
       consumes:
         - application/json
@@ -256,20 +511,30 @@ paths:
       responses:
         201:
           description: Request successfully created
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         403:
           description: Invalid user type
-        400:
-          description: Invalid request fields
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# ================== ADMIN ==================
+  # ================== ADMIN ==================
 
   /managers:
     get:
       summary: Get list of managers
       tags:
-        - admin
+        - manager
       operationId: getManagers
       security:
         - basicAuth: []
@@ -284,12 +549,22 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ManagerDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
     post:
       summary: Create manager
       tags:
-        - admin
+        - manager
       operationId: addManager
       security:
         - basicAuth: [ ]
@@ -301,22 +576,44 @@ paths:
         - in: query
           name: user_id
           required: true
-          type: integer
-          format: uint64
+          type: array
+          items:
+            type: integer
+            format: uint64
           description: "ID пользователя"
       responses:
         201:
           description: Manager successfully created
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         403:
-          description: Manager alredy exists
+          description: Invalid user type (your role)
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such user
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        409:
+          description: Already exists
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
   /users:
     get:
       summary: Get list of users
       tags:
-        - admin
+        - user
       operationId: getUsers
       security:
         - basicAuth: [ ]
@@ -331,16 +628,26 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserDTO'
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        403:
+          description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# ================== GUEST ==================
+  # ================== GUEST ==================
 
   /register:
     post:
       summary: Create new user
       tags:
-        - guest
+        - auth
       operationId: register
       consumes:
         - application/json
@@ -365,12 +672,57 @@ paths:
       responses:
         201:
           description: User successfully created
-        403:
-          description: User alredy exists
+        409:
+          description: User already exists
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         500:
           description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
 
-# ================== ALL ==================
+
+  /login:
+    post:
+      summary: Login, lol
+      tags:
+        - auth
+      operationId: login
+      parameters:
+        - in: query
+          name: email
+          required: true
+          type: string
+          format: email
+          description: "Email пользователя"
+        - in: query
+          name: password
+          required: true
+          type: string
+          format: password
+          description: "Пароль пользователя"
+
+      responses:
+        200:
+          description: User successfully logged in
+        401:
+          description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        422:
+          description: Invalid params
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        500:
+          description: Internal error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+
+  # ================== ALL ==================
 
   /heartbeat:
     get:
@@ -416,6 +768,26 @@ definitions:
           - 1  # ManagerUser
           - 2  # ArtistUser
           - 3  # Admin
+
+  ArtistDTO:
+    type: object
+    properties:
+      artist_id:
+        type: integer
+        format: uint64
+      user_id:
+        type: integer
+        format: uint64
+      manager_id:
+        type: integer
+        format: uint64
+      nickname:
+        type: string
+      activity:
+        type: boolean
+      contract_term:
+        type: string
+        format: date
 
   ManagerDTO:
     type: object
@@ -554,6 +926,23 @@ definitions:
       nickname:
         type: string
       description:
+        type: string
+
+
+  PublishRequestInput:
+    type: object
+    properties:
+      release_id:
+        type: integer
+        format: uint64
+      expected_date:
+        type: string
+        format: date
+
+  LeErrorMessage:
+    type: object
+    properties:
+      error:
         type: string
 
 responses:

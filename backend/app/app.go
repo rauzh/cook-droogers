@@ -8,7 +8,6 @@ import (
 	releaseService "cookdroogers/internal/release/service"
 	"cookdroogers/internal/repo"
 	postgres "cookdroogers/internal/repo/pg"
-	"cookdroogers/internal/reporter/service"
 	"cookdroogers/internal/requests/base"
 	repo2 "cookdroogers/internal/requests/base/repo"
 	"cookdroogers/internal/requests/base/repo/pg"
@@ -25,8 +24,6 @@ import (
 	repo3 "cookdroogers/internal/requests/sign_contract/repo"
 	postgres2 "cookdroogers/internal/requests/sign_contract/repo/pg"
 	"cookdroogers/internal/requests/sign_contract/usecase"
-	"cookdroogers/internal/statistics/fetcher/adapters"
-	statService "cookdroogers/internal/statistics/service"
 	trackService "cookdroogers/internal/track/service"
 	"cookdroogers/internal/transactor"
 	transactor_impl "cookdroogers/internal/transactor/trm"
@@ -61,9 +58,7 @@ type AppServices struct {
 	ManagerService     managerService.IManagerService
 	PublicationService publicationService.IPublicationService
 	ReleaseService     releaseService.IReleaseService
-	ReportService      service.IReportService
 	RequestService     requestService.IRequestService
-	StatService        statService.IStatisticsService
 	TrackService       trackService.ITrackService
 	UserService        userService.IUserService
 }
@@ -77,7 +72,6 @@ type AppRepositories struct {
 	pubReqRepo      publishReqRepo.PublishRequestRepo
 	signReqRepo     repo3.SignContractRequestRepo
 	userRepo        repo.UserRepo
-	statRepo        repo.StatisticsRepo
 	trackRepo       repo.TrackRepo
 }
 
@@ -92,7 +86,6 @@ func (a *App) initRepositories() *AppRepositories {
 		pubReqRepo:      pg2.NewPublishRequestPgRepo(a.postgresDB),
 		signReqRepo:     postgres2.NewSignContractRequestPgRepo(a.postgresDB),
 		userRepo:        postgres.NewUserPgRepo(a.postgresDB),
-		statRepo:        postgres.NewStatisticsPgRepo(a.postgresDB),
 		trackRepo:       postgres.NewTrackPgRepo(a.postgresDB),
 	}
 
@@ -103,8 +96,6 @@ func (a *App) initServices() *AppServices {
 
 	trackSvc := trackService.NewTrackService(a.repos.trackRepo, a.Logger)
 	rlsSvc := releaseService.NewReleaseService(trackSvc, a.Transactor, a.repos.releaseRepo, a.Logger)
-	statFetcher := adapters.NewStatFetcherAdapter(a.Config.StatFetchURLrauzh, a.repos.artistRepo, a.repos.releaseRepo, a.Logger)
-	statSvc := statService.NewStatisticsService(trackSvc, statFetcher, a.repos.statRepo, rlsSvc, a.Logger)
 
 	artSvc := artistService.NewArtistService(a.repos.artistRepo, a.Logger)
 	mngSvc := managerService.NewManagerService(a.repos.managerRepo, a.Logger)
@@ -116,10 +107,8 @@ func (a *App) initServices() *AppServices {
 		PublicationService: pbcSvc,
 		TrackService:       trackSvc,
 		ReleaseService:     rlsSvc,
-		StatService:        statSvc,
 		UserService:        userService.NewUserService(a.repos.userRepo, a.Logger),
 		RequestService:     requestService.NewRequestService(a.repos.requestRepo, a.Logger),
-		ReportService:      service.NewReportService(mngSvc, statSvc, artSvc, pbcSvc, rlsSvc, a.Logger),
 	}
 
 	return svcs
@@ -133,7 +122,7 @@ func (a *App) initUseCases() (*AppUseCases, error) {
 		return nil, err
 	}
 
-	pubUC, err := usecase2.NewPublishRequestUseCase(a.Services.StatService, a.repos.publicationRepo, a.repos.releaseRepo,
+	pubUC, err := usecase2.NewPublishRequestUseCase(a.repos.publicationRepo, a.repos.releaseRepo,
 		a.repos.artistRepo, a.Transactor, a.Broker, a.repos.pubReqRepo, a.Logger)
 	if err != nil {
 		return nil, err
@@ -200,7 +189,6 @@ func (a *App) Init(log *slog.Logger) error {
 
 	critCollection, _ := criteria.BuildCollection(
 		&publish_criteria.ArtistReleaseLimitPerSeasonCriteriaFabric{PublicationRepo: a.repos.publicationRepo, ArtistRepo: a.repos.artistRepo},
-		&publish_criteria.RelevantGenreCriteriaFabric{ReleaseService: a.Services.ReleaseService, StatService: a.Services.StatService},
 		&publish_criteria.OneReleasePerDayCriteriaFabric{PublicationRepo: a.repos.publicationRepo})
 
 	pubreqConsumerHandler := publish.InitPublishProceedToManagerConsumerHandler(

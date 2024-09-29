@@ -7,12 +7,11 @@ import (
 )
 
 type Config struct {
-	Mode              string        `yaml:"mode"`
-	StatFetchURLrauzh string        `yaml:"stat_fetcher_url"`
-	Postgres          PostgresFlags `yaml:"postgres"`
-	Kafka             KafkaConfig   `yaml:"kafka"`
-	Root              RootConfig    `yaml:"root"`
-	Log               LogConfig     `yaml:"log"`
+	Mode     string        `yaml:"mode"`
+	Postgres PostgresFlags `yaml:"postgres"`
+	Kafka    KafkaConfig   `yaml:"kafka"`
+	Root     RootConfig    `yaml:"root"`
+	Log      LogConfig     `yaml:"log"`
 }
 
 type PostgresFlags struct {

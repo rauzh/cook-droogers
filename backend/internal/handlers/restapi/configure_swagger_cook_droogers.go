@@ -8,6 +8,10 @@ import (
 	"cookdroogers/config"
 	"cookdroogers/internal/handlers"
 	modelsDTO "cookdroogers/internal/handlers/models"
+	"cookdroogers/internal/handlers/restapi/operations/auth"
+	"cookdroogers/internal/handlers/restapi/operations/releases"
+	"cookdroogers/internal/handlers/restapi/operations/requests"
+	"cookdroogers/internal/handlers/restapi/operations/user"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/publish"
 	usecase2 "cookdroogers/internal/requests/publish/usecase"
@@ -19,7 +23,6 @@ import (
 	"cookdroogers/pkg/logger"
 	"crypto/tls"
 	"database/sql"
-	"encoding/json"
 	goerrors "errors"
 	"github.com/go-openapi/strfmt"
 	"log/slog"
@@ -32,11 +35,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"cookdroogers/internal/handlers/restapi/operations"
-	"cookdroogers/internal/handlers/restapi/operations/admin"
-	"cookdroogers/internal/handlers/restapi/operations/artist"
-	"cookdroogers/internal/handlers/restapi/operations/guest"
 	"cookdroogers/internal/handlers/restapi/operations/manager"
-	"cookdroogers/internal/handlers/restapi/operations/non_member"
 )
 
 //go:generate swagger generate server --target ../../handlers --name SwaggerCookDroogers --spec ../../../swagger-api/swagger.yml --principal interface{}
@@ -118,7 +117,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ManagerAcceptRequestHandler = manager.AcceptRequestHandlerFunc(func(params manager.AcceptRequestParams, principal interface{}) middleware.Responder {
+	api.RequestsAcceptRequestHandler = requests.AcceptRequestHandlerFunc(func(params requests.AcceptRequestParams, principal interface{}) middleware.Responder {
 
 		mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -166,23 +165,24 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.AdminAddManagerHandler = admin.AddManagerHandlerFunc(func(params admin.AddManagerParams, principal interface{}) middleware.Responder {
+	api.ManagerAddManagerHandler = manager.AddManagerHandlerFunc(func(params manager.AddManagerParams, principal interface{}) middleware.Responder {
 
 		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
 			return middleware.Error(403, err.Error())
 		}
 
-		err = cdApp.Services.UserService.UpdateType(params.UserID, models.ManagerUser)
-		if err != nil {
-			return middleware.Error(500, "can't create manager")
-		}
+		for _, userid := range params.UserID {
+			err = cdApp.Services.UserService.UpdateType(userid, models.ManagerUser)
+			if err != nil {
+				return middleware.Error(500, "can't create manager")
+			}
+			man := models.Manager{UserID: userid}
 
-		man := models.Manager{UserID: params.UserID}
-
-		err = cdApp.Services.ManagerService.Create(&man)
-		if err != nil {
-			return middleware.Error(500, "can't create manager")
+			err = cdApp.Services.ManagerService.Create(&man)
+			if err != nil {
+				return middleware.Error(500, "can't create manager")
+			}
 		}
 
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
@@ -190,7 +190,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ArtistAddReleaseHandler = artist.AddReleaseHandlerFunc(func(params artist.AddReleaseParams, principal interface{}) middleware.Responder {
+	api.ReleasesAddReleaseHandler = releases.AddReleaseHandlerFunc(func(params releases.AddReleaseParams, principal interface{}) middleware.Responder {
 
 		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -228,7 +228,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ManagerDeclineRequestHandler = manager.DeclineRequestHandlerFunc(func(params manager.DeclineRequestParams, principal interface{}) middleware.Responder {
+	api.RequestsDeclineRequestHandler = requests.DeclineRequestHandlerFunc(func(params requests.DeclineRequestParams, principal interface{}) middleware.Responder {
 		mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
 			return middleware.Error(400, err.Error())
@@ -275,31 +275,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ManagerFetchStatsHandler = manager.FetchStatsHandlerFunc(func(params manager.FetchStatsParams, principal interface{}) middleware.Responder {
-		mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
-		if err != nil {
-			return middleware.Error(400, err.Error())
-		}
-
-		for _, artistID := range mngr.Artists {
-			releases, err := cdApp.Services.ReleaseService.GetAllByArtist(artistID)
-			if err != nil {
-				return middleware.Error(500, "can't fetch stats")
-			}
-			for _, release := range releases {
-				err = cdApp.Services.StatService.FetchByRelease(&release)
-				if err != nil {
-					return middleware.Error(500, "can't fetch stats")
-				}
-			}
-		}
-
-		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
-			rw.WriteHeader(http.StatusOK)
-		})
-	})
-
-	api.AdminGetManagersHandler = admin.GetManagersHandlerFunc(func(params admin.GetManagersParams, principal interface{}) middleware.Responder {
+	api.ManagerGetManagersHandler = manager.GetManagersHandlerFunc(func(params manager.GetManagersParams, principal interface{}) middleware.Responder {
 
 		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -327,7 +303,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ArtistGetReleaseHandler = artist.GetReleaseHandlerFunc(func(params artist.GetReleaseParams, principal interface{}) middleware.Responder {
+	api.ReleasesGetReleaseHandler = releases.GetReleaseHandlerFunc(func(params releases.GetReleaseParams, principal interface{}) middleware.Responder {
 
 		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -359,7 +335,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.NonMemberGetRequestHandler = non_member.GetRequestHandlerFunc(func(params non_member.GetRequestParams, principal interface{}) middleware.Responder {
+	api.RequestsGetRequestHandler = requests.GetRequestHandlerFunc(func(params requests.GetRequestParams, principal interface{}) middleware.Responder {
 
 		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -435,7 +411,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.NonMemberGetRequestsHandler = non_member.GetRequestsHandlerFunc(func(params non_member.GetRequestsParams, principal interface{}) middleware.Responder {
+	api.RequestsGetRequestsHandler = requests.GetRequestsHandlerFunc(func(params requests.GetRequestsParams, principal interface{}) middleware.Responder {
 
 		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
@@ -481,84 +457,26 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ArtistGetStatsHandler = artist.GetStatsHandlerFunc(func(params artist.GetStatsParams, principal interface{}) middleware.Responder {
-
-		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
-		if err != nil {
-			return middleware.Error(400, err.Error())
-		}
-
-		stats := make(map[string][]byte)
-
-		if user.Type == models.ManagerUser {
-			mngr, err := handlers.LoginManager(params.HTTPRequest.Header.Get("authorization"), &cdApp)
-			if err != nil {
-				return middleware.Error(400, err.Error())
-			}
-			stats, err = cdApp.Services.ReportService.GetReportForManager(mngr.ManagerID)
-
-			type statsManagerDTOstruct struct {
-				RelevantGenre json.RawMessage `json:"relevant_genre"`
-				ArtistsStats  json.RawMessage `json:"artists_stats"`
-			}
-
-			statsManagerDTO := statsManagerDTOstruct{
-				RelevantGenre: stats["relevant_genre"],
-				ArtistsStats:  stats["artists_stats"],
-			}
-
-			return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
-				rw.WriteHeader(http.StatusOK)
-				_ = p.Produce(rw, statsManagerDTO)
-			})
-
-		} else if user.Type == models.ArtistUser {
-			artistuser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
-			if err != nil {
-				return middleware.Error(400, err.Error())
-			}
-			stats, err = cdApp.Services.ReportService.GetReportForArtist(artistuser.ArtistID)
-
-			jsonMap := make(map[string]interface{})
-
-			// Преобразуем каждый "сырой" json-объект в json-объект
-			for key, rawJson := range stats {
-				var jsonObject interface{}
-				if err := json.Unmarshal(rawJson, &jsonObject); err != nil {
-					return middleware.Error(500, "error unmarshalling json")
-				}
-
-				jsonMap[key] = jsonObject
-			}
-			return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
-				rw.WriteHeader(http.StatusOK)
-				_ = p.Produce(rw, jsonMap)
-			})
-		} else {
-			return middleware.Error(403, "you have no rights to get statistics")
-		}
-	})
-
-	api.AdminGetUsersHandler = admin.GetUsersHandlerFunc(func(params admin.GetUsersParams, principal interface{}) middleware.Responder {
+	api.UserGetUsersHandler = user.GetUsersHandlerFunc(func(params user.GetUsersParams, principal interface{}) middleware.Responder {
 		err := handlers.LoginAdmin(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
 			return middleware.Error(403, err.Error())
 		}
 
-		users, err := cdApp.Services.UserService.GetForAdmin()
+		usersCD, err := cdApp.Services.UserService.GetForAdmin()
 		if err != nil {
 			return middleware.Error(500, "can't get users")
 		}
 
-		usersDTO := make([]modelsDTO.UserDTO, len(users))
+		usersDTO := make([]modelsDTO.UserDTO, len(usersCD))
 
-		for i, user := range users {
+		for i, userCD := range usersCD {
 			usersDTO[i] = modelsDTO.UserDTO{
-				UserID:   user.UserID,
-				Name:     user.Name,
-				Password: user.Password,
-				Type:     int64(user.Type),
-				Email:    strfmt.Email(user.Email),
+				UserID:   userCD.UserID,
+				Name:     userCD.Name,
+				Password: userCD.Password,
+				Type:     int64(userCD.Type),
+				Email:    strfmt.Email(userCD.Email),
 			}
 		}
 
@@ -568,31 +486,31 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.ArtistPublishReqHandler = artist.PublishReqHandlerFunc(func(params artist.PublishReqParams, principal interface{}) middleware.Responder {
+	api.RequestsPublishReqHandler = requests.PublishReqHandlerFunc(func(params requests.PublishReqParams, principal interface{}) middleware.Responder {
 
-		artistUser, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
+		_, err := handlers.LoginArtist(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
 			return middleware.Error(403, err.Error())
 		}
-
-		if params.ReleaseID <= 0 {
-			return middleware.Error(400, "invalid releaseID")
-		}
-
-		pubReq := publish.NewPublishRequest(artistUser.UserID, params.ReleaseID, time.Time(params.Date))
-
-		err = cdApp.UseCases.PublishReqUC.Apply(pubReq)
-		if err != nil {
-			return middleware.Error(500, err.Error())
-		}
+		//
+		//if params.ReleaseID <= 0 {
+		//	return middleware.Error(400, "invalid releaseID")
+		//}
+		//
+		//pubReq := publish.NewPublishRequest(artistUser.UserID, params.ReleaseID, time.Time(params.Date))
+		//
+		//err = cdApp.UseCases.PublishReqUC.Apply(pubReq)
+		//if err != nil {
+		//	return middleware.Error(500, err.Error())
+		//}
 
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
 			rw.WriteHeader(http.StatusCreated)
 		})
 	})
 
-	api.GuestRegisterHandler = guest.RegisterHandlerFunc(func(params guest.RegisterParams) middleware.Responder {
-		user := &models.User{
+	api.AuthRegisterHandler = auth.RegisterHandlerFunc(func(params auth.RegisterParams) middleware.Responder {
+		userCD := &models.User{
 			Name:     params.Username,
 			Email:    string(params.Email),
 			Password: params.Password,
@@ -600,7 +518,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 
 		err := cdApp.Services.UserService.SetRole(models.NonMemberUser)
 
-		err = cdApp.Services.UserService.Create(user)
+		err = cdApp.Services.UserService.Create(userCD)
 		if goerrors.Is(err, userErrors.ErrAlreadyTaken) {
 			return middleware.Error(403, "user already exists")
 		}
@@ -613,7 +531,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		})
 	})
 
-	api.NonMemberSignContractHandler = non_member.SignContractHandlerFunc(func(params non_member.SignContractParams, principal interface{}) middleware.Responder {
+	api.RequestsSignContractHandler = requests.SignContractHandlerFunc(func(params requests.SignContractParams, principal interface{}) middleware.Responder {
 		user, err := handlers.LoginNonMember(params.HTTPRequest.Header.Get("authorization"), &cdApp)
 		if err != nil {
 			return middleware.Error(403, err.Error())

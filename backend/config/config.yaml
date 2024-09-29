@@ -2,8 +2,6 @@
 
 mode: "techUI"
 
-stat_fetcher_url: "http://data_server:1337"
-
 postgres:
   host: "postgres"
   port: 5432

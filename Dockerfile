@@ -1,4 +1,4 @@
-FROM golang:1.22 AS build
+FROM golang:1.23 AS build
 
 RUN go install github.com/vektra/mockery/v2@latest
 
@@ -20,7 +20,7 @@ RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
 
 # #=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====
 
-# FROM golang:1.22
+# FROM 
 
 # COPY --from=build /go/src/app/backend/cook_droogers /app/cook_droogers
 # COPY --from=build /go/src/app/backend/config/config.yaml /app/config.yaml

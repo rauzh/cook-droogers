@@ -29,24 +29,64 @@ func init() {
   "host": "0.0.0.0:13337",
   "basePath": "/api",
   "paths": {
-    "/fetch-stats": {
-      "post": {
+    "/artists/{artist_id}": {
+      "get": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "artist"
         ],
-        "summary": "Fetch statistics for manager's artists",
-        "operationId": "fetchStats",
+        "summary": "Get artist data",
+        "operationId": "getArtistByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID артиста",
+            "name": "artist_id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ArtistDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such artist",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -57,6 +97,56 @@ func init() {
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login, lol",
+        "operationId": "login",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "email",
+            "description": "Email пользователя",
+            "name": "email",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "password",
+            "description": "Пароль пользователя",
+            "name": "password",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully logged in"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -75,7 +165,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "manager"
         ],
         "summary": "Get list of managers",
         "operationId": "getManagers",
@@ -89,8 +179,23 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       },
@@ -107,14 +212,17 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "manager"
         ],
         "summary": "Create manager",
         "operationId": "addManager",
         "parameters": [
           {
-            "type": "integer",
-            "format": "uint64",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint64"
+            },
             "description": "ID пользователя",
             "name": "user_id",
             "in": "query",
@@ -125,60 +233,103 @@ func init() {
           "201": {
             "description": "Manager successfully created"
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "403": {
-            "description": "Manager alredy exists"
+            "description": "Invalid user type (your role)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
-    "/publish": {
-      "post": {
+    "/managers/{manager_id}": {
+      "get": {
         "security": [
           {
             "basicAuth": []
           }
         ],
-        "consumes": [
-          "application/json"
-        ],
         "tags": [
-          "artist"
+          "manager"
         ],
-        "summary": "Create publish request",
-        "operationId": "publishReq",
+        "summary": "Get manager data",
+        "operationId": "getManagerByID",
         "parameters": [
           {
             "type": "integer",
             "format": "uint64",
-            "description": "ID релиза",
-            "name": "release_id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "format": "date",
-            "description": "Желаемая дата публикации",
-            "name": "date",
-            "in": "query",
+            "description": "ID менеджера",
+            "name": "manager_id",
+            "in": "path",
             "required": true
           }
         ],
         "responses": {
-          "201": {
-            "description": "Request successfully created"
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ManagerDTO"
+            }
           },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such manager",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -189,7 +340,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "guest"
+          "auth"
         ],
         "summary": "Create new user",
         "operationId": "register",
@@ -221,11 +372,23 @@ func init() {
           "201": {
             "description": "User successfully created"
           },
-          "403": {
-            "description": "User alredy exists"
+          "409": {
+            "description": "User already exists",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -241,7 +404,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "artist"
+          "releases"
         ],
         "summary": "Get releases",
         "operationId": "getRelease",
@@ -255,8 +418,23 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       },
@@ -270,7 +448,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "artist"
+          "releases"
         ],
         "summary": "Upload release",
         "operationId": "addRelease",
@@ -307,14 +485,91 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/releases/{release_id}": {
+      "get": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "releases"
+        ],
+        "summary": "Get release data",
+        "operationId": "getReleaseByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID релиза",
+            "name": "release_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReleaseDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such release",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -327,9 +582,7 @@ func init() {
           }
         ],
         "tags": [
-          "non-member",
-          "manager",
-          "artist"
+          "requests"
         ],
         "summary": "Get requests",
         "operationId": "getRequests",
@@ -343,8 +596,126 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error"
+          },
+          "403": {
+            "description": "Invalid user type"
+          },
           "500": {
             "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/requests/contracts": {
+      "post": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create sign request",
+        "operationId": "signContract",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Псевдоним",
+            "name": "nickname",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Request successfully created"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/requests/publications": {
+      "post": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create publish request",
+        "operationId": "publishReq",
+        "parameters": [
+          {
+            "description": "Поля заявки на публикацию релиза",
+            "name": "publication_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PublishRequestInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Request successfully created"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -357,9 +728,7 @@ func init() {
           }
         ],
         "tags": [
-          "non-member",
-          "manager",
-          "artist"
+          "requests"
         ],
         "summary": "Get specified request",
         "operationId": "getRequest",
@@ -380,21 +749,48 @@ func init() {
               "$ref": "#/definitions/PublishRequestDTO"
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
     "/requests/{req_id}/accept": {
-      "post": {
+      "patch": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "requests"
         ],
         "summary": "Accept specified request",
         "operationId": "acceptRequest",
@@ -412,21 +808,48 @@ func init() {
           "200": {
             "description": "Success"
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
     "/requests/{req_id}/decline": {
-      "post": {
+      "patch": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "requests"
         ],
         "summary": "Decline specified request",
         "operationId": "declineRequest",
@@ -444,53 +867,40 @@ func init() {
           "200": {
             "description": "Success"
           },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
-    "/sign-contract": {
-      "post": {
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "consumes": [
-          "application/json"
-        ],
-        "tags": [
-          "non-member"
-        ],
-        "summary": "Create sign request",
-        "operationId": "signContract",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Псевдоним",
-            "name": "nickname",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Request successfully created"
-          },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
-    "/stats": {
+    "/tracks/{track_id}": {
       "get": {
         "security": [
           {
@@ -498,17 +908,56 @@ func init() {
           }
         ],
         "tags": [
-          "artist",
-          "manager"
+          "tracks"
         ],
-        "summary": "Get stats",
-        "operationId": "getStats",
+        "summary": "Get track data",
+        "operationId": "getTrackByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID трека",
+            "name": "track_id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TrackDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such track",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -527,7 +976,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "user"
         ],
         "summary": "Get list of users",
         "operationId": "getUsers",
@@ -541,14 +990,126 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get user data",
+        "operationId": "getUserByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID юзера",
+            "name": "user_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     }
   },
   "definitions": {
+    "ArtistDTO": {
+      "type": "object",
+      "properties": {
+        "activity": {
+          "type": "boolean"
+        },
+        "artist_id": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "contract_term": {
+          "type": "string",
+          "format": "date"
+        },
+        "manager_id": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "uint64"
+        }
+      }
+    },
+    "LeErrorMessage": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
     "ManagerDTO": {
       "type": "object",
       "properties": {
@@ -584,6 +1145,19 @@ func init() {
         },
         "grade": {
           "type": "integer"
+        },
+        "release_id": {
+          "type": "integer",
+          "format": "uint64"
+        }
+      }
+    },
+    "PublishRequestInput": {
+      "type": "object",
+      "properties": {
+        "expected_date": {
+          "type": "string",
+          "format": "date"
         },
         "release_id": {
           "type": "integer",
@@ -808,10 +1382,19 @@ func init() {
       "name": "manager"
     },
     {
-      "name": "non-member"
+      "name": "user"
     },
     {
-      "name": "guest"
+      "name": "requests"
+    },
+    {
+      "name": "tracks"
+    },
+    {
+      "name": "releases"
+    },
+    {
+      "name": "auth"
     }
   ]
 }`))
@@ -827,24 +1410,64 @@ func init() {
   "host": "0.0.0.0:13337",
   "basePath": "/api",
   "paths": {
-    "/fetch-stats": {
-      "post": {
+    "/artists/{artist_id}": {
+      "get": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "artist"
         ],
-        "summary": "Fetch statistics for manager's artists",
-        "operationId": "fetchStats",
+        "summary": "Get artist data",
+        "operationId": "getArtistByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID артиста",
+            "name": "artist_id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ArtistDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such artist",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -855,6 +1478,56 @@ func init() {
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login, lol",
+        "operationId": "login",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "email",
+            "description": "Email пользователя",
+            "name": "email",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "password",
+            "description": "Пароль пользователя",
+            "name": "password",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully logged in"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -873,7 +1546,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "manager"
         ],
         "summary": "Get list of managers",
         "operationId": "getManagers",
@@ -887,8 +1560,23 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       },
@@ -905,14 +1593,17 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "manager"
         ],
         "summary": "Create manager",
         "operationId": "addManager",
         "parameters": [
           {
-            "type": "integer",
-            "format": "uint64",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint64"
+            },
             "description": "ID пользователя",
             "name": "user_id",
             "in": "query",
@@ -923,60 +1614,103 @@ func init() {
           "201": {
             "description": "Manager successfully created"
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "403": {
-            "description": "Manager alredy exists"
+            "description": "Invalid user type (your role)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
-    "/publish": {
-      "post": {
+    "/managers/{manager_id}": {
+      "get": {
         "security": [
           {
             "basicAuth": []
           }
         ],
-        "consumes": [
-          "application/json"
-        ],
         "tags": [
-          "artist"
+          "manager"
         ],
-        "summary": "Create publish request",
-        "operationId": "publishReq",
+        "summary": "Get manager data",
+        "operationId": "getManagerByID",
         "parameters": [
           {
             "type": "integer",
             "format": "uint64",
-            "description": "ID релиза",
-            "name": "release_id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "format": "date",
-            "description": "Желаемая дата публикации",
-            "name": "date",
-            "in": "query",
+            "description": "ID менеджера",
+            "name": "manager_id",
+            "in": "path",
             "required": true
           }
         ],
         "responses": {
-          "201": {
-            "description": "Request successfully created"
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ManagerDTO"
+            }
           },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such manager",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -987,7 +1721,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "guest"
+          "auth"
         ],
         "summary": "Create new user",
         "operationId": "register",
@@ -1019,11 +1753,23 @@ func init() {
           "201": {
             "description": "User successfully created"
           },
-          "403": {
-            "description": "User alredy exists"
+          "409": {
+            "description": "User already exists",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -1039,7 +1785,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "artist"
+          "releases"
         ],
         "summary": "Get releases",
         "operationId": "getRelease",
@@ -1053,8 +1799,23 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       },
@@ -1068,7 +1829,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "artist"
+          "releases"
         ],
         "summary": "Upload release",
         "operationId": "addRelease",
@@ -1105,14 +1866,91 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/releases/{release_id}": {
+      "get": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "releases"
+        ],
+        "summary": "Get release data",
+        "operationId": "getReleaseByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID релиза",
+            "name": "release_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReleaseDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such release",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -1125,9 +1963,7 @@ func init() {
           }
         ],
         "tags": [
-          "non-member",
-          "manager",
-          "artist"
+          "requests"
         ],
         "summary": "Get requests",
         "operationId": "getRequests",
@@ -1141,8 +1977,126 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error"
+          },
+          "403": {
+            "description": "Invalid user type"
+          },
           "500": {
             "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/requests/contracts": {
+      "post": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create sign request",
+        "operationId": "signContract",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Псевдоним",
+            "name": "nickname",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Request successfully created"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/requests/publications": {
+      "post": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create publish request",
+        "operationId": "publishReq",
+        "parameters": [
+          {
+            "description": "Поля заявки на публикацию релиза",
+            "name": "publication_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PublishRequestInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Request successfully created"
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -1155,9 +2109,7 @@ func init() {
           }
         ],
         "tags": [
-          "non-member",
-          "manager",
-          "artist"
+          "requests"
         ],
         "summary": "Get specified request",
         "operationId": "getRequest",
@@ -1178,21 +2130,48 @@ func init() {
               "$ref": "#/definitions/PublishRequestDTO"
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
     "/requests/{req_id}/accept": {
-      "post": {
+      "patch": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "requests"
         ],
         "summary": "Accept specified request",
         "operationId": "acceptRequest",
@@ -1210,21 +2189,48 @@ func init() {
           "200": {
             "description": "Success"
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
     "/requests/{req_id}/decline": {
-      "post": {
+      "patch": {
         "security": [
           {
             "basicAuth": []
           }
         ],
         "tags": [
-          "manager"
+          "requests"
         ],
         "summary": "Decline specified request",
         "operationId": "declineRequest",
@@ -1242,53 +2248,40 @@ func init() {
           "200": {
             "description": "Success"
           },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
-    "/sign-contract": {
-      "post": {
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "consumes": [
-          "application/json"
-        ],
-        "tags": [
-          "non-member"
-        ],
-        "summary": "Create sign request",
-        "operationId": "signContract",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Псевдоним",
-            "name": "nickname",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Request successfully created"
-          },
-          "400": {
-            "description": "Invalid request fields"
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "403": {
-            "description": "Invalid user type"
+            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     },
-    "/stats": {
+    "/tracks/{track_id}": {
       "get": {
         "security": [
           {
@@ -1296,17 +2289,56 @@ func init() {
           }
         ],
         "tags": [
-          "artist",
-          "manager"
+          "tracks"
         ],
-        "summary": "Get stats",
-        "operationId": "getStats",
+        "summary": "Get track data",
+        "operationId": "getTrackByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID трека",
+            "name": "track_id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TrackDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such track",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
@@ -1325,7 +2357,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "admin"
+          "user"
         ],
         "summary": "Get list of users",
         "operationId": "getUsers",
@@ -1339,14 +2371,126 @@ func init() {
               }
             }
           },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "500": {
-            "description": "Internal error"
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get user data",
+        "operationId": "getUserByID",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "uint64",
+            "description": "ID юзера",
+            "name": "user_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserDTO"
+            }
+          },
+          "401": {
+            "description": "Auth error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "422": {
+            "description": "Invalid params",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
           }
         }
       }
     }
   },
   "definitions": {
+    "ArtistDTO": {
+      "type": "object",
+      "properties": {
+        "activity": {
+          "type": "boolean"
+        },
+        "artist_id": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "contract_term": {
+          "type": "string",
+          "format": "date"
+        },
+        "manager_id": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "uint64"
+        }
+      }
+    },
+    "LeErrorMessage": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
     "ManagerDTO": {
       "type": "object",
       "properties": {
@@ -1382,6 +2526,19 @@ func init() {
         },
         "grade": {
           "type": "integer"
+        },
+        "release_id": {
+          "type": "integer",
+          "format": "uint64"
+        }
+      }
+    },
+    "PublishRequestInput": {
+      "type": "object",
+      "properties": {
+        "expected_date": {
+          "type": "string",
+          "format": "date"
         },
         "release_id": {
           "type": "integer",
@@ -1606,10 +2763,19 @@ func init() {
       "name": "manager"
     },
     {
-      "name": "non-member"
+      "name": "user"
     },
     {
-      "name": "guest"
+      "name": "requests"
+    },
+    {
+      "name": "tracks"
+    },
+    {
+      "name": "releases"
+    },
+    {
+      "name": "auth"
     }
   ]
 }`))
