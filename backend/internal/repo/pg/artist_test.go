@@ -34,10 +34,11 @@ func (s *ArtistPgRepoSuite) AfterEach(t provider.T) {
 	s.db.Close()
 }
 
-func (s *ArtistPgRepoSuite) TestArtistPgRepo_GetSuccess(t provider.T) {
+func (s *ArtistPgRepoSuite) Test_ArtistPgRepoGetSuccess(t provider.T) {
 	t.Title("Get: Success")
 	t.Tags("ArtistPgRepo")
 	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
+
 		q := "SELECT artist_id, nickname, contract_due, activity, user_id, manager_id FROM artists WHERE artist_id=$1"
 		s.mock.ExpectQuery(q).
 			WithArgs(uint64(1)).
@@ -114,6 +115,7 @@ func (s *ArtistPgRepoSuite) TestArtistPgRepo_UpdateSuccess(t provider.T) {
 
 		expectedArtist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
 		artist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
+
 		err := s.repo.Update(s.ctx, artist)
 
 		sCtx.Assert().NoError(err)
@@ -143,13 +145,15 @@ func (s *ArtistPgRepoSuite) TestArtistPgRepo_CreateSuccess(t provider.T) {
 	t.Title("Create: Success")
 	t.Tags("ArtistPgRepo")
 	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
+
 		q := "INSERT INTO artists(user_id, nickname, contract_due, activity, manager_id)" +
 			"VALUES($1, $2, $3, $4, $5) RETURNING artist_id"
 		s.mock.ExpectQuery(q).
 			WithArgs(uint64(7), "uzi", cdtime.GetEndOfContract(), true, uint64(9)).
-			WillReturnRows(sqlmock.NewRows([]string{"artist_id"}).AddRow(1))
+			WillReturnRows(sqlmock.NewRows([]string{"artist_id"}).AddRow(27))
 
-		expectedArtist := data_builders.NewArtistBuilder().Build()
+		expectedArtist := data_builders.NewArtistBuilder().WithID(uint64(27)).Build()
+
 		artist := data_builders.NewArtistBuilder().WithID(0).Build()
 
 		err := s.repo.Create(s.ctx, artist)
