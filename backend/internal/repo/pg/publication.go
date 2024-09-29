@@ -5,9 +5,9 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"database/sql"
-	"errors"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -31,7 +31,7 @@ func (pub *PublicationPgRepo) Create(ctx context.Context, publication *models.Pu
 		publication.ManagerID, publication.ReleaseID, publication.Date).Scan(&publicationID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	publication.PublicationID = publicationID
@@ -48,7 +48,7 @@ func (pub *PublicationPgRepo) Get(ctx context.Context, publicationID uint64) (*m
 		publicationID).Scan(&publication.PublicationID, &publication.Date, &publication.ManagerID, &publication.ReleaseID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &publication, err
@@ -66,8 +66,9 @@ func (pub *PublicationPgRepo) GetAllByDate(ctx context.Context, date time.Time) 
 		return publications, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -75,7 +76,7 @@ func (pub *PublicationPgRepo) GetAllByDate(ctx context.Context, date time.Time) 
 		err = rows.Scan(&publication.PublicationID, &publication.Date, &publication.ManagerID, &publication.ReleaseID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		publications = append(publications, publication)
@@ -95,7 +96,7 @@ func (pub *PublicationPgRepo) GetAllByManager(ctx context.Context, mng uint64) (
 		return publications, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -104,7 +105,7 @@ func (pub *PublicationPgRepo) GetAllByManager(ctx context.Context, mng uint64) (
 		err = rows.Scan(&publication.PublicationID, &publication.Date, &publication.ManagerID, &publication.ReleaseID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		publications = append(publications, publication)
@@ -127,7 +128,7 @@ func (pub *PublicationPgRepo) GetAllByArtistSinceDate(ctx context.Context, date 
 		return publications, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -136,7 +137,7 @@ func (pub *PublicationPgRepo) GetAllByArtistSinceDate(ctx context.Context, date 
 		err = rows.Scan(&publication.PublicationID, &publication.Date, &publication.ManagerID, &publication.ReleaseID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		publications = append(publications, publication)
@@ -148,10 +149,18 @@ func (pub *PublicationPgRepo) GetAllByArtistSinceDate(ctx context.Context, date 
 
 func (pub *PublicationPgRepo) Update(ctx context.Context, publication *models.Publication) error {
 
-	q := "UPDATE publications SET creation_date=$1, manager_id=$2, release_id=$3 WHERE publication_id=$4"
+	q := "UPDATE publications SET creation_date=$1, manager_id=$2, release_id=$3 WHERE publication_id=$4 RETURNING *"
 
-	_, err := pub.txResolver.DefaultTrOrDB(ctx, pub.db).ExecContext(ctx, q,
-		publication.Date, publication.ManagerID, publication.ReleaseID, publication.PublicationID)
+	err := pub.txResolver.DefaultTrOrDB(ctx, pub.db).QueryRowxContext(ctx, q,
+		publication.Date, publication.ManagerID, publication.ReleaseID, publication.PublicationID).Scan(
+		&publication.Date,
+		&publication.ManagerID,
+		&publication.ReleaseID,
+		&publication.PublicationID)
 
-	return err
+	if err != nil {
+		return errors.Wrap(PgDbErr, err.Error())
+	}
+
+	return nil
 }
