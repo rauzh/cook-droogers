@@ -4,7 +4,7 @@ import (
 	"context"
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
-	"fmt"
+	"github.com/pkg/errors"
 	"log/slog"
 )
 
@@ -15,6 +15,9 @@ type IManagerService interface {
 	GetRandomManagerID() (uint64, error)
 	GetForAdmin() ([]models.Manager, error)
 }
+
+var CreateDbError error = errors.New("can't create manager")
+var GetDbError error = errors.New("can't get manager")
 
 type ManagerService struct {
 	repo   repo.ManagerRepo
@@ -28,7 +31,7 @@ func NewManagerService(r repo.ManagerRepo, logger *slog.Logger) IManagerService 
 func (mngSvc *ManagerService) Create(manager *models.Manager) error {
 	if err := mngSvc.repo.Create(context.Background(), manager); err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: Create", "error", err.Error())
-		return fmt.Errorf("can't create manager with err %w", err)
+		return errors.Wrap(CreateDbError, err.Error())
 	}
 	return nil
 }
@@ -38,7 +41,7 @@ func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: Get", "error", err.Error())
-		return nil, fmt.Errorf("can't get manager with err %w", err)
+		return nil, errors.Wrap(GetDbError, err.Error())
 	}
 	return manager, nil
 }
@@ -48,7 +51,7 @@ func (mngSvc *ManagerService) GetForAdmin() ([]models.Manager, error) {
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: GetForAdmin", "error", err.Error())
-		return nil, fmt.Errorf("can't get managers with err %w", err)
+		return nil, errors.Wrap(GetDbError, err.Error())
 	}
 	return managers, nil
 }
@@ -58,7 +61,7 @@ func (mngSvc *ManagerService) GetByUserID(id uint64) (*models.Manager, error) {
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: GetByUserID", "error", err.Error())
-		return nil, fmt.Errorf("can't get manager with err %w", err)
+		return nil, errors.Wrap(GetDbError, err.Error())
 	}
 	return manager, nil
 }
@@ -67,7 +70,7 @@ func (mngSvc *ManagerService) GetRandomManagerID() (uint64, error) {
 	id, err := mngSvc.repo.GetRandManagerID(context.Background())
 
 	if err != nil {
-		return 0, fmt.Errorf("can't get manager with err %w", err)
+		return 0, errors.Wrap(GetDbError, err.Error())
 	}
 	return id, nil
 }
