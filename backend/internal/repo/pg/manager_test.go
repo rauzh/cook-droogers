@@ -234,6 +234,39 @@ func (s *ManagerPgRepoSuite) TestManagerPgRepo_CreateFailure(t provider.T) {
 	})
 }
 
+func (s *ManagerPgRepoSuite) TestManagerPgRepo_GetRandManagerIDSuccess(t provider.T) {
+	t.Title("GetRandManagerID: Success")
+	t.Tags("ManagerPgRepo")
+	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
+		// Ожидание для первого запроса
+		q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1"
+		s.mock.ExpectQuery(q).
+			WillReturnRows(sqlmock.NewRows([]string{"manager_id"}).
+				AddRow(8))
+
+		var expectedManagerID uint64 = 8
+		managerID, err := s.repo.GetRandManagerID(s.ctx)
+
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().Equal(expectedManagerID, managerID)
+	})
+}
+
+func (s *ManagerPgRepoSuite) TestRequestPgRepo_GetRandManagerIDFailure(t provider.T) {
+	t.Title("GetRandManagerID: Failure")
+	t.Tags("ManagerPgRepo")
+	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
+		// Ожидание для первого запроса
+		q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1"
+		s.mock.ExpectQuery(q).WillReturnError(sql.ErrConnDone)
+
+		managerID, err := s.repo.GetRandManagerID(s.ctx)
+
+		sCtx.Assert().Zero(managerID)
+		sCtx.Assert().ErrorIs(err, PgDbErr)
+	})
+}
+
 func TestManagerPgRepoSuiteRunner(t *testing.T) {
 	suite.RunSuite(t, new(ManagerPgRepoSuite))
 }

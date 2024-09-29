@@ -161,10 +161,14 @@ func (mng *ManagerPgRepo) Get(ctx context.Context, managerID uint64) (*models.Ma
 
 func (mng *ManagerPgRepo) GetRandManagerID(ctx context.Context) (uint64, error) {
 
-	q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1;"
+	q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1"
 
 	var managerID uint64
 	err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q).Scan(&managerID)
+
+	if err != nil {
+		return 0, errors.Wrap(PgDbErr, err.Error())
+	}
 
 	return managerID, err
 }
