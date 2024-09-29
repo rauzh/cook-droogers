@@ -55,6 +55,10 @@ func (sctRepo *SignContractRequestPgRepo) SetMeta(ctx context.Context, signReq *
 	err = sctRepo.txResolver.DefaultTrOrDB(ctx, sctRepo.db).QueryRowxContext(ctx, q,
 		metaJson, signReq.RequestID).Scan()
 
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
+
 	return err
 }
 

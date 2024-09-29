@@ -6,7 +6,6 @@ import (
 	"cookdroogers/internal/requests/publish/repo"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -49,8 +48,6 @@ func (pubreqrepo *PublishRequestPgRepo) Create(ctx context.Context, req *publish
 
 	err = pubreqrepo.txResolver.DefaultTrOrDB(ctx, pubreqrepo.db).QueryRowxContext(ctx, q,
 		req.Status, req.Type, req.Date, metaJson, req.ManagerID, req.ApplierID).Scan(&req.RequestID)
-
-	fmt.Println(req.Status, req.Type, req.Date, metaJson, req.ManagerID, req.ApplierID, req.RequestID)
 
 	return err
 }
