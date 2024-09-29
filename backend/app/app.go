@@ -16,7 +16,7 @@ import (
 	"cookdroogers/internal/requests/broker/publish"
 	"cookdroogers/internal/requests/broker/sign_contract"
 	"cookdroogers/internal/requests/broker/sync_broker"
-	criteria "cookdroogers/internal/requests/criteria_controller"
+	criteria "cookdroogers/internal/requests/criteria_controller/criteria_collection"
 	publish_criteria "cookdroogers/internal/requests/criteria_controller/publish"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	pg2 "cookdroogers/internal/requests/publish/repo/pg"

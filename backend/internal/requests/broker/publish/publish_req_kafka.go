@@ -6,7 +6,7 @@ import (
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/broker"
 	"cookdroogers/internal/requests/broker/broker_dto"
-	criteria "cookdroogers/internal/requests/criteria_controller"
+	criteria "cookdroogers/internal/requests/criteria_controller/criteria_collection"
 	"cookdroogers/internal/requests/publish"
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	cdtime "cookdroogers/pkg/time"

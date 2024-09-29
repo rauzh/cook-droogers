@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	rlsService "cookdroogers/internal/release/service"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/internal/requests/base"
 	base_errors "cookdroogers/internal/requests/base/errors"
@@ -9,9 +8,6 @@ import (
 	"cookdroogers/internal/requests/publish"
 	pubReqErrors "cookdroogers/internal/requests/publish/errors"
 	publishReqRepoMocks "cookdroogers/internal/requests/publish/repo/mocks"
-	statFetcher "cookdroogers/internal/statistics/fetcher/mocks"
-	statService "cookdroogers/internal/statistics/service"
-	trackService "cookdroogers/internal/track/service"
 	transacMock "cookdroogers/internal/transactor/mocks"
 	cdtime "cookdroogers/pkg/time"
 	"errors"
@@ -22,9 +18,7 @@ import (
 
 type _depFields struct {
 	_trackRepo *mocks.TrackRepo
-	_statRepo  *mocks.StatisticsRepo
 
-	statService     statService.IStatisticsService
 	publicationRepo *mocks.PublicationRepo
 	releaseRepo     *mocks.ReleaseRepo
 	artistRepo      *mocks.ArtistRepo
@@ -40,21 +34,12 @@ func _newMockPublishReqDepFields(t *testing.T) *_depFields {
 	rlsMockRepo := mocks.NewReleaseRepo(t)
 	artistMockRepo := mocks.NewArtistRepo(t)
 	trkMockRepo := mocks.NewTrackRepo(t)
-	statMockRepo := mocks.NewStatisticsRepo(t)
 	publishMockRepo := publishReqRepoMocks.NewPublishRequestRepo(t)
-
-	statMockFetcher := statFetcher.NewStatFetcher(t)
-
-	trkSvc := trackService.NewTrackService(trkMockRepo, slog.Default())
-	rlsSvc := rlsService.NewReleaseService(trkSvc, transactionMock, rlsMockRepo, slog.Default())
-	statSvc := statService.NewStatisticsService(trkSvc, statMockFetcher, statMockRepo, rlsSvc, slog.Default())
 
 	mockBroker := broker_mocks.NewIBroker(t)
 
 	f := &_depFields{
-		_statRepo:       statMockRepo,
 		_trackRepo:      trkMockRepo,
-		statService:     statSvc,
 		publicationRepo: pbcMockRepo,
 		releaseRepo:     rlsMockRepo,
 		artistRepo:      artistMockRepo,
@@ -156,7 +141,7 @@ func TestPublishRequestUseCase_Decline(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
+			publishReqUseCase, err := NewPublishRequestUseCase(f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
 
 			// act
 			err = publishReqUseCase.Decline(tt.in.pubReq)
@@ -274,7 +259,7 @@ func TestPublishRequestUseCase_Accept(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
+			publishReqUseCase, err := NewPublishRequestUseCase(f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
 
 			// act
 			err = publishReqUseCase.Accept(tt.in.pubReq)
@@ -381,7 +366,7 @@ func TestPublishRequestUseCase_Apply(t *testing.T) {
 				tt.dependencies(f)
 			}
 
-			publishReqUseCase, err := NewPublishRequestUseCase(f.statService, f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
+			publishReqUseCase, err := NewPublishRequestUseCase(f.publicationRepo, f.releaseRepo, f.artistRepo, f.transactor, f.pbBroker, f.publishRepo, slog.Default())
 
 			// act
 			err = publishReqUseCase.Apply(tt.in.pubReq)

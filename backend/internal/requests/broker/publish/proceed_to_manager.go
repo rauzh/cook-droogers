@@ -3,7 +3,7 @@ package publish
 import (
 	"context"
 	"cookdroogers/internal/requests/base"
-	criteria "cookdroogers/internal/requests/criteria_controller"
+	criteria "cookdroogers/internal/requests/criteria_controller/criteria_collection"
 	"cookdroogers/internal/requests/publish"
 	"fmt"
 )

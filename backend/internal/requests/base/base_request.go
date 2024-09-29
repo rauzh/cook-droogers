@@ -17,6 +17,7 @@ type Request struct {
 	ManagerID uint64
 }
 
+//go:generate mockery --name IRequest --with-expecter
 type IRequest interface {
 	Validate(RequestType) error
 	GetType() RequestType

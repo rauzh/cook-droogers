@@ -12,11 +12,13 @@ type CriteriaDiff struct {
 
 type CriteriaName string
 
+//go:generate mockery --name Criteria --with-expecter
 type Criteria interface {
 	Apply(base.IRequest) CriteriaDiff
 	Name() CriteriaName
 }
 
+//go:generate mockery --name AbstractCriteriaFabric --with-expecter
 type AbstractCriteriaFabric interface {
 	Create() (Criteria, error)
 }
