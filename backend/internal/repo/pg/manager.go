@@ -30,8 +30,7 @@ func (mng *ManagerPgRepo) Create(ctx context.Context, manager *models.Manager) e
 		q := "INSERT INTO managers(user_id) VALUES($1) RETURNING manager_id"
 
 		var managerID uint64
-		err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q,
-			manager.UserID).Scan(&managerID)
+		err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q, manager.UserID).Scan(&managerID)
 
 		if err != nil {
 			return errors.Wrap(PgDbErr, err.Error())
@@ -73,7 +72,7 @@ func (mng *ManagerPgRepo) getManagedArtists(ctx context.Context, mngID uint64) (
 		var artistID uint64
 		err = rows.Scan(&artistID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 		artists = append(artists, artistID)
 	}
@@ -92,7 +91,7 @@ func (mng *ManagerPgRepo) GetForAdmin(ctx context.Context) ([]models.Manager, er
 		return mans, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -102,12 +101,12 @@ func (mng *ManagerPgRepo) GetForAdmin(ctx context.Context) ([]models.Manager, er
 
 		err := rows.Scan(&man.ManagerID, &man.UserID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		artists, err := mng.getManagedArtists(ctx, man.ManagerID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		man.Artists = artists
@@ -126,12 +125,12 @@ func (mng *ManagerPgRepo) GetByUserID(ctx context.Context, userID uint64) (*mode
 		userID).Scan(&manager.ManagerID, &manager.UserID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	artists, err := mng.getManagedArtists(ctx, manager.ManagerID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	manager.Artists = artists
@@ -147,12 +146,12 @@ func (mng *ManagerPgRepo) Get(ctx context.Context, managerID uint64) (*models.Ma
 		managerID).Scan(&manager.ManagerID, &manager.UserID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	artists, err := mng.getManagedArtists(ctx, manager.ManagerID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	manager.Artists = artists
@@ -162,10 +161,14 @@ func (mng *ManagerPgRepo) Get(ctx context.Context, managerID uint64) (*models.Ma
 
 func (mng *ManagerPgRepo) GetRandManagerID(ctx context.Context) (uint64, error) {
 
-	q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1;"
+	q := "SELECT manager_id FROM managers ORDER BY random() LIMIT 1"
 
 	var managerID uint64
 	err := mng.txResolver.DefaultTrOrDB(ctx, mng.db).QueryRowxContext(ctx, q).Scan(&managerID)
+
+	if err != nil {
+		return 0, errors.Wrap(PgDbErr, err.Error())
+	}
 
 	return managerID, err
 }

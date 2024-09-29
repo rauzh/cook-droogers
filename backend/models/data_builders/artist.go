@@ -28,7 +28,7 @@ func (b *ArtistBuilder) WithID(id uint64) *ArtistBuilder {
 	return b
 }
 
-func (b *ArtistBuilder) WithNicname(nickname string) *ArtistBuilder {
+func (b *ArtistBuilder) WithNickname(nickname string) *ArtistBuilder {
 	b.artist.Nickname = nickname
 	return b
 }

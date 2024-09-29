@@ -113,8 +113,8 @@ func (s *ArtistPgRepoSuite) TestArtistPgRepo_UpdateSuccess(t provider.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"artist_id", "nickname", "contract_due", "activity", "user_id", "manager_id"}).
 				AddRow(1, "carti", cdtime.GetEndOfContract(), true, uint64(7), uint64(9)))
 
-		expectedArtist := data_builders.NewArtistBuilder().WithNicname("carti").Build()
-		artist := data_builders.NewArtistBuilder().WithNicname("carti").Build()
+		expectedArtist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
+		artist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
 
 		err := s.repo.Update(s.ctx, artist)
 
@@ -131,8 +131,8 @@ func (s *ArtistPgRepoSuite) TestRequestPgRepo_UpdateFailure(t provider.T) {
 		s.mock.ExpectQuery(q).
 			WillReturnError(sql.ErrConnDone)
 
-		expectedArtist := data_builders.NewArtistBuilder().WithNicname("carti").Build()
-		artist := data_builders.NewArtistBuilder().WithNicname("carti").Build()
+		expectedArtist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
+		artist := data_builders.NewArtistBuilder().WithNickname("carti").Build()
 
 		err := s.repo.Update(s.ctx, artist)
 
