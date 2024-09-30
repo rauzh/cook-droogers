@@ -64,7 +64,7 @@ func (usr *UserPgRepo) Get(ctx context.Context, id uint64) (*models.User, error)
 		&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &user, nil
@@ -78,7 +78,7 @@ func (usr *UserPgRepo) Update(ctx context.Context, user *models.User) error {
 		user.Name, user.Email, user.Type, user.Password, user.UserID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return nil
@@ -91,7 +91,7 @@ func (usr *UserPgRepo) UpdateType(ctx context.Context, userID uint64, typ models
 	_, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).ExecContext(ctx, q, typ, userID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return nil
@@ -117,7 +117,7 @@ func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error 
 	_, err := usr.txResolver.DefaultTrOrDB(ctx, usr.db).ExecContext(ctx, q)
 
 	if err != nil {
-		return err
+		return errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func (usr *UserPgRepo) GetForAdmin(ctx context.Context) ([]models.User, error) {
 		return users, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -144,7 +144,7 @@ func (usr *UserPgRepo) GetForAdmin(ctx context.Context) ([]models.User, error) {
 
 		err := rows.Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Type)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		users = append(users, user)

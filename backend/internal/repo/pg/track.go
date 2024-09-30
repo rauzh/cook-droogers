@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type TrackPgRepo struct {
@@ -28,7 +29,7 @@ func (trk *TrackPgRepo) Create(ctx context.Context, track *models.Track) (uint64
 	err := trk.txResolver.DefaultTrOrDB(ctx, trk.db).QueryRowxContext(ctx, q,
 		track.Title, track.Genre, track.Duration, track.Type).Scan(&trackID)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	track.TrackID = trackID
@@ -40,7 +41,7 @@ func (trk *TrackPgRepo) Create(ctx context.Context, track *models.Track) (uint64
 		err = trk.txResolver.DefaultTrOrDB(ctx, trk.db).QueryRowxContext(ctx, q,
 			artistID, track.TrackID).Scan(&connId)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(PgDbErr, err.Error())
 		}
 	}
 
@@ -57,7 +58,7 @@ func (trk *TrackPgRepo) Get(ctx context.Context, trackID uint64) (*models.Track,
 		&track.TrackID, &track.Title, &track.Genre, &track.Duration, &track.Type)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	return &track, nil

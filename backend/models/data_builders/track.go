@@ -14,7 +14,7 @@ func NewTrackBuilder() *TrackBuilder {
 			Duration: 60,
 			Genre:    "trap",
 			Type:     "intro",
-			Artists:  []uint64{7},
+			Artists:  nil,
 		},
 	}
 }
