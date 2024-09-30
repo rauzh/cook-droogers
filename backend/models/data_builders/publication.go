@@ -13,7 +13,7 @@ func NewPublicationBuilder() *PublicationBuilder {
 	return &PublicationBuilder{
 		Publication: &models.Publication{
 			PublicationID: 88,
-			Date:          time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
+			Date:          date,
 			ReleaseID:     888,
 			ManagerID:     8,
 		},
