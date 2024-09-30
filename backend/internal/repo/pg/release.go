@@ -6,9 +6,9 @@ import (
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	"database/sql"
-	"errors"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type ReleasePgRepo struct {
@@ -34,7 +34,7 @@ func (rel *ReleasePgRepo) Create(ctx context.Context, release *models.Release) e
 			release.Title, release.Status, release.DateCreation, release.ArtistID).Scan(&releaseID)
 
 		if err != nil {
-			return err
+			return errors.Wrap(PgDbErr, err.Error())
 		}
 
 		release.ReleaseID = releaseID
@@ -44,7 +44,7 @@ func (rel *ReleasePgRepo) Create(ctx context.Context, release *models.Release) e
 
 			_, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).ExecContext(ctx, q, releaseID, trackID)
 			if err != nil {
-				return err
+				return errors.Wrap(PgDbErr, err.Error())
 			}
 		}
 
@@ -62,7 +62,7 @@ func (rel *ReleasePgRepo) Get(ctx context.Context, releaseID uint64) (*models.Re
 		&release.Title, &release.Status, &release.DateCreation, &release.ArtistID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 
 	release.ReleaseID = releaseID
@@ -74,7 +74,7 @@ func (rel *ReleasePgRepo) Get(ctx context.Context, releaseID uint64) (*models.Re
 		return &release, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -82,7 +82,7 @@ func (rel *ReleasePgRepo) Get(ctx context.Context, releaseID uint64) (*models.Re
 		var trackID uint64
 		err = rows.Scan(&trackID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		release.Tracks = append(release.Tracks, trackID)
@@ -103,7 +103,7 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 		return releases, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(PgDbErr, err.Error())
 	}
 	defer rows.Close()
 
@@ -113,7 +113,7 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 
 		err = rows.Scan(&release.Title, &release.Status, &release.DateCreation, &release.ReleaseID)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		release.ArtistID = artistID
@@ -125,14 +125,14 @@ func (rel *ReleasePgRepo) GetAllByArtist(ctx context.Context, artistID uint64) (
 			continue
 		}
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		for rowsTRK.Next() {
 			var trackID uint64
 			err = rowsTRK.Scan(&trackID)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(PgDbErr, err.Error())
 			}
 
 			release.Tracks = append(release.Tracks, trackID)
@@ -161,20 +161,20 @@ func (rel *ReleasePgRepo) GetAllTracks(ctx context.Context, release *models.Rele
 			&track.TrackID, &track.Title, &track.Genre, &track.Duration, &track.Type)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		rows, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).QueryxContext(ctx, q2, trackID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(PgDbErr, err.Error())
 		}
 
 		for rows.Next() {
 			var artistID uint64
 			err := rows.Scan(&artistID)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(PgDbErr, err.Error())
 			}
 
 			track.Artists = append(track.Artists, artistID)
@@ -193,6 +193,10 @@ func (rel *ReleasePgRepo) Update(ctx context.Context, release *models.Release) e
 	_, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).ExecContext(ctx, q,
 		release.Title, release.Status, release.DateCreation, release.ArtistID, release.ReleaseID)
 
+	if err != nil {
+		return errors.Wrap(PgDbErr, err.Error())
+	}
+
 	return err
 }
 
@@ -201,6 +205,10 @@ func (rel *ReleasePgRepo) UpdateStatus(ctx context.Context, id uint64, stat mode
 	q := "UPDATE releases SET status=$1 WHERE release_id=$2"
 
 	_, err := rel.txResolver.DefaultTrOrDB(ctx, rel.db).ExecContext(ctx, q, stat, id)
+
+	if err != nil {
+		return errors.Wrap(PgDbErr, err.Error())
+	}
 
 	return err
 }
