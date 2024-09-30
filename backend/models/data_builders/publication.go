@@ -2,6 +2,7 @@ package data_builders
 
 import (
 	"cookdroogers/models"
+	cdtime "cookdroogers/pkg/time"
 	"time"
 )
 
@@ -13,7 +14,7 @@ func NewPublicationBuilder() *PublicationBuilder {
 	return &PublicationBuilder{
 		Publication: &models.Publication{
 			PublicationID: 88,
-			Date:          date,
+			Date:          cdtime.GetToday().AddDate(-1, 0, 0),
 			ReleaseID:     888,
 			ManagerID:     8,
 		},

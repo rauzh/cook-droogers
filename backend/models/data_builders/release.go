@@ -2,10 +2,9 @@ package data_builders
 
 import (
 	"cookdroogers/models"
+	cdtime "cookdroogers/pkg/time"
 	"time"
 )
-
-var date = time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC)
 
 type ReleaseBuilder struct {
 	Release *models.Release
@@ -17,7 +16,7 @@ func NewReleaseBuilder() *ReleaseBuilder {
 			ReleaseID:    888,
 			Title:        "title",
 			Status:       models.PublishedRelease,
-			DateCreation: date,
+			DateCreation: cdtime.GetToday().AddDate(-1, 0, 0),
 			Tracks:       []uint64{1111},
 			ArtistID:     7,
 		},
