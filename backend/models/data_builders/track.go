@@ -19,6 +19,11 @@ func NewTrackBuilder() *TrackBuilder {
 	}
 }
 
+func (b *TrackBuilder) WithArtists(artists []uint64) *TrackBuilder {
+	b.Track.Artists = artists
+	return b
+}
+
 func (b *TrackBuilder) Build() *models.Track {
 	return b.Track
 }

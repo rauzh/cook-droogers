@@ -204,7 +204,7 @@ func (s *ReleasePgRepoSuit) TestReleasePgRepo_GetAllTracksSuccess(t provider.T) 
 				AddRow(7))
 
 		release := data_builders.NewReleaseBuilder().Build()
-		expectedTrack := data_builders.NewTrackBuilder().Build()
+		expectedTrack := data_builders.NewTrackBuilder().WithArtists([]uint64{7}).Build()
 		expectedTracks := append(make([]models.Track, 0), *expectedTrack)
 
 		tracks, err := s.repo.GetAllTracks(s.ctx, release)
