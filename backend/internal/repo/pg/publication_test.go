@@ -5,15 +5,15 @@ import (
 	"cookdroogers/internal/repo"
 	"cookdroogers/models"
 	"cookdroogers/models/data_builders"
+	cdtime "cookdroogers/pkg/time"
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"testing"
-	"time"
 )
 
-var date = time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC)
+var date = cdtime.GetToday().AddDate(-1, 0, 0)
 
 type PublicationPgRepoSuit struct {
 	suite.Suite
@@ -239,7 +239,7 @@ func (s *PublicationPgRepoSuit) TestPublicationPgRepo_UpdateFailure(t provider.T
 	t.Title("Update: Failure")
 	t.Tags("PublicationPgRepo")
 	t.WithNewStep("Failure", func(sCtx provider.StepCtx) {
-		q := "UPDATE publications SET creation_date=$1, manager_id=$2, release_id=$3 WHERE publication_id=$4 RETURN *"
+		q := "UPDATE publications SET creation_date=$1, manager_id=$2, release_id=$3 WHERE publication_id=$4 RETURNING *"
 		s.mock.ExpectQuery(q).WillReturnError(sql.ErrConnDone)
 
 		publication := data_builders.NewPublicationBuilder().WithManagerID(8).WithReleaseID(888).WithPublicationID(88).Build()
