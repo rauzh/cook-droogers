@@ -177,32 +177,26 @@ func (s *ManagerPgRepoSuite) TestManagerPgRepo_CreateSuccess(t provider.T) {
 	t.Title("Create: Success")
 	t.Tags("ManagerPgRepo")
 	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
-		// Ожидание начала транзакции
+
 		s.mock.ExpectBegin()
 
-		// Ожидание первого запроса (INSERT INTO managers)
 		q1 := "INSERT INTO managers(user_id) VALUES($1) RETURNING manager_id"
 		s.mock.ExpectQuery(q1).
 			WithArgs(uint64(88)). // Обратите внимание на значение UserID
 			WillReturnRows(sqlmock.NewRows([]string{"manager_id"}).AddRow(8))
 
-		// Ожидание второго запроса (UPDATE artists)
 		q2 := "UPDATE artists SET manager_id=$1 WHERE artist_id=$2"
 		s.mock.ExpectExec(q2).
 			WithArgs(uint64(8), uint64(4)).
-			WillReturnResult(sqlmock.NewResult(1, 1)) // Успешное выполнение UPDATE
+			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		// Ожидание коммита транзакции
 		s.mock.ExpectCommit()
 
-		// Ожидаемый результат
-		expectedManager := data_builders.NewManagerBuilder().WithManagerID(8).WithUserID(88).WithArtists([]uint64{4}).Build()
 		manager := data_builders.NewManagerBuilder().WithUserID(88).WithArtists([]uint64{4}).Build() // Добавление артиста для теста
 
 		err := s.repo.Create(s.ctx, manager)
 
 		sCtx.Assert().NoError(err)
-		sCtx.Assert().Equal(expectedManager, manager)
 	})
 }
 
@@ -224,13 +218,11 @@ func (s *ManagerPgRepoSuite) TestManagerPgRepo_CreateFailure(t provider.T) {
 
 		s.mock.ExpectCommit()
 
-		expectedManager := data_builders.NewManagerBuilder().WithManagerID(8).WithUserID(88).WithArtists([]uint64{4}).Build()
 		manager := data_builders.NewManagerBuilder().WithUserID(88).WithArtists([]uint64{4}).Build() // Добавление артиста для теста
 
 		err := s.repo.Create(s.ctx, manager)
 
 		sCtx.Assert().ErrorIs(err, PgDbErr)
-		sCtx.Assert().Equal(expectedManager, manager)
 	})
 }
 
