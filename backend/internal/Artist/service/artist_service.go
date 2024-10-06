@@ -9,10 +9,10 @@ import (
 )
 
 type IArtistService interface {
-	Create(*models.Artist) error
-	Get(uint64) (*models.Artist, error)
-	GetByUserID(id uint64) (*models.Artist, error)
-	Update(*models.Artist) error
+	Create(context.Context, *models.Artist) error
+	Get(context.Context, uint64) (*models.Artist, error)
+	GetByUserID(ctx context.Context, id uint64) (*models.Artist, error)
+	Update(context.Context, *models.Artist) error
 }
 
 var CreateDbError error = errors.New("can't create artist")
@@ -28,15 +28,15 @@ func NewArtistService(r repo.ArtistRepo, logger *slog.Logger) IArtistService {
 	return &ArtistService{repo: r, logger: logger}
 }
 
-func (ars *ArtistService) Create(artist *models.Artist) error {
-	if err := ars.repo.Create(context.Background(), artist); err != nil {
+func (ars *ArtistService) Create(ctx context.Context, artist *models.Artist) error {
+	if err := ars.repo.Create(ctx, artist); err != nil {
 		return errors.Wrap(CreateDbError, err.Error())
 	}
 	return nil
 }
 
-func (ars *ArtistService) Get(id uint64) (*models.Artist, error) {
-	artist, err := ars.repo.Get(context.Background(), id)
+func (ars *ArtistService) Get(ctx context.Context, id uint64) (*models.Artist, error) {
+	artist, err := ars.repo.Get(ctx, id)
 
 	if err != nil {
 		return nil, errors.Wrap(GetDbError, err.Error())
@@ -44,8 +44,8 @@ func (ars *ArtistService) Get(id uint64) (*models.Artist, error) {
 	return artist, nil
 }
 
-func (ars *ArtistService) GetByUserID(id uint64) (*models.Artist, error) {
-	artist, err := ars.repo.GetByUserID(context.Background(), id)
+func (ars *ArtistService) GetByUserID(ctx context.Context, id uint64) (*models.Artist, error) {
+	artist, err := ars.repo.GetByUserID(ctx, id)
 
 	if err != nil {
 		return nil, errors.Wrap(GetDbError, err.Error())
@@ -53,8 +53,8 @@ func (ars *ArtistService) GetByUserID(id uint64) (*models.Artist, error) {
 	return artist, nil
 }
 
-func (ars *ArtistService) Update(artist *models.Artist) error {
-	if err := ars.repo.Update(context.Background(), artist); err != nil {
+func (ars *ArtistService) Update(ctx context.Context, artist *models.Artist) error {
+	if err := ars.repo.Update(ctx, artist); err != nil {
 		return errors.Wrap(UpdateDbError, err.Error())
 	}
 	return nil

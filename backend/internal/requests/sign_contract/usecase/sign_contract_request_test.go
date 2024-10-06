@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	repo_mocks "cookdroogers/internal/repo/mocks"
 	"cookdroogers/internal/requests/base"
 	base_errors "cookdroogers/internal/requests/base/errors"
@@ -86,7 +87,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_Decline
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Decline(req)
+		err := signReqUseCase.Decline(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -108,7 +109,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_Decline
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Decline(req)
+		err := signReqUseCase.Decline(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, sctErrors.ErrNickname)
 	})
@@ -147,7 +148,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_ApplyOK
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Apply(req)
+		err := signReqUseCase.Apply(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -184,7 +185,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_ApplyFa
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Apply(req)
+		err := signReqUseCase.Apply(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, sql.ErrConnDone)
 	})
@@ -233,7 +234,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_AcceptO
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Accept(req)
+		err := signReqUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -257,7 +258,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_AcceptI
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Accept(req)
+		err := signReqUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, sctErrors.ErrNickname)
 	})
@@ -281,7 +282,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_AcceptA
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		err := signReqUseCase.Accept(req)
+		err := signReqUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, base_errors.ErrAlreadyClosed)
 	})
@@ -299,7 +300,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_GetOK(t
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		signreq, err := signReqUseCase.(*SignContractRequestUseCase).Get(uint64(1))
+		signreq, err := signReqUseCase.(*SignContractRequestUseCase).Get(context.Background(), uint64(1))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().NotNil(signreq)
@@ -319,7 +320,7 @@ func (s *SignContractRequestUseCaseSuite) TestSignContractRequestUseCase_GetDbEr
 
 		signReqUseCase, _ := NewSignContractRequestUseCase(df.userRepo, df.artistRepo, df.transactor, df.scBroker, df.signReqRepo, df.logger)
 
-		signreq, err := signReqUseCase.(*SignContractRequestUseCase).Get(uint64(1))
+		signreq, err := signReqUseCase.(*SignContractRequestUseCase).Get(context.Background(), uint64(1))
 
 		sCtx.Assert().ErrorIs(err, sql.ErrConnDone)
 		sCtx.Assert().Nil(signreq)

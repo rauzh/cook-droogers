@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/internal/requests/base"
 	base_errors "cookdroogers/internal/requests/base/errors"
@@ -91,7 +92,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_DeclineOK(t provi
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Decline(req)
+		err := publishUseCase.Decline(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -117,7 +118,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_DeclineInvalidDat
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Decline(req)
+		err := publishUseCase.Decline(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, pubReqErrors.ErrInvalidDate)
 	})
@@ -161,7 +162,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_AcceptOK(t provid
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Accept(req)
+		err := publishUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -188,7 +189,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_AcceptInvalidType
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Accept(req)
+		err := publishUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, base_errors.ErrInvalidType)
 	})
@@ -214,7 +215,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_AcceptAlreadyClos
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Accept(req)
+		err := publishUseCase.Accept(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, base_errors.ErrAlreadyClosed)
 	})
@@ -232,7 +233,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_GetOK(t provider.
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		req, err := publishUseCase.(*PublishRequestUseCase).Get(uint64(1))
+		req, err := publishUseCase.(*PublishRequestUseCase).Get(context.Background(), uint64(1))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().NotNil(req)
@@ -252,7 +253,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_GetDbErr(t provid
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		req, err := publishUseCase.(*PublishRequestUseCase).Get(uint64(1))
+		req, err := publishUseCase.(*PublishRequestUseCase).Get(context.Background(), uint64(1))
 
 		sCtx.Assert().ErrorIs(err, sql.ErrConnDone)
 		sCtx.Assert().Nil(req)
@@ -302,7 +303,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_ApplyOK(t provide
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Apply(req)
+		err := publishUseCase.Apply(context.Background(), req)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -328,7 +329,7 @@ func (s *PublishRequestUseCaseSuite) TestPublishRequestUseCase_ApplyInvalidDate(
 
 		publishUseCase, _ := NewPublishRequestUseCase(df.publicationRepo, df.releaseRepo, df.artistRepo, df.transactor, df.pbBroker, df.publishRepo, df.logger)
 
-		err := publishUseCase.Apply(req)
+		err := publishUseCase.Apply(context.Background(), req)
 
 		sCtx.Assert().ErrorIs(err, pubReqErrors.ErrInvalidDate)
 	})

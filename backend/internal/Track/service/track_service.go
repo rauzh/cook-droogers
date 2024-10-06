@@ -11,7 +11,7 @@ import (
 
 type ITrackService interface {
 	Create(context.Context, *models.Track) (uint64, error)
-	Get(uint64) (*models.Track, error)
+	Get(context.Context, uint64) (*models.Track, error)
 }
 
 type TrackService struct {
@@ -62,8 +62,8 @@ func (trkSvc *TrackService) Create(ctx context.Context, track *models.Track) (ui
 	return trackID, nil
 }
 
-func (trkSvc *TrackService) Get(trackID uint64) (*models.Track, error) {
-	track, err := trkSvc.repo.Get(context.Background(), trackID)
+func (trkSvc *TrackService) Get(ctx context.Context, trackID uint64) (*models.Track, error) {
+	track, err := trkSvc.repo.Get(ctx, trackID)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get track with err %w", err)

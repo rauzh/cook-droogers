@@ -48,7 +48,7 @@ func NewSignContractRequestUseCase(
 	return sctUseCase, nil
 }
 
-func (sctUseCase *SignContractRequestUseCase) Apply(request base.IRequest) error {
+func (sctUseCase *SignContractRequestUseCase) Apply(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(sign_contract.SignRequest); err != nil {
 		return err
@@ -57,7 +57,7 @@ func (sctUseCase *SignContractRequestUseCase) Apply(request base.IRequest) error
 
 	base.InitDateStatus(&signReq.Request)
 
-	if err := sctUseCase.repo.Create(context.Background(), signReq); err != nil {
+	if err := sctUseCase.repo.Create(ctx, signReq); err != nil {
 		return fmt.Errorf("can't apply sign contract request with err %w", err)
 	}
 
@@ -68,7 +68,7 @@ func (sctUseCase *SignContractRequestUseCase) Apply(request base.IRequest) error
 	return nil
 }
 
-func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) error {
+func (sctUseCase *SignContractRequestUseCase) Accept(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(sign_contract.SignRequest); err != nil {
 		return err
@@ -83,7 +83,6 @@ func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) erro
 		ManagerID:    signReq.ManagerID,
 	}
 
-	ctx := context.Background()
 	return sctUseCase.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
 		if err := sctUseCase.userRepo.UpdateType(ctx, artist.UserID, models.ArtistUser); err != nil {
 			return fmt.Errorf("can't update user with err %w", err)
@@ -102,7 +101,7 @@ func (sctUseCase *SignContractRequestUseCase) Accept(request base.IRequest) erro
 	})
 }
 
-func (sctUseCase *SignContractRequestUseCase) Decline(request base.IRequest) error {
+func (sctUseCase *SignContractRequestUseCase) Decline(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(sign_contract.SignRequest); err != nil {
 		return err
@@ -112,12 +111,12 @@ func (sctUseCase *SignContractRequestUseCase) Decline(request base.IRequest) err
 	signReq.Status = base.ClosedRequest
 	signReq.Description = base.DescrDeclinedRequest
 
-	return sctUseCase.repo.Update(context.Background(), signReq)
+	return sctUseCase.repo.Update(ctx, signReq)
 }
 
-func (sctUseCase *SignContractRequestUseCase) Get(id uint64) (*sign_contract.SignContractRequest, error) {
+func (sctUseCase *SignContractRequestUseCase) Get(ctx context.Context, id uint64) (*sign_contract.SignContractRequest, error) {
 
-	req, err := sctUseCase.repo.Get(context.Background(), id)
+	req, err := sctUseCase.repo.Get(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("can't get sign contract request with err %w", err)
 	}

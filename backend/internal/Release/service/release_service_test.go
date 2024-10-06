@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	releaseErrors "cookdroogers/internal/release/errors"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/internal/track/service"
@@ -59,13 +60,9 @@ func (s *ReleaseServiceSuite) TestReleaseService_CreateOK(t provider.T) {
 
 		df.transactor.EXPECT().WithinTransaction(mock.Anything, mock.Anything).Return(nil).Once()
 
-		//df.trackRepo.EXPECT().Create(mock.Anything, tracks[0]).Return(uint64(1), nil).Once()
-		//df.trackRepo.EXPECT().Create(mock.Anything, tracks[1]).Return(uint64(2), nil).Once()
-		//df.releaseRepo.EXPECT().Create(mock.Anything, release).Return(nil).Once()
-
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		err := releaseService.Create(release, tracks)
+		err := releaseService.Create(context.Background(), release, tracks)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -84,7 +81,7 @@ func (s *ReleaseServiceSuite) TestReleaseService_CreateValidationError(t provide
 
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		err := releaseService.Create(release, tracks)
+		err := releaseService.Create(context.Background(), release, tracks)
 
 		sCtx.Assert().ErrorIs(err, releaseErrors.ErrNoTitle)
 	})
@@ -104,7 +101,7 @@ func (s *ReleaseServiceSuite) TestReleaseService_GetOK(t provider.T) {
 
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		result, err := releaseService.Get(uint64(888))
+		result, err := releaseService.Get(context.Background(), uint64(888))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(release, result)
@@ -125,7 +122,7 @@ func (s *ReleaseServiceSuite) TestReleaseService_GetAllByArtistOK(t provider.T) 
 
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		result, err := releaseService.GetAllByArtist(uint64(7))
+		result, err := releaseService.GetAllByArtist(context.Background(), uint64(7))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(releases, result)
@@ -150,7 +147,7 @@ func (s *ReleaseServiceSuite) TestReleaseService_GetAllTracksOK(t provider.T) {
 
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		result, err := releaseService.GetAllTracks(release)
+		result, err := releaseService.GetAllTracks(context.Background(), release)
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(tracks, result)
@@ -173,7 +170,7 @@ func (s *ReleaseServiceSuite) TestReleaseService_GetMainGenreOK(t provider.T) {
 
 		releaseService := NewReleaseService(service.NewTrackService(df.trackRepo, df.logger), df.transactor, df.releaseRepo, df.logger)
 
-		mainGenre, err := releaseService.GetMainGenre(uint64(888))
+		mainGenre, err := releaseService.GetMainGenre(context.Background(), uint64(888))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal("Pop", mainGenre)

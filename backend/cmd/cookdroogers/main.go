@@ -6,8 +6,9 @@ import (
 	"cookdroogers/cmd/techUI"
 	"cookdroogers/config"
 	"cookdroogers/pkg/logger"
-	"github.com/pkg/errors"
 	"log/slog"
+
+	"github.com/pkg/errors"
 )
 
 func main() {

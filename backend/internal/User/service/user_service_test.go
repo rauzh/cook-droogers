@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo/mocks"
 	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models/data_builders"
@@ -47,7 +48,7 @@ func (s *UserServiceSuite) TestUserService_CreateOK(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		err := userService.Create(user)
+		err := userService.Create(context.Background(), user)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -65,7 +66,7 @@ func (s *UserServiceSuite) TestUserService_CreateValidationError(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		err := userService.Create(user)
+		err := userService.Create(context.Background(), user)
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Equal(userErrors.ErrInvalidEmail, err)
@@ -86,7 +87,7 @@ func (s *UserServiceSuite) TestUserService_CreateAlreadyTaken(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		err := userService.Create(user)
+		err := userService.Create(context.Background(), user)
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Equal(userErrors.ErrAlreadyTaken, err)
@@ -107,7 +108,7 @@ func (s *UserServiceSuite) TestUserService_LoginOK(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		loggedInUser, err := userService.Login(user.Email, "password")
+		loggedInUser, err := userService.Login(context.Background(), user.Email, "password")
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(user, loggedInUser)
@@ -128,7 +129,7 @@ func (s *UserServiceSuite) TestUserService_LoginInvalidPassword(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		_, err := userService.Login(user.Email, "wrongpassword")
+		_, err := userService.Login(context.Background(), user.Email, "wrongpassword")
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().EqualError(err, "invalid password")
@@ -149,7 +150,7 @@ func (s *UserServiceSuite) TestUserService_GetByEmailOK(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		result, err := userService.GetByEmail(user.Email)
+		result, err := userService.GetByEmail(context.Background(), user.Email)
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(user, result)
@@ -170,7 +171,7 @@ func (s *UserServiceSuite) TestUserService_GetByEmailFailure(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		result, err := userService.GetByEmail(user.Email)
+		result, err := userService.GetByEmail(context.Background(), user.Email)
 
 		sCtx.Assert().ErrorIs(err, sql.ErrConnDone)
 		sCtx.Assert().Nil(result)
@@ -191,7 +192,7 @@ func (s *UserServiceSuite) TestUserService_GetOK(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		result, err := userService.Get(uint64(7))
+		result, err := userService.Get(context.Background(), uint64(7))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(user, result)
@@ -210,7 +211,7 @@ func (s *UserServiceSuite) TestUserService_GetFailure(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		result, err := userService.Get(uint64(7))
+		result, err := userService.Get(context.Background(), uint64(7))
 
 		sCtx.Assert().Error(err, sql.ErrConnDone)
 		sCtx.Assert().Nil(result)
@@ -231,7 +232,7 @@ func (s *UserServiceSuite) TestUserService_UpdateOK(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		err := userService.Update(user)
+		err := userService.Update(context.Background(), user)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -251,7 +252,7 @@ func (s *UserServiceSuite) TestUserService_UpdateFailure(t provider.T) {
 
 		userService := NewUserService(df.userRepo, df.logger)
 
-		err := userService.Update(user)
+		err := userService.Update(context.Background(), user)
 
 		sCtx.Assert().ErrorIs(err, sql.ErrConnDone)
 	})

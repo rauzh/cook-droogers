@@ -9,11 +9,11 @@ import (
 )
 
 type IManagerService interface {
-	Create(*models.Manager) error
-	Get(uint64) (*models.Manager, error)
-	GetByUserID(uint64) (*models.Manager, error)
-	GetRandomManagerID() (uint64, error)
-	GetForAdmin() ([]models.Manager, error)
+	Create(context.Context, *models.Manager) error
+	Get(context.Context, uint64) (*models.Manager, error)
+	GetByUserID(context.Context, uint64) (*models.Manager, error)
+	GetRandomManagerID(context.Context) (uint64, error)
+	GetForAdmin(context.Context) ([]models.Manager, error)
 }
 
 var CreateDbError error = errors.New("can't create manager")
@@ -28,16 +28,16 @@ func NewManagerService(r repo.ManagerRepo, logger *slog.Logger) IManagerService 
 	return &ManagerService{repo: r, logger: logger}
 }
 
-func (mngSvc *ManagerService) Create(manager *models.Manager) error {
-	if err := mngSvc.repo.Create(context.Background(), manager); err != nil {
+func (mngSvc *ManagerService) Create(ctx context.Context, manager *models.Manager) error {
+	if err := mngSvc.repo.Create(ctx, manager); err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: Create", "error", err.Error())
 		return errors.Wrap(CreateDbError, err.Error())
 	}
 	return nil
 }
 
-func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
-	manager, err := mngSvc.repo.Get(context.Background(), id)
+func (mngSvc *ManagerService) Get(ctx context.Context, id uint64) (*models.Manager, error) {
+	manager, err := mngSvc.repo.Get(ctx, id)
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: Get", "error", err.Error())
@@ -46,8 +46,8 @@ func (mngSvc *ManagerService) Get(id uint64) (*models.Manager, error) {
 	return manager, nil
 }
 
-func (mngSvc *ManagerService) GetForAdmin() ([]models.Manager, error) {
-	managers, err := mngSvc.repo.GetForAdmin(context.Background())
+func (mngSvc *ManagerService) GetForAdmin(ctx context.Context) ([]models.Manager, error) {
+	managers, err := mngSvc.repo.GetForAdmin(ctx)
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: GetForAdmin", "error", err.Error())
@@ -56,8 +56,8 @@ func (mngSvc *ManagerService) GetForAdmin() ([]models.Manager, error) {
 	return managers, nil
 }
 
-func (mngSvc *ManagerService) GetByUserID(id uint64) (*models.Manager, error) {
-	manager, err := mngSvc.repo.GetByUserID(context.Background(), id)
+func (mngSvc *ManagerService) GetByUserID(ctx context.Context, id uint64) (*models.Manager, error) {
+	manager, err := mngSvc.repo.GetByUserID(ctx, id)
 
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: GetByUserID", "error", err.Error())
@@ -66,8 +66,8 @@ func (mngSvc *ManagerService) GetByUserID(id uint64) (*models.Manager, error) {
 	return manager, nil
 }
 
-func (mngSvc *ManagerService) GetRandomManagerID() (uint64, error) {
-	id, err := mngSvc.repo.GetRandManagerID(context.Background())
+func (mngSvc *ManagerService) GetRandomManagerID(ctx context.Context) (uint64, error) {
+	id, err := mngSvc.repo.GetRandManagerID(ctx)
 
 	if err != nil {
 		return 0, errors.Wrap(GetDbError, err.Error())
