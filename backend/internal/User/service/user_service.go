@@ -61,6 +61,7 @@ func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) err
 	}
 
 	usr, err := usrSvc.repo.GetByEmail(ctx, newUser.Email)
+
 	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can't create user: %w", err)
@@ -80,9 +81,11 @@ func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) err
 	return nil
 }
 
+
 func (usrSvc *UserService) Login(ctx context.Context, login, password string) (*models.User, error) {
 	user, err := usrSvc.repo.GetByEmail(ctx, login)
 	if err != nil {
+
 		return nil, err
 	}
 

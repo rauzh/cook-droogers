@@ -41,9 +41,8 @@ func (menu *artistMenu) Loop() error {
 		1 -- подать заявку на публикацию релиза
 		2 -- посмотреть список заявок
 		3 -- загрузить релиз
-		4 -- получить статистику своих релизов
-		5 -- посмотреть информацию о лейбле
-		6 -- посмотреть свои релизы
+		4 -- посмотреть информацию о лейбле
+		5 -- посмотреть свои релизы
 	Выберите пункт меню: `
 
 	fmt.Println(menu.artist.ArtistID, menu.artist.ManagerID, menu.artist.ContractTerm, menu.artist.Nickname, menu.artist.UserID)
@@ -80,10 +79,8 @@ func (menu *artistMenu) Loop() error {
 				fmt.Println("Релиз успешно загружен.")
 			}
 		case 4:
-			menu.stats()
-		case 5:
 			printInfo()
-		case 6:
+		case 5:
 			menu.releases()
 		default:
 			fmt.Printf("Неверный пункт меню")
@@ -154,10 +151,6 @@ func (menu *artistMenu) uploadRelease() error {
 	}
 
 	return menu.a.Services.ReleaseService.Create(release, tracks)
-}
-
-func (menu *artistMenu) stats() {
-
 }
 
 func (menu *artistMenu) releases() {
