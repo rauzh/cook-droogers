@@ -51,7 +51,7 @@ func NewPublishRequestUseCase(
 	return publishUseCase, nil
 }
 
-func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error {
+func (publishUseCase *PublishRequestUseCase) Apply(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(publish.PubReq); err != nil {
 		return err
@@ -60,7 +60,7 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 
 	base.InitDateStatus(&pubReq.Request)
 
-	if err := publishUseCase.checkRelease(pubReq); err != nil {
+	if err := publishUseCase.checkRelease(ctx, pubReq); err != nil {
 		return fmt.Errorf("can't apply publish request with err %w", err)
 	}
 
@@ -75,9 +75,7 @@ func (publishUseCase *PublishRequestUseCase) Apply(request base.IRequest) error 
 	return nil
 }
 
-func (publishUseCase *PublishRequestUseCase) checkRelease(pubReq *publish.PublishRequest) error {
-
-	ctx := context.Background()
+func (publishUseCase *PublishRequestUseCase) checkRelease(ctx context.Context, pubReq *publish.PublishRequest) error {
 
 	release, err := publishUseCase.releaseRepo.Get(ctx, pubReq.ReleaseID)
 	if err != nil {
@@ -106,7 +104,7 @@ func (publishUseCase *PublishRequestUseCase) checkRelease(pubReq *publish.Publis
 	return nil
 }
 
-func (publishUseCase *PublishRequestUseCase) Accept(request base.IRequest) error {
+func (publishUseCase *PublishRequestUseCase) Accept(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(publish.PubReq); err != nil {
 		return err
@@ -119,7 +117,6 @@ func (publishUseCase *PublishRequestUseCase) Accept(request base.IRequest) error
 		ManagerID: pubReq.ManagerID,
 	}
 
-	ctx := context.Background()
 	return publishUseCase.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
 
 		if err := publishUseCase.publicationRepo.Create(ctx, &publication); err != nil {
@@ -139,7 +136,7 @@ func (publishUseCase *PublishRequestUseCase) Accept(request base.IRequest) error
 	})
 }
 
-func (publishUseCase *PublishRequestUseCase) Decline(request base.IRequest) error {
+func (publishUseCase *PublishRequestUseCase) Decline(ctx context.Context, request base.IRequest) error {
 
 	if err := request.Validate(publish.PubReq); err != nil {
 		return err
@@ -149,11 +146,11 @@ func (publishUseCase *PublishRequestUseCase) Decline(request base.IRequest) erro
 	pubReq.Status = base.ClosedRequest
 	pubReq.Description = base.DescrDeclinedRequest
 
-	return publishUseCase.repo.Update(context.Background(), pubReq)
+	return publishUseCase.repo.Update(ctx, pubReq)
 }
 
-func (publishUseCase *PublishRequestUseCase) Get(id uint64) (*publish.PublishRequest, error) {
-	req, err := publishUseCase.repo.Get(context.Background(), id)
+func (publishUseCase *PublishRequestUseCase) Get(ctx context.Context, id uint64) (*publish.PublishRequest, error) {
+	req, err := publishUseCase.repo.Get(ctx, id)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get publish request with err %w", err)

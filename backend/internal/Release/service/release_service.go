@@ -12,12 +12,12 @@ import (
 )
 
 type IReleaseService interface {
-	Create(release *models.Release, tracks []*models.Track) error
-	Get(releaseID uint64) (*models.Release, error)
-	GetMainGenre(releaseID uint64) (string, error)
-	UpdateStatus(uint64, models.ReleaseStatus) error
-	GetAllByArtist(uint64) ([]models.Release, error)
-	GetAllTracks(release *models.Release) ([]models.Track, error)
+	Create(ctx context.Context, release *models.Release, tracks []*models.Track) error
+	Get(ctx context.Context, releaseID uint64) (*models.Release, error)
+	GetMainGenre(ctx context.Context, releaseID uint64) (string, error)
+	UpdateStatus(context.Context, uint64, models.ReleaseStatus) error
+	GetAllByArtist(context.Context, uint64) ([]models.Release, error)
+	GetAllTracks(ctx context.Context, release *models.Release) ([]models.Track, error)
 }
 
 type ReleaseService struct {
@@ -48,7 +48,7 @@ func (rlsSvc *ReleaseService) validate(release *models.Release) error {
 	return nil
 }
 
-func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []*models.Track) error {
+func (rlsSvc *ReleaseService) Create(ctx context.Context, release *models.Release, tracks []*models.Track) error {
 
 	if err := rlsSvc.validate(release); err != nil {
 		return err
@@ -56,7 +56,6 @@ func (rlsSvc *ReleaseService) Create(release *models.Release, tracks []*models.T
 
 	release.Status = models.UnpublishedRelease
 
-	ctx := context.Background()
 	return rlsSvc.transactor.WithinTransaction(ctx, func(ctx context.Context) error {
 		if err := rlsSvc.uploadTracks(ctx, release, tracks); err != nil {
 			return fmt.Errorf("can't create release with err %w", err)
@@ -84,8 +83,8 @@ func (rlsSvc *ReleaseService) uploadTracks(ctx context.Context, release *models.
 	return nil
 }
 
-func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
-	release, err := rlsSvc.repo.Get(context.Background(), releaseID)
+func (rlsSvc *ReleaseService) Get(ctx context.Context, releaseID uint64) (*models.Release, error) {
+	release, err := rlsSvc.repo.Get(ctx, releaseID)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
@@ -93,8 +92,8 @@ func (rlsSvc *ReleaseService) Get(releaseID uint64) (*models.Release, error) {
 	return release, nil
 }
 
-func (rlsSvc *ReleaseService) GetAllByArtist(artistID uint64) ([]models.Release, error) {
-	releases, err := rlsSvc.repo.GetAllByArtist(context.Background(), artistID)
+func (rlsSvc *ReleaseService) GetAllByArtist(ctx context.Context, artistID uint64) ([]models.Release, error) {
+	releases, err := rlsSvc.repo.GetAllByArtist(ctx, artistID)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
@@ -102,8 +101,8 @@ func (rlsSvc *ReleaseService) GetAllByArtist(artistID uint64) ([]models.Release,
 	return releases, nil
 }
 
-func (rlsSvc *ReleaseService) GetAllTracks(release *models.Release) ([]models.Track, error) {
-	tracks, err := rlsSvc.repo.GetAllTracks(context.Background(), release)
+func (rlsSvc *ReleaseService) GetAllTracks(ctx context.Context, release *models.Release) ([]models.Track, error) {
+	tracks, err := rlsSvc.repo.GetAllTracks(ctx, release)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
@@ -111,29 +110,29 @@ func (rlsSvc *ReleaseService) GetAllTracks(release *models.Release) ([]models.Tr
 	return tracks, nil
 }
 
-func (rlsSvc *ReleaseService) Update(release *models.Release) error {
-	if err := rlsSvc.repo.Update(context.Background(), release); err != nil {
+func (rlsSvc *ReleaseService) Update(ctx context.Context, release *models.Release) error {
+	if err := rlsSvc.repo.Update(ctx, release); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
-func (rlsSvc *ReleaseService) UpdateStatus(id uint64, stat models.ReleaseStatus) error {
-	if err := rlsSvc.repo.UpdateStatus(context.Background(), id, stat); err != nil {
+func (rlsSvc *ReleaseService) UpdateStatus(ctx context.Context, id uint64, stat models.ReleaseStatus) error {
+	if err := rlsSvc.repo.UpdateStatus(ctx, id, stat); err != nil {
 		return fmt.Errorf("can't update release with err %w", err)
 	}
 	return nil
 }
 
-func (rlsSvc *ReleaseService) GetMainGenre(releaseID uint64) (string, error) {
-	release, err := rlsSvc.repo.Get(context.Background(), releaseID)
+func (rlsSvc *ReleaseService) GetMainGenre(ctx context.Context, releaseID uint64) (string, error) {
+	release, err := rlsSvc.repo.Get(ctx, releaseID)
 	if err != nil {
 		return "", fmt.Errorf("can't get release with err %w", err)
 	}
 
 	genres := make(map[string]int)
 	for _, trackID := range release.Tracks {
-		track, err := rlsSvc.trkSvc.Get(trackID)
+		track, err := rlsSvc.trkSvc.Get(ctx, trackID)
 		if err != nil {
 			return "", fmt.Errorf("can't get track %d with err %w", trackID, err)
 		}

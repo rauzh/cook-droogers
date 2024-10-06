@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   cook_droogers:
+    image: cook-droogers-cook_droogers
     build:
       context: .
       dockerfile: Dockerfile

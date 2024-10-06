@@ -1,6 +1,7 @@
 package base
 
 import (
+	"context"
 	baseReqErrors "cookdroogers/internal/requests/base/errors"
 	cdtime "cookdroogers/pkg/time"
 	"time"
@@ -24,9 +25,9 @@ type IRequest interface {
 }
 
 type IRequestUseCase interface {
-	Apply(request IRequest) error
-	Accept(request IRequest) error
-	Decline(request IRequest) error
+	Apply(ctx context.Context, request IRequest) error
+	Accept(ctx context.Context, request IRequest) error
+	Decline(ctx context.Context, request IRequest) error
 }
 
 const (

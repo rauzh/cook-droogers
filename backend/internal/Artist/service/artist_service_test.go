@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/models/data_builders"
 	"database/sql"
@@ -45,7 +46,7 @@ func (s *ArtistServiceSuite) TestArtistService_CreateOK(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		err := artistService.Create(artist)
+		err := artistService.Create(context.Background(), artist)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -65,7 +66,7 @@ func (s *ArtistServiceSuite) TestArtistService_CreateDbErr(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		err := artistService.Create(artist)
+		err := artistService.Create(context.Background(), artist)
 
 		sCtx.Assert().ErrorIs(err, CreateDbError)
 	})
@@ -85,7 +86,7 @@ func (s *ArtistServiceSuite) TestArtistService_GetOK(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		result, err := artistService.Get(uint64(1))
+		result, err := artistService.Get(context.Background(), uint64(1))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(artist, result)
@@ -104,7 +105,7 @@ func (s *ArtistServiceSuite) TestArtistService_GetDbErr(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		result, err := artistService.Get(uint64(1))
+		result, err := artistService.Get(context.Background(), uint64(1))
 
 		sCtx.Assert().Nil(result)
 		sCtx.Assert().ErrorIs(err, GetDbError)
@@ -125,7 +126,7 @@ func (s *ArtistServiceSuite) TestArtistService_GetByUserIDOK(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		result, err := artistService.GetByUserID(uint64(7))
+		result, err := artistService.GetByUserID(context.Background(), uint64(7))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(artist, result)
@@ -144,7 +145,7 @@ func (s *ArtistServiceSuite) TestArtistService_GetByUserIDDbErr(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		result, err := artistService.GetByUserID(uint64(7))
+		result, err := artistService.GetByUserID(context.Background(), uint64(7))
 
 		sCtx.Assert().Nil(result)
 		sCtx.Assert().ErrorIs(err, GetDbError)
@@ -165,7 +166,7 @@ func (s *ArtistServiceSuite) TestArtistService_UpdateOK(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		err := artistService.Update(artist)
+		err := artistService.Update(context.Background(), artist)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -185,7 +186,7 @@ func (s *ArtistServiceSuite) TestArtistService_UpdateDbErr(t provider.T) {
 
 		artistService := NewArtistService(df.artistRepo, df.logger)
 
-		err := artistService.Update(artist)
+		err := artistService.Update(context.Background(), artist)
 
 		sCtx.Assert().ErrorIs(err, UpdateDbError)
 	})

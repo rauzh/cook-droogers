@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/models"
 	"cookdroogers/models/data_builders"
@@ -46,7 +47,7 @@ func (s *ManagerServiceSuite) TestManagerService_CreateOK(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		err := managerService.Create(manager)
+		err := managerService.Create(context.Background(), manager)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -67,7 +68,7 @@ func (s *ManagerServiceSuite) TestManagerService_CreateDbErr(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		err := managerService.Create(manager)
+		err := managerService.Create(context.Background(), manager)
 
 		sCtx.Assert().ErrorIs(err, CreateDbError)
 	})
@@ -87,7 +88,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetOK(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.Get(uint64(1))
+		result, err := managerService.Get(context.Background(), uint64(1))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(manager, result)
@@ -107,7 +108,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetDbErr(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.Get(uint64(1))
+		result, err := managerService.Get(context.Background(), uint64(1))
 
 		sCtx.Assert().Nil(result)
 		sCtx.Assert().ErrorIs(err, GetDbError)
@@ -128,7 +129,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetByUserIDOK(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.GetByUserID(uint64(88))
+		result, err := managerService.GetByUserID(context.Background(), uint64(88))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(manager, result)
@@ -148,7 +149,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetByUserIDDbErr(t provider.T) 
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.GetByUserID(uint64(88))
+		result, err := managerService.GetByUserID(context.Background(), uint64(88))
 
 		sCtx.Assert().Nil(result)
 		sCtx.Assert().ErrorIs(err, GetDbError)
@@ -169,7 +170,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetForAdminOK(t provider.T) {
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.GetForAdmin()
+		result, err := managerService.GetForAdmin(context.Background())
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(managers, result)
@@ -189,7 +190,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetForAdminDbErr(t provider.T) 
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		result, err := managerService.GetForAdmin()
+		result, err := managerService.GetForAdmin(context.Background())
 
 		sCtx.Assert().Nil(result)
 		sCtx.Assert().ErrorIs(err, GetDbError)
@@ -208,7 +209,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetRandomManagerIDOK(t provider
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		id, err := managerService.GetRandomManagerID()
+		id, err := managerService.GetRandomManagerID(context.Background())
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(uint64(8), id)
@@ -228,7 +229,7 @@ func (s *ManagerServiceSuite) TestManagerService_GetRandomManagerIDDbErr(t provi
 
 		managerService := NewManagerService(df.managerRepo, df.logger)
 
-		id, err := managerService.GetRandomManagerID()
+		id, err := managerService.GetRandomManagerID(context.Background())
 
 		sCtx.Assert().Equal(uint64(0), id)
 		sCtx.Assert().ErrorIs(err, GetDbError)

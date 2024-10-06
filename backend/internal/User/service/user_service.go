@@ -14,15 +14,15 @@ import (
 )
 
 type IUserService interface {
-	Create(*models.User) error
-	Login(login, password string) (*models.User, error)
-	GetByEmail(string) (*models.User, error)
-	Get(uint64) (*models.User, error)
-	Update(*models.User) error
-	UpdateType(uint64, models.UserType) error
-	GetForAdmin() ([]models.User, error)
+	Create(context.Context, *models.User) error
+	Login(ctx context.Context, login, password string) (*models.User, error)
+	GetByEmail(context.Context, string) (*models.User, error)
+	Get(context.Context, uint64) (*models.User, error)
+	Update(context.Context, *models.User) error
+	UpdateType(context.Context, uint64, models.UserType) error
+	GetForAdmin(context.Context) ([]models.User, error)
 
-	SetRole(role models.UserType) error
+	SetRole(ctx context.Context, role models.UserType) error
 }
 
 type UserService struct {
@@ -53,14 +53,15 @@ func (usrSvc *UserService) validate(usr *models.User) error {
 	return nil
 }
 
-func (usrSvc *UserService) Create(newUser *models.User) error {
+func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) error {
 
 	err := usrSvc.validate(newUser)
 	if err != nil {
 		return err
 	}
 
-	usr, err := usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
+	usr, err := usrSvc.repo.GetByEmail(ctx, newUser.Email)
+
 	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can't create user: %w", err)
@@ -71,7 +72,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 
 	newUser.Type = models.NonMemberUser
 
-	err = usrSvc.repo.Create(context.Background(), newUser)
+	err = usrSvc.repo.Create(ctx, newUser)
 	if err != nil {
 		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can'r create user: %w", err)
@@ -80,9 +81,11 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 	return nil
 }
 
-func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
-	user, err := usrSvc.repo.GetByEmail(context.Background(), login)
-	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+
+func (usrSvc *UserService) Login(ctx context.Context, login, password string) (*models.User, error) {
+	user, err := usrSvc.repo.GetByEmail(ctx, login)
+	if err != nil {
+
 		return nil, err
 	}
 
@@ -93,16 +96,16 @@ func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
 	return user, nil
 }
 
-func (usrSvc *UserService) GetByEmail(email string) (*models.User, error) {
-	user, err := usrSvc.repo.GetByEmail(context.Background(), email)
+func (usrSvc *UserService) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	user, err := usrSvc.repo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}
 	return user, nil
 }
 
-func (usrSvc *UserService) Get(id uint64) (*models.User, error) {
-	user, err := usrSvc.repo.Get(context.Background(), id)
+func (usrSvc *UserService) Get(ctx context.Context, id uint64) (*models.User, error) {
+	user, err := usrSvc.repo.Get(ctx, id)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
@@ -110,29 +113,29 @@ func (usrSvc *UserService) Get(id uint64) (*models.User, error) {
 	return user, nil
 }
 
-func (usrSvc *UserService) Update(user *models.User) error {
-	if err := usrSvc.repo.Update(context.Background(), user); err != nil {
+func (usrSvc *UserService) Update(ctx context.Context, user *models.User) error {
+	if err := usrSvc.repo.Update(ctx, user); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil
 }
 
-func (usrSvc *UserService) UpdateType(userID uint64, typ models.UserType) error {
-	if err := usrSvc.repo.UpdateType(context.Background(), userID, typ); err != nil {
+func (usrSvc *UserService) UpdateType(ctx context.Context, userID uint64, typ models.UserType) error {
+	if err := usrSvc.repo.UpdateType(ctx, userID, typ); err != nil {
 		return fmt.Errorf("can't update user with err %w", err)
 	}
 	return nil
 }
 
-func (usrSvc *UserService) SetRole(role models.UserType) error {
-	if err := usrSvc.repo.SetRole(context.Background(), role); err != nil {
+func (usrSvc *UserService) SetRole(ctx context.Context, role models.UserType) error {
+	if err := usrSvc.repo.SetRole(ctx, role); err != nil {
 		return fmt.Errorf("can't set user role with err %w", err)
 	}
 	return nil
 }
 
-func (usrSvc *UserService) GetForAdmin() ([]models.User, error) {
-	users, err := usrSvc.repo.GetForAdmin(context.Background())
+func (usrSvc *UserService) GetForAdmin(ctx context.Context) ([]models.User, error) {
+	users, err := usrSvc.repo.GetForAdmin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can't get users with err %w", err)
 	}

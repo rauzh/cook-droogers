@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"cookdroogers/internal/repo/mocks"
 	"cookdroogers/models"
 	"cookdroogers/models/data_builders"
@@ -47,7 +48,7 @@ func (s *PublicationServiceSuite) TestPublicationService_CreateOK(t provider.T) 
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		err := publicationService.Create(publication)
+		err := publicationService.Create(context.Background(), publication)
 
 		sCtx.Assert().NoError(err)
 	})
@@ -67,7 +68,7 @@ func (s *PublicationServiceSuite) TestPublicationService_CreateError(t provider.
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		err := publicationService.Create(publication)
+		err := publicationService.Create(context.Background(), publication)
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Contains(err.Error(), "can't create publication info")
@@ -88,7 +89,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetOK(t provider.T) {
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		result, err := publicationService.Get(uint64(88))
+		result, err := publicationService.Get(context.Background(), uint64(88))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(publication, result)
@@ -107,7 +108,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetError(t provider.T) 
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		_, err := publicationService.Get(uint64(88))
+		_, err := publicationService.Get(context.Background(), uint64(88))
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Contains(err.Error(), "can't get publication info")
@@ -130,7 +131,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetAllByDateOK(t provid
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		result, err := publicationService.GetAllByDate(cdtime.GetToday().AddDate(-1, 0, 0))
+		result, err := publicationService.GetAllByDate(context.Background(), cdtime.GetToday().AddDate(-1, 0, 0))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(publications, result)
@@ -149,7 +150,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetAllByDateError(t pro
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		_, err := publicationService.GetAllByDate(cdtime.GetToday().AddDate(-1, 0, 0))
+		_, err := publicationService.GetAllByDate(context.Background(), cdtime.GetToday().AddDate(-1, 0, 0))
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Contains(err.Error(), "can't get publications info")
@@ -172,7 +173,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetAllByManagerOK(t pro
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		result, err := publicationService.GetAllByManager(uint64(8))
+		result, err := publicationService.GetAllByManager(context.Background(), uint64(8))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(publications, result)
@@ -195,7 +196,7 @@ func (s *PublicationServiceSuite) TestPublicationService_GetAllByArtistSinceDate
 
 		publicationService := NewPublicationService(df.publicationRepo, df.logger)
 
-		result, err := publicationService.GetAllByArtistSinceDate(cdtime.GetToday().AddDate(-1, 0, 0), uint64(8))
+		result, err := publicationService.GetAllByArtistSinceDate(context.Background(), cdtime.GetToday().AddDate(-1, 0, 0), uint64(8))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(publications, result)
