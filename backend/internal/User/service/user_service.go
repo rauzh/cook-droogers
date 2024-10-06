@@ -81,11 +81,9 @@ func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) err
 	return nil
 }
 
-
 func (usrSvc *UserService) Login(ctx context.Context, login, password string) (*models.User, error) {
 	user, err := usrSvc.repo.GetByEmail(ctx, login)
-	if err != nil {
-
+	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		return nil, err
 	}
 
