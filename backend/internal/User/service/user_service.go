@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/mail"
+	"strings"
 )
 
 type IUserService interface {
@@ -60,7 +61,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 	}
 
 	usr, err := usrSvc.repo.GetByEmail(context.Background(), newUser.Email)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
 		return fmt.Errorf("can't create user: %w", err)
 	}
@@ -81,7 +82,7 @@ func (usrSvc *UserService) Create(newUser *models.User) error {
 
 func (usrSvc *UserService) Login(login, password string) (*models.User, error) {
 	user, err := usrSvc.repo.GetByEmail(context.Background(), login)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		return nil, err
 	}
 

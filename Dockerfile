@@ -8,7 +8,7 @@ COPY . .
 
 WORKDIR /go/src/app/backend
 RUN go build -o cook_droogers cmd/cookdroogers/main.go
-RUN  go build -o rest-api internal/handlers/cmd/swagger-cook-droogers-server/main.go 
+RUN go build -o rest-api internal/handlers/cmd/swagger-cook-droogers-server/main.go
 
 WORKDIR  /app
 
@@ -30,5 +30,5 @@ ENV PORT=8080
 
 WORKDIR /app
 
-CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
-# CMD ["tail", "-f", "/dev/null"]
+# CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
+CMD ["tail", "-f", "/dev/null"]
