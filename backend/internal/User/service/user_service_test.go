@@ -1,3 +1,6 @@
+//go:build unit
+// +build unit
+
 package service
 
 import (
@@ -6,11 +9,12 @@ import (
 	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models/data_builders"
 	"database/sql"
+	"log/slog"
+	"testing"
+
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"log/slog"
-	"testing"
 )
 
 type _depFields struct {

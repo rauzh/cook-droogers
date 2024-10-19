@@ -48,7 +48,7 @@ func (b *ArtistBuilder) WithActivity(activity bool) *ArtistBuilder {
 	return b
 }
 
-func (b *ArtistBuilder) WitManagerID(managerid uint64) *ArtistBuilder {
+func (b *ArtistBuilder) WithManagerID(managerid uint64) *ArtistBuilder {
 	b.artist.ManagerID = managerid
 	return b
 }

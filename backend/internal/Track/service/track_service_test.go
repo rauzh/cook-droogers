@@ -1,3 +1,6 @@
+//go:build unit
+// +build unit
+
 package service
 
 import (
@@ -6,11 +9,12 @@ import (
 	trackErrors "cookdroogers/internal/track/errors"
 	"cookdroogers/models/data_builders"
 	"fmt"
+	"log/slog"
+	"testing"
+
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"log/slog"
-	"testing"
 )
 
 type _depFields struct {
@@ -109,7 +113,7 @@ func (s *TrackServiceSuite) TestTrackService_GetOK(t provider.T) {
 
 		trackService := NewTrackService(df.trackRepo, df.logger)
 
-		result, err := trackService.Get(uint64(1111))
+		result, err := trackService.Get(context.Background(), uint64(1111))
 
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(track, result)
@@ -128,7 +132,7 @@ func (s *TrackServiceSuite) TestTrackService_GetError(t provider.T) {
 
 		trackService := NewTrackService(df.trackRepo, df.logger)
 
-		_, err := trackService.Get(uint64(1111))
+		_, err := trackService.Get(context.Background(), uint64(1111))
 
 		sCtx.Assert().Error(err)
 		sCtx.Assert().Contains(err.Error(), "can't get track")

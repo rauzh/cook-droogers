@@ -3,12 +3,9 @@ package main
 import (
 	"context"
 	"cookdroogers/app"
-	"cookdroogers/cmd/techUI"
 	"cookdroogers/config"
 	"cookdroogers/pkg/logger"
 	"log/slog"
-
-	"github.com/pkg/errors"
 )
 
 func main() {
@@ -36,18 +33,18 @@ func runApplication(loggerFactory logger.LoggerFactory) {
 		return
 	}
 
-	switch cdApp.Config.Mode {
-	case "techUI":
-		for {
-			err := techUI.RunMenu(&cdApp, log)
-			if errors.Is(err, techUI.ErrEXIT) {
-				break
-			}
-			if err != nil {
-				log.Error("Error running techUI: ", slog.Any("error", err))
-			}
-		}
-	default:
-		log.Info("Unknown mode")
-	}
+	// switch cdApp.Config.Mode {
+	// case "techUI":
+	// 	for {
+	// 		err := techUI.RunMenu(&cdApp, log)
+	// 		if errors.Is(err, techUI.ErrEXIT) {
+	// 			break
+	// 		}
+	// 		if err != nil {
+	// 			log.Error("Error running techUI: ", slog.Any("error", err))
+	// 		}
+	// 	}
+	// default:
+	// 	log.Info("Unknown mode")
+	// }
 }
