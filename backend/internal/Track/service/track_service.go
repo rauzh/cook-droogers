@@ -5,8 +5,10 @@ import (
 	"cookdroogers/internal/repo"
 	trackErrors "cookdroogers/internal/track/errors"
 	"cookdroogers/models"
+	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 )
 
 type ITrackService interface {
@@ -64,7 +66,9 @@ func (trkSvc *TrackService) Create(ctx context.Context, track *models.Track) (ui
 
 func (trkSvc *TrackService) Get(ctx context.Context, trackID uint64) (*models.Track, error) {
 	track, err := trkSvc.repo.Get(ctx, trackID)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, trackErrors.ErrNoTrack
+	}
 	if err != nil {
 		return nil, fmt.Errorf("can't get track with err %w", err)
 	}

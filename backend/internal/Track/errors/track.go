@@ -7,4 +7,5 @@ var (
 	ErrNoArtist error = errors.New("no artists provided")
 	ErrNoType   error = errors.New("no track type provided")
 	ErrNoTitle  error = errors.New("no track title provided")
+	ErrNoTrack  error = errors.New("no such track")
 )
