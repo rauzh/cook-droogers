@@ -20,7 +20,7 @@ RUN cp /go/src/app/backend/cook_droogers /app/cook_droogers && \
 
 # #=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====#=====
 
-# FROM 
+# FROM
 
 # COPY --from=build /go/src/app/backend/cook_droogers /app/cook_droogers
 # COPY --from=build /go/src/app/backend/config/config.yaml /app/config.yaml
@@ -30,5 +30,5 @@ ENV PORT=8080
 
 WORKDIR /app
 
-# CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
+#CMD ["tail", "-f", "/dev/null"]

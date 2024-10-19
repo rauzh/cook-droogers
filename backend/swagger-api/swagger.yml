@@ -14,8 +14,10 @@ tags:
   - name: auth
 
 securityDefinitions:
-  basicAuth:
-    type: basic
+  JWTAuth:
+    type: apiKey
+    in: header
+    name: access_token
 
 schemes:
   - http
@@ -29,7 +31,7 @@ paths:
       tags:
         - requests
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getRequests
       responses:
         200:
@@ -51,7 +53,7 @@ paths:
       tags:
         - requests
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getRequest
       parameters:
         - in: path
@@ -94,7 +96,7 @@ paths:
       tags:
         - artist
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getArtistByID
       parameters:
         - in: path
@@ -133,7 +135,7 @@ paths:
     post:
       summary: Create publish request
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       tags:
         - requests
       operationId: publishReq
@@ -145,7 +147,7 @@ paths:
           description: "Поля заявки на публикацию релиза"
           required: true
           schema:
-            $ref: '#/definitions/PublishRequestInput'
+            $ref: '#/definitions/CreatePublishRequestDTO'
       responses:
         201:
           description: Request successfully created
@@ -171,7 +173,7 @@ paths:
     get:
       summary: Get releases
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       tags:
         - releases
       operationId: getRelease
@@ -200,32 +202,19 @@ paths:
     post:
       summary: Upload release
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       tags:
         - releases
       operationId: addRelease
       consumes:
         - application/json
       parameters:
-        - in: query
-          name: title
-          required: true
-          type: string
-          description: "Название релиза"
-        - in: query
-          name: date
-          required: true
-          type: string
-          format: date
-          description: "Дата написания релиза"
         - in: body
-          name: tracks
-          description: "Треки данного релиза"
+          name: release
+          description: "Информация о релизе"
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/TrackDTO'
+            $ref: '#/definitions/UploadReleaseDTO'
       responses:
         201:
           description: Request successfully created
@@ -252,7 +241,7 @@ paths:
       tags:
         - releases
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getReleaseByID
       parameters:
         - in: path
@@ -293,7 +282,7 @@ paths:
       tags:
         - tracks
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getTrackByID
       parameters:
         - in: path
@@ -336,7 +325,7 @@ paths:
       tags:
         - manager
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getManagerByID
       parameters:
         - in: path
@@ -377,7 +366,7 @@ paths:
       tags:
         - requests
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: acceptRequest
       parameters:
         - in: path
@@ -416,7 +405,7 @@ paths:
       tags:
         - requests
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: declineRequest
       parameters:
         - in: path
@@ -457,7 +446,7 @@ paths:
       tags:
         - users
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       operationId: getUserByID
       parameters:
         - in: path
@@ -496,18 +485,19 @@ paths:
     post:
       summary: Create sign request
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       tags:
         - requests
       operationId: signContract
       consumes:
         - application/json
       parameters:
-        - in: query
-          name: nickname
+        - in: body
+          name: signRequest
+          description: "Информация для запроса на подписание контракта"
           required: true
-          type: string
-          description: "Псевдоним"
+          schema:
+            $ref: '#/definitions/CreateSignRequestDTO'
       responses:
         201:
           description: Request successfully created
@@ -537,7 +527,7 @@ paths:
         - manager
       operationId: getManagers
       security:
-        - basicAuth: []
+        - JWTAuth: []
       consumes:
         - application/json
       produces:
@@ -567,20 +557,18 @@ paths:
         - manager
       operationId: addManager
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       consumes:
         - application/json
       produces:
         - application/json
       parameters:
-        - in: query
-          name: user_id
+        - in: body
+          name: managerData
+          description: "Данные для создания менеджера"
           required: true
-          type: array
-          items:
-            type: integer
-            format: uint64
-          description: "ID пользователя"
+          schema:
+            $ref: '#/definitions/CreateManagerDTO'
       responses:
         201:
           description: Manager successfully created
@@ -616,7 +604,7 @@ paths:
         - user
       operationId: getUsers
       security:
-        - basicAuth: [ ]
+        - JWTAuth: [ ]
       consumes:
         - application/json
       produces:
@@ -642,7 +630,6 @@ paths:
             $ref: '#/definitions/LeErrorMessage'
 
   # ================== GUEST ==================
-
   /register:
     post:
       summary: Create new user
@@ -651,24 +638,15 @@ paths:
       operationId: register
       consumes:
         - application/json
+      produces:
+        - application/json
       parameters:
-        - in: query
-          name: username
+        - in: body
+          name: userData
+          description: "Данные для регистрации нового пользователя"
           required: true
-          type: string
-          description: "Имя пользователя"
-        - in: query
-          name: email
-          required: true
-          type: string
-          format: email
-          description: "Email пользователя"
-        - in: query
-          name: password
-          required: true
-          type: string
-          description: "Пароль пользователя"
-
+          schema:
+            $ref: '#/definitions/RegisterUserDTO'
       responses:
         201:
           description: User successfully created
@@ -685,30 +663,28 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
 
-
   /login:
     post:
       summary: Login, lol
       tags:
         - auth
       operationId: login
+      consumes:
+        - application/json
+      produces:
+        - application/json
       parameters:
-        - in: query
-          name: email
+        - in: body
+          name: loginData
+          description: "Данные для входа"
           required: true
-          type: string
-          format: email
-          description: "Email пользователя"
-        - in: query
-          name: password
-          required: true
-          type: string
-          format: password
-          description: "Пароль пользователя"
-
+          schema:
+            $ref: '#/definitions/LoginUserDTO'
       responses:
         200:
           description: User successfully logged in
+          schema:
+            $ref: '#/definitions/AccessTokenDTO'
         401:
           description: Auth error
           schema:
@@ -928,8 +904,48 @@ definitions:
       description:
         type: string
 
+  UploadReleaseDTO:
+    type: object
+    properties:
+      title:
+        type: string
+        description: "Название релиза"
+      date:
+        type: string
+        format: date
+        description: "Дата написания релиза"
+      tracks:
+        type: array
+        description: "Треки данного релиза"
+        items:
+          $ref: '#/definitions/TrackDTO'
+    required:
+      - title
+      - date
+      - tracks
 
-  PublishRequestInput:
+  CreateManagerDTO:
+    type: object
+    properties:
+      user_id:
+        type: array
+        items:
+          type: integer
+          format: uint64
+        description: "ID пользователя"
+    required:
+      - user_id
+
+  CreateSignRequestDTO:
+    type: object
+    properties:
+      nickname:
+        type: string
+        description: "Псевдоним"
+    required:
+      - nickname
+
+  CreatePublishRequestDTO:
     type: object
     properties:
       release_id:
@@ -938,6 +954,46 @@ definitions:
       expected_date:
         type: string
         format: date
+
+  RegisterUserDTO:
+    type: object
+    properties:
+      username:
+        type: string
+        description: "Имя пользователя"
+      email:
+        type: string
+        format: email
+        description: "Email пользователя"
+      password:
+        type: string
+        description: "Пароль пользователя"
+    required:
+      - username
+      - email
+      - password
+
+  LoginUserDTO:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: "Email пользователя"
+      password:
+        type: string
+        format: password
+        description: "Пароль пользователя"
+    required:
+      - email
+      - password
+
+  AccessTokenDTO:
+    type: object
+    properties:
+      access_key:
+        type: string
+        description: "JWT access key"
 
   LeErrorMessage:
     type: object
