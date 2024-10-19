@@ -650,6 +650,8 @@ paths:
       responses:
         201:
           description: User successfully created
+          schema:
+            $ref: '#/definitions/AccessTokenDTO'
         409:
           description: User already exists
           schema:
@@ -687,6 +689,10 @@ paths:
             $ref: '#/definitions/AccessTokenDTO'
         401:
           description: Auth error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such user
           schema:
             $ref: '#/definitions/LeErrorMessage'
         422:

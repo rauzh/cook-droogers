@@ -6,7 +6,6 @@ import (
 	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/mail"
@@ -64,7 +63,7 @@ func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) err
 
 	if err != nil && !strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
 		usrSvc.logger.Error("USER SVC: Create", "error", err.Error())
-		return fmt.Errorf("can't create user: %w", err)
+		return fmt.Errorf("can'r create user: %w", err)
 	}
 	if usr != nil {
 		return userErrors.ErrAlreadyTaken
@@ -81,16 +80,17 @@ func (usrSvc *UserService) Create(ctx context.Context, newUser *models.User) err
 	return nil
 }
 
-
 func (usrSvc *UserService) Login(ctx context.Context, login, password string) (*models.User, error) {
 	user, err := usrSvc.repo.GetByEmail(ctx, login)
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrInvalidEmail
+	}
 	if err != nil {
-
 		return nil, err
 	}
 
 	if password != user.Password {
-		return nil, errors.New("invalid password")
+		return nil, userErrors.ErrInvalidPassword
 	}
 
 	return user, nil

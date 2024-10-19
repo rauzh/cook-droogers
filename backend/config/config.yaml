@@ -14,7 +14,7 @@ kafka:
   kafka_settings: null
 
 root:
-  username: "root"
+  username: "root@root.root"
   password: "1337"
 
 log:

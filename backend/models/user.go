@@ -9,6 +9,13 @@ const (
 	AdminUser     UserType = iota
 )
 
+const (
+	NonMemberUserStr string = "nonmember"
+	ManagerUserStr   string = "manager"
+	ArtistUserStr    string = "artist"
+	AdminUserStr     string = "admin"
+)
+
 type User struct {
 	UserID   uint64
 	Name     string
