@@ -107,7 +107,7 @@ func (o *GetUserByIDUnauthorized) WriteResponse(rw http.ResponseWriter, producer
 const GetUserByIDForbiddenCode int = 403
 
 /*
-GetUserByIDForbidden Invalid user type
+GetUserByIDForbidden Forbidden
 
 swagger:response getUserByIdForbidden
 */

@@ -138,6 +138,12 @@ func init() {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "422": {
             "description": "Invalid params",
             "schema": {
@@ -360,7 +366,10 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "User successfully created"
+            "description": "User successfully created",
+            "schema": {
+              "$ref": "#/definitions/AccessTokenDTO"
+            }
           },
           "409": {
             "description": "User already exists",
@@ -950,7 +959,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "user"
+          "users"
         ],
         "summary": "Get list of users",
         "operationId": "getUsers",
@@ -971,7 +980,7 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type",
+            "description": "No rights",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -1021,7 +1030,7 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type",
+            "description": "Forbidden",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -1463,7 +1472,7 @@ func init() {
       "name": "manager"
     },
     {
-      "name": "user"
+      "name": "users"
     },
     {
       "name": "requests"
@@ -1600,6 +1609,12 @@ func init() {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
+          "404": {
+            "description": "No such user",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "422": {
             "description": "Invalid params",
             "schema": {
@@ -1822,7 +1837,10 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "User successfully created"
+            "description": "User successfully created",
+            "schema": {
+              "$ref": "#/definitions/AccessTokenDTO"
+            }
           },
           "409": {
             "description": "User already exists",
@@ -2412,7 +2430,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "user"
+          "users"
         ],
         "summary": "Get list of users",
         "operationId": "getUsers",
@@ -2433,7 +2451,7 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type",
+            "description": "No rights",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -2483,7 +2501,7 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type",
+            "description": "Forbidden",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -2925,7 +2943,7 @@ func init() {
       "name": "manager"
     },
     {
-      "name": "user"
+      "name": "users"
     },
     {
       "name": "requests"

@@ -22,6 +22,11 @@ RegisterCreated User successfully created
 swagger:response registerCreated
 */
 type RegisterCreated struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.AccessTokenDTO `json:"body,omitempty"`
 }
 
 // NewRegisterCreated creates RegisterCreated with default headers values
@@ -30,12 +35,27 @@ func NewRegisterCreated() *RegisterCreated {
 	return &RegisterCreated{}
 }
 
+// WithPayload adds the payload to the register created response
+func (o *RegisterCreated) WithPayload(payload *models.AccessTokenDTO) *RegisterCreated {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the register created response
+func (o *RegisterCreated) SetPayload(payload *models.AccessTokenDTO) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *RegisterCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(201)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // RegisterConflictCode is the HTTP code returned for type RegisterConflict

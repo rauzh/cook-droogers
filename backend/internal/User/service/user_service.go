@@ -106,7 +106,9 @@ func (usrSvc *UserService) GetByEmail(ctx context.Context, email string) (*model
 
 func (usrSvc *UserService) Get(ctx context.Context, id uint64) (*models.User, error) {
 	user, err := usrSvc.repo.Get(ctx, id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrNoUser
+	}
 	if err != nil {
 		return nil, fmt.Errorf("can't get user with err %w", err)
 	}

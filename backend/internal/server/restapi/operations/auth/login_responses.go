@@ -103,6 +103,51 @@ func (o *LoginUnauthorized) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
+// LoginNotFoundCode is the HTTP code returned for type LoginNotFound
+const LoginNotFoundCode int = 404
+
+/*
+LoginNotFound No such user
+
+swagger:response loginNotFound
+*/
+type LoginNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewLoginNotFound creates LoginNotFound with default headers values
+func NewLoginNotFound() *LoginNotFound {
+
+	return &LoginNotFound{}
+}
+
+// WithPayload adds the payload to the login not found response
+func (o *LoginNotFound) WithPayload(payload *models.LeErrorMessage) *LoginNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the login not found response
+func (o *LoginNotFound) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *LoginNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // LoginUnprocessableEntityCode is the HTTP code returned for type LoginUnprocessableEntity
 const LoginUnprocessableEntityCode int = 422
 

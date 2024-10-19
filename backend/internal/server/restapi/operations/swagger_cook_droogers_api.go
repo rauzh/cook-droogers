@@ -25,7 +25,6 @@ import (
 	"cookdroogers/internal/server/restapi/operations/releases"
 	"cookdroogers/internal/server/restapi/operations/requests"
 	"cookdroogers/internal/server/restapi/operations/tracks"
-	"cookdroogers/internal/server/restapi/operations/user"
 	"cookdroogers/internal/server/restapi/operations/users"
 )
 
@@ -93,8 +92,8 @@ func NewSwaggerCookDroogersAPI(spec *loads.Document) *SwaggerCookDroogersAPI {
 		UsersGetUserByIDHandler: users.GetUserByIDHandlerFunc(func(params users.GetUserByIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation users.GetUserByID has not yet been implemented")
 		}),
-		UserGetUsersHandler: user.GetUsersHandlerFunc(func(params user.GetUsersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation user.GetUsers has not yet been implemented")
+		UsersGetUsersHandler: users.GetUsersHandlerFunc(func(params users.GetUsersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation users.GetUsers has not yet been implemented")
 		}),
 		AuthLoginHandler: auth.LoginHandlerFunc(func(params auth.LoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation auth.Login has not yet been implemented")
@@ -186,8 +185,8 @@ type SwaggerCookDroogersAPI struct {
 	TracksGetTrackByIDHandler tracks.GetTrackByIDHandler
 	// UsersGetUserByIDHandler sets the operation handler for the get user by ID operation
 	UsersGetUserByIDHandler users.GetUserByIDHandler
-	// UserGetUsersHandler sets the operation handler for the get users operation
-	UserGetUsersHandler user.GetUsersHandler
+	// UsersGetUsersHandler sets the operation handler for the get users operation
+	UsersGetUsersHandler users.GetUsersHandler
 	// AuthLoginHandler sets the operation handler for the login operation
 	AuthLoginHandler auth.LoginHandler
 	// RequestsPublishReqHandler sets the operation handler for the publish req operation
@@ -319,8 +318,8 @@ func (o *SwaggerCookDroogersAPI) Validate() error {
 	if o.UsersGetUserByIDHandler == nil {
 		unregistered = append(unregistered, "users.GetUserByIDHandler")
 	}
-	if o.UserGetUsersHandler == nil {
-		unregistered = append(unregistered, "user.GetUsersHandler")
+	if o.UsersGetUsersHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersHandler")
 	}
 	if o.AuthLoginHandler == nil {
 		unregistered = append(unregistered, "auth.LoginHandler")
@@ -490,7 +489,7 @@ func (o *SwaggerCookDroogersAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users"] = user.NewGetUsers(o.context, o.UserGetUsersHandler)
+	o.handlers["GET"]["/users"] = users.NewGetUsers(o.context, o.UsersGetUsersHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

@@ -7,7 +7,7 @@ basePath: /api
 tags:
   - name: artist
   - name: manager
-  - name: user
+  - name: users
   - name: requests
   - name: tracks
   - name: releases
@@ -465,7 +465,7 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
         403:
-          description: Invalid user type
+          description: Forbidden
           schema:
             $ref: '#/definitions/LeErrorMessage'
         404:
@@ -601,7 +601,7 @@ paths:
     get:
       summary: Get list of users
       tags:
-        - user
+        - users
       operationId: getUsers
       security:
         - JWTAuth: [ ]
@@ -621,7 +621,7 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
         403:
-          description: Invalid user type
+          description: No rights
           schema:
             $ref: '#/definitions/LeErrorMessage'
         500:

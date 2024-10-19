@@ -7,4 +7,5 @@ var (
 	ErrInvalidName     error = errors.New("the name is invalid")
 	ErrInvalidPassword error = errors.New("the password is invalid")
 	ErrAlreadyTaken    error = errors.New("this email is already taken")
+	ErrNoUser          error = errors.New("no such user")
 )

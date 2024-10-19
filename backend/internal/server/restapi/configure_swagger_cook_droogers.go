@@ -23,8 +23,6 @@ import (
 	"cookdroogers/internal/server/restapi/operations/releases"
 	"cookdroogers/internal/server/restapi/operations/requests"
 	"cookdroogers/internal/server/restapi/operations/tracks"
-	"cookdroogers/internal/server/restapi/operations/user"
-	"cookdroogers/internal/server/restapi/operations/users"
 )
 
 //go:generate swagger generate server --target ../../server --name SwaggerCookDroogers --spec ../../../swagger-api/swagger.yml --principal interface{}
@@ -69,6 +67,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 	}
 
 	handlers.ConfigureAuthHandlers(&cdApp, api)
+	handlers.ConfigureUserHandlers(&cdApp, api)
 
 	api.GetHeartbeatHandler = operations.GetHeartbeatHandlerFunc(func(params operations.GetHeartbeatParams) middleware.Responder {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
@@ -137,16 +136,6 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 	if api.TracksGetTrackByIDHandler == nil {
 		api.TracksGetTrackByIDHandler = tracks.GetTrackByIDHandlerFunc(func(params tracks.GetTrackByIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation tracks.GetTrackByID has not yet been implemented")
-		})
-	}
-	if api.UsersGetUserByIDHandler == nil {
-		api.UsersGetUserByIDHandler = users.GetUserByIDHandlerFunc(func(params users.GetUserByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation users.GetUserByID has not yet been implemented")
-		})
-	}
-	if api.UserGetUsersHandler == nil {
-		api.UserGetUsersHandler = user.GetUsersHandlerFunc(func(params user.GetUsersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation user.GetUsers has not yet been implemented")
 		})
 	}
 
