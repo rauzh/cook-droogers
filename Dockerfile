@@ -8,7 +8,7 @@ COPY . .
 
 WORKDIR /go/src/app/backend
 RUN go build -o cook_droogers cmd/cookdroogers/main.go
-RUN  go build -o rest-api internal/handlers/cmd/swagger-cook-droogers-server/main.go 
+RUN go build -o rest-api internal/handlers/cmd/swagger-cook-droogers-server/main.go
 
 WORKDIR  /app
 

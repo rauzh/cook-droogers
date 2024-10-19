@@ -78,41 +78,50 @@ func lookupReqs(a *app.App, user *models.User) error {
 		return err
 	}
 
-	reqMap := make(map[uint64]base.Request)
+	if len(reqs) > 0 {
+		fmt.Println("Доступные заявки:")
 
-	for _, req := range reqs {
-		fmt.Printf("\n\t request id:%d\n\t type:%s\n\t status:%s\n\t date:%s\n\t manager:%d\n\t applier:%d\n",
-			req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
-		reqMap[req.RequestID] = req
-	}
+		reqMap := make(map[uint64]base.Request)
 
-	fmt.Printf("\n%s", "Введите id заявки, которую хотите посмотреть (0, если не хотите): ")
-	var reqID uint64
-	_, _ = fmt.Scanf("%d", &reqID)
-	if reqID == 0 {
-		return nil
-	}
-
-	switch reqMap[reqID].Type {
-	case sign_contract.SignRequest:
-		signReqUC := a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
-
-		signreq, err := signReqUC.Get(reqID)
-		if err != nil {
-			return err
+		for _, req := range reqs {
+			fmt.Printf("\n\t request id:%d\n\t type:%s\n\t status:%s\n\t date:%s\n\t manager:%d\n\t applier:%d\n",
+				req.RequestID, req.Type, req.Status, req.Date, req.ManagerID, req.ApplierID)
+			reqMap[req.RequestID] = req
 		}
 
-		fmt.Printf("\n\t nickname: %s \n\t decription: %s\n", signreq.Nickname, signreq.Description)
-	case publish.PubReq:
-		pubReqUC := a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
+		fmt.Printf("\n%s", "Введите id заявки, которую хотите посмотреть (0, если не хотите): ")
 
-		pubreq, err := pubReqUC.Get(reqID)
-		if err != nil {
-			return err
+		var reqID uint64
+		_, _ = fmt.Scanf("%d", &reqID)
+		if reqID == 0 {
+			return nil
 		}
 
-		fmt.Printf("\n\t expected date:%s\n\t decription: %s\n\t grade: %d\n\t release id: %d\n",
-			pubreq.ExpectedDate, pubreq.Description, pubreq.Grade, pubreq.ReleaseID)
+		switch reqMap[reqID].Type {
+		case sign_contract.SignRequest:
+			signReqUC := a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
+
+			signreq, err := signReqUC.Get(reqID)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("\n\t nickname: %s \n", signreq.Nickname)
+		case publish.PubReq:
+			pubReqUC := a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
+
+			pubreq, err := pubReqUC.Get(reqID)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("\n\t expected date:%s\n\t grade: %d\n\t release id: %d\n",
+				pubreq.ExpectedDate, pubreq.Grade, pubreq.ReleaseID)
+		}
+
+	} else {
+		fmt.Println("Нет доступных заявок.")
 	}
+
 	return nil
 }
