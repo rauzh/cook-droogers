@@ -1,5 +1,5 @@
-{"time":"2024-10-19T19:54:32.048939713Z","level":"INFO","msg":"init pubreq consumer handler"}
-{"time":"2024-10-19T19:54:35.138122215Z","level":"INFO","msg":"add pubreq consumer handler"}
-{"time":"2024-10-19T19:54:35.140319131Z","level":"INFO","msg":"init signreq consumer handler"}
-{"time":"2024-10-19T19:54:38.184146716Z","level":"INFO","msg":"add sign consumer handler"}
-{"time":"2024-10-19T19:54:38.199601133Z","level":"INFO","msg":"Serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":13337,"Zone":""}}
+{"time":"2024-10-20T13:43:18.721471093Z","level":"INFO","msg":"init pubreq consumer handler"}
+{"time":"2024-10-20T13:43:21.82394347Z","level":"INFO","msg":"add pubreq consumer handler"}
+{"time":"2024-10-20T13:43:21.82448947Z","level":"INFO","msg":"init signreq consumer handler"}
+{"time":"2024-10-20T13:43:24.872245179Z","level":"INFO","msg":"add sign consumer handler"}
+{"time":"2024-10-20T13:43:24.891646388Z","level":"INFO","msg":"Serving swagger cook droogers at http://%s","!BADKEY":{"IP":"::","Port":8080,"Zone":""}}

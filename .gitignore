@@ -1,5 +1,6 @@
-.gitignore
 *.DS_Store
 *vendor/
 *__pycache__*
 *.idea*
+pgadmin/*
+.env

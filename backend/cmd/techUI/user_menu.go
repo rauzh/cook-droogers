@@ -1,6 +1,7 @@
 package techUI
 
 import (
+	"context"
 	"cookdroogers/app"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/publish"
@@ -14,7 +15,7 @@ import (
 
 func userLoop(a *app.App, user *models.User, log *slog.Logger) error {
 
-	err := a.Services.UserService.SetRole(models.NonMemberUser)
+	err := a.Services.UserService.SetRole(context.Background(), models.NonMemberUser)
 	if err != nil {
 		log.Error("Can't init user menu: can't set user role: ", slog.Any("error", err))
 		return err
@@ -68,7 +69,7 @@ func applySignRequest(a *app.App, applier *models.User) error {
 
 	signReq := sign_contract.NewSignContractRequest(applier.UserID, nickname)
 
-	return a.UseCases.SignContractReqUC.Apply(signReq)
+	return a.UseCases.SignContractReqUC.Apply(context.Background(), signReq)
 }
 
 func lookupReqs(a *app.App, user *models.User) error {
@@ -101,7 +102,7 @@ func lookupReqs(a *app.App, user *models.User) error {
 		case sign_contract.SignRequest:
 			signReqUC := a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
 
-			signreq, err := signReqUC.Get(reqID)
+			signreq, err := signReqUC.Get(context.Background(), reqID)
 			if err != nil {
 				return err
 			}
@@ -110,7 +111,7 @@ func lookupReqs(a *app.App, user *models.User) error {
 		case publish.PubReq:
 			pubReqUC := a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 
-			pubreq, err := pubReqUC.Get(reqID)
+			pubreq, err := pubReqUC.Get(context.Background(), reqID)
 			if err != nil {
 				return err
 			}

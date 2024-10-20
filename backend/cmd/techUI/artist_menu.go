@@ -1,6 +1,7 @@
 package techUI
 
 import (
+	"context"
 	"cookdroogers/app"
 	"cookdroogers/internal/requests/publish"
 	"cookdroogers/models"
@@ -19,7 +20,7 @@ type artistMenu struct {
 
 func initArtistMenu(a *app.App, user *models.User, log *slog.Logger) (*artistMenu, error) {
 
-	artist, err := a.Services.ArtistService.GetByUserID(user.UserID)
+	artist, err := a.Services.ArtistService.GetByUserID(context.Background(), user.UserID)
 	if err != nil {
 		log.Error("Can't init artist menu: can't get artist: ", slog.Any("error", err))
 		return nil, err
@@ -100,7 +101,7 @@ func (menu *artistMenu) applyPublishRequest() error {
 
 	pubReq := publish.NewPublishRequest(menu.user.UserID, releaseID, cdtime.Date(year, month, day))
 
-	return menu.a.UseCases.PublishReqUC.Apply(pubReq)
+	return menu.a.UseCases.PublishReqUC.Apply(context.Background(), pubReq)
 }
 
 func (menu *artistMenu) uploadRelease() error {
@@ -150,12 +151,12 @@ func (menu *artistMenu) uploadRelease() error {
 		tracks[i] = track
 	}
 
-	return menu.a.Services.ReleaseService.Create(release, tracks)
+	return menu.a.Services.ReleaseService.Create(context.Background(), release, tracks)
 }
 
 func (menu *artistMenu) releases() {
 
-	releases, err := menu.a.Services.ReleaseService.GetAllByArtist(menu.artist.ArtistID)
+	releases, err := menu.a.Services.ReleaseService.GetAllByArtist(context.Background(), menu.artist.ArtistID)
 	if err != nil {
 		menu.log.Error("Can't get releases: ", slog.Any("error", err))
 	}

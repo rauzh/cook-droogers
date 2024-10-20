@@ -1,6 +1,7 @@
 package techUI
 
 import (
+	"context"
 	"cookdroogers/app"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/publish"
@@ -21,7 +22,7 @@ type managerMenu struct {
 
 func initManagerMenu(a *app.App, user *models.User, log *slog.Logger) (*managerMenu, error) {
 
-	manager, err := a.Services.ManagerService.GetByUserID(user.UserID)
+	manager, err := a.Services.ManagerService.GetByUserID(context.Background(), user.UserID)
 	if err != nil {
 		log.Error("Can't init manager menu: can't get manager: ", slog.Any("error", err))
 		return nil, err
@@ -94,7 +95,7 @@ func (menu *managerMenu) lookupReqs() error {
 		case sign_contract.SignRequest:
 			signReqUC := menu.a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
 
-			signreq, err := signReqUC.Get(reqID)
+			signreq, err := signReqUC.Get(context.Background(), reqID)
 			if err != nil {
 				return err
 			}
@@ -103,7 +104,7 @@ func (menu *managerMenu) lookupReqs() error {
 		case publish.PubReq:
 			pubReqUC := menu.a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
 
-			pubreq, err := pubReqUC.Get(reqID)
+			pubreq, err := pubReqUC.Get(context.Background(), reqID)
 			if err != nil {
 				return err
 			}
@@ -130,22 +131,22 @@ func (menu *managerMenu) lookupReqs() error {
 			switch reqMap[reqID].Type {
 			case sign_contract.SignRequest:
 				signReqUC := menu.a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
-				signreq, err := signReqUC.Get(reqID)
+				signreq, err := signReqUC.Get(context.Background(), reqID)
 				if err != nil {
 					return err
 				}
-				err = menu.a.UseCases.SignContractReqUC.Accept(signreq)
+				err = menu.a.UseCases.SignContractReqUC.Accept(context.Background(), signreq)
 				if err != nil {
 					menu.log.Error("CANT ACCEPT SIGN CONTRACT", slog.Any("error", err))
 					return err
 				}
 			case publish.PubReq:
 				pubReqUC := menu.a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
-				pubreq, err := pubReqUC.Get(reqID)
+				pubreq, err := pubReqUC.Get(context.Background(), reqID)
 				if err != nil {
 					return err
 				}
-				err = menu.a.UseCases.PublishReqUC.Accept(pubreq)
+				err = menu.a.UseCases.PublishReqUC.Accept(context.Background(), pubreq)
 				if err != nil {
 					menu.log.Error("CANT ACCEPT PUBLISH", slog.Any("error", err))
 					return err
@@ -155,21 +156,21 @@ func (menu *managerMenu) lookupReqs() error {
 			switch reqMap[reqID].Type {
 			case sign_contract.SignRequest:
 				signReqUC := menu.a.UseCases.SignContractReqUC.(*usecase.SignContractRequestUseCase)
-				signreq, err := signReqUC.Get(reqID)
+				signreq, err := signReqUC.Get(context.Background(), reqID)
 				if err != nil {
 					return err
 				}
-				err = menu.a.UseCases.SignContractReqUC.Decline(signreq)
+				err = menu.a.UseCases.SignContractReqUC.Decline(context.Background(), signreq)
 				if err != nil {
 					return err
 				}
 			case publish.PubReq:
 				pubReqUC := menu.a.UseCases.PublishReqUC.(*usecase2.PublishRequestUseCase)
-				pubreq, err := pubReqUC.Get(reqID)
+				pubreq, err := pubReqUC.Get(context.Background(), reqID)
 				if err != nil {
 					return err
 				}
-				err = menu.a.UseCases.PublishReqUC.Decline(pubreq)
+				err = menu.a.UseCases.PublishReqUC.Decline(context.Background(), pubreq)
 				if err != nil {
 					return err
 				}

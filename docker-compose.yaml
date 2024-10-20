@@ -6,8 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: /app/rest-api --host 0.0.0.0 --port 8080
     ports:
-      - "13337:13337"
+      - "13337:8080"
     volumes:
       - ./cook_droogers.log:/app/cook_droogers.log
       - ./backend/config/config.yaml:/app/config.yaml
@@ -87,6 +88,21 @@ services:
       - "2181:2181"
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - cookdroognet
+
+  pgadmin:
+    image: dpage/pgadmin4:7
+    env_file:
+      - .env
+    ports:
+      - 5435:80
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    environment:
+      TZ: "Europe/Moscow"
+    depends_on:
+      - postgres
     networks:
       - cookdroognet
 

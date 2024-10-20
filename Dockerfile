@@ -30,5 +30,5 @@ ENV PORT=8080
 
 WORKDIR /app
 
-CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
+#CMD ["/app/rest-api", "--host", "0.0.0.0", "--port", "13337"]
 #CMD ["tail", "-f", "/dev/null"]

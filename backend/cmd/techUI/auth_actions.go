@@ -1,6 +1,7 @@
 package techUI
 
 import (
+	"context"
 	"cookdroogers/app"
 	"cookdroogers/models"
 	"fmt"
@@ -20,7 +21,7 @@ func loginCLI(a *app.App) (*models.User, error) {
 	var password string
 	_, _ = fmt.Scanf("%s", &password)
 
-	return a.Services.UserService.Login(email, password)
+	return a.Services.UserService.Login(context.Background(), email, password)
 }
 
 func registerCLI(a *app.App) (*models.User, error) {
@@ -49,7 +50,7 @@ func registerCLI(a *app.App) (*models.User, error) {
 		Password: password,
 	}
 
-	err := a.Services.UserService.Create(user)
+	err := a.Services.UserService.Create(context.Background(), user)
 
 	return user, err
 }

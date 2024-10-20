@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Images Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            width: 70%;
+            margin: 0 auto 20px;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Приблизительные макеты будущего приложения</h1>
+
+<script>
+    const folderPath = 'figma-imgs';
+
+    const images = [
+        'Cook Droogers\'.png',
+        'Авторизация.png',
+        'Заявки (Артист).png',
+        'Заявки (Менеджер)-1.png',
+        'Заявки (Менеджер). Тип_ publish.png',
+        'Заявки (Менеджер). Тип_ sign.png',
+        'Заявки (Менеджер).png',
+        'Заявки (Пользователь).png',
+        'Подача заявки (Артист).png',
+        'Подача заявки (Пользователь).png',
+        'Подробное отображение_ release.png',
+        'Подробное отображение_ track.png',
+        'Просмотр заявки (Артист).png',
+        'Просмотр заявки (Пользователь).png',
+        'Профиль (Админ).png',
+        'Профиль (Артист).png',
+        'Профиль (Менеджер).png',
+        'Профиль (Пользователь).png',
+        'Регистрация.png',
+        'Релизы (Артист).png',
+        'Создание релиза (Артист)-1.png',
+        'Создание релиза (Артист).png'
+    ];
+
+    const body = document.querySelector('body');
+
+    images.forEach(image => {
+        const img = document.createElement('img');
+        img.src = folderPath + '/' + image;
+        img.alt = image;
+        
+        const galleryItem = document.createElement('div');
+        galleryItem.className = 'gallery-item';
+        galleryItem.appendChild(img);
+        
+        body.appendChild(galleryItem);
+    });
+</script>
+
+</body>
+</html>
