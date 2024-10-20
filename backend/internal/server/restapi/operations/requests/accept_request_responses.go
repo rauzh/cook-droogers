@@ -87,7 +87,7 @@ func (o *AcceptRequestUnauthorized) WriteResponse(rw http.ResponseWriter, produc
 const AcceptRequestForbiddenCode int = 403
 
 /*
-AcceptRequestForbidden Invalid user type (or this manager is not maintainer of the request)
+AcceptRequestForbidden Invalid user type
 
 swagger:response acceptRequestForbidden
 */
@@ -165,6 +165,51 @@ func (o *AcceptRequestNotFound) SetPayload(payload *models.LeErrorMessage) {
 func (o *AcceptRequestNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// AcceptRequestConflictCode is the HTTP code returned for type AcceptRequestConflict
+const AcceptRequestConflictCode int = 409
+
+/*
+AcceptRequestConflict Conflict
+
+swagger:response acceptRequestConflict
+*/
+type AcceptRequestConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewAcceptRequestConflict creates AcceptRequestConflict with default headers values
+func NewAcceptRequestConflict() *AcceptRequestConflict {
+
+	return &AcceptRequestConflict{}
+}
+
+// WithPayload adds the payload to the accept request conflict response
+func (o *AcceptRequestConflict) WithPayload(payload *models.LeErrorMessage) *AcceptRequestConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the accept request conflict response
+func (o *AcceptRequestConflict) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *AcceptRequestConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

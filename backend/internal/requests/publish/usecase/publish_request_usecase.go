@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	serviceErrors "cookdroogers/internal/errors"
 	"cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/broker"
@@ -12,8 +13,10 @@ import (
 	publishReqRepo "cookdroogers/internal/requests/publish/repo"
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
+	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 )
 
 type PublishRequestUseCase struct {
@@ -53,10 +56,10 @@ func NewPublishRequestUseCase(
 
 func (publishUseCase *PublishRequestUseCase) Apply(ctx context.Context, request base.IRequest) error {
 
-	if err := request.Validate(publish.PubReq); err != nil {
+	pubReq := request.(*publish.PublishRequest)
+	if err := pubReq.Validate(publish.PubReq); err != nil {
 		return err
 	}
-	pubReq := request.(*publish.PublishRequest)
 
 	base.InitDateStatus(&pubReq.Request)
 
@@ -78,6 +81,9 @@ func (publishUseCase *PublishRequestUseCase) Apply(ctx context.Context, request 
 func (publishUseCase *PublishRequestUseCase) checkRelease(ctx context.Context, pubReq *publish.PublishRequest) error {
 
 	release, err := publishUseCase.releaseRepo.Get(ctx, pubReq.ReleaseID)
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return serviceErrors.ErrNoSuchInstance
+	}
 	if err != nil {
 		return err
 	}
@@ -106,10 +112,10 @@ func (publishUseCase *PublishRequestUseCase) checkRelease(ctx context.Context, p
 
 func (publishUseCase *PublishRequestUseCase) Accept(ctx context.Context, request base.IRequest) error {
 
-	if err := request.Validate(publish.PubReq); err != nil {
+	pubReq := request.(*publish.PublishRequest)
+	if err := pubReq.Validate(publish.PubReq); err != nil {
 		return err
 	}
-	pubReq := request.(*publish.PublishRequest)
 
 	publication := models.Publication{
 		ReleaseID: pubReq.ReleaseID,
@@ -151,7 +157,9 @@ func (publishUseCase *PublishRequestUseCase) Decline(ctx context.Context, reques
 
 func (publishUseCase *PublishRequestUseCase) Get(ctx context.Context, id uint64) (*publish.PublishRequest, error) {
 	req, err := publishUseCase.repo.Get(ctx, id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, serviceErrors.ErrNoSuchInstance
+	}
 	if err != nil {
 		return nil, fmt.Errorf("can't get publish request with err %w", err)
 	}

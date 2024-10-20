@@ -6,7 +6,13 @@ import (
 	"context"
 	"cookdroogers/app"
 	"cookdroogers/config"
-	"cookdroogers/internal/server/restapi/handlers"
+	artistsHandlers "cookdroogers/internal/server/restapi/handlers/artists"
+	authHandlers "cookdroogers/internal/server/restapi/handlers/auth"
+	managersHandlers "cookdroogers/internal/server/restapi/handlers/managers"
+	releasesHandlers "cookdroogers/internal/server/restapi/handlers/releases"
+	requestsHandlers "cookdroogers/internal/server/restapi/handlers/requests"
+	tracksHandlers "cookdroogers/internal/server/restapi/handlers/tracks"
+	usersHandlers "cookdroogers/internal/server/restapi/handlers/users"
 	"cookdroogers/internal/server/restapi/session"
 	"cookdroogers/pkg/logger"
 	"crypto/tls"
@@ -18,7 +24,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"cookdroogers/internal/server/restapi/operations"
-	"cookdroogers/internal/server/restapi/operations/requests"
 )
 
 //go:generate swagger generate server --target ../../server --name SwaggerCookDroogers --spec ../../../swagger-api/swagger.yml --principal interface{}
@@ -62,12 +67,13 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 		return role, nil
 	}
 
-	handlers.ConfigureAuthHandlers(&cdApp, api)
-	handlers.ConfigureUserHandlers(&cdApp, api)
-	handlers.ConfigureTracksHandlers(&cdApp, api)
-	handlers.ConfigureArtistsHandlers(&cdApp, api)
-	handlers.ConfigureManagerHandlers(&cdApp, api)
-	handlers.ConfigureReleasesHandlers(&cdApp, api)
+	authHandlers.ConfigureAuthHandlers(&cdApp, api)
+	usersHandlers.ConfigureUserHandlers(&cdApp, api)
+	tracksHandlers.ConfigureTracksHandlers(&cdApp, api)
+	artistsHandlers.ConfigureArtistsHandlers(&cdApp, api)
+	managersHandlers.ConfigureManagerHandlers(&cdApp, api)
+	releasesHandlers.ConfigureReleasesHandlers(&cdApp, api)
+	requestsHandlers.ConfigureRequestsHandlers(&cdApp, api)
 
 	api.GetHeartbeatHandler = operations.GetHeartbeatHandlerFunc(func(params operations.GetHeartbeatParams) middleware.Responder {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
@@ -77,39 +83,6 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			}
 		})
 	})
-
-	if api.RequestsAcceptRequestHandler == nil {
-		api.RequestsAcceptRequestHandler = requests.AcceptRequestHandlerFunc(func(params requests.AcceptRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.AcceptRequest has not yet been implemented")
-		})
-	}
-	if api.RequestsDeclineRequestHandler == nil {
-		api.RequestsDeclineRequestHandler = requests.DeclineRequestHandlerFunc(func(params requests.DeclineRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.DeclineRequest has not yet been implemented")
-		})
-	}
-	if api.RequestsGetRequestHandler == nil {
-		api.RequestsGetRequestHandler = requests.GetRequestHandlerFunc(func(params requests.GetRequestParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.GetRequest has not yet been implemented")
-		})
-	}
-	if api.RequestsGetRequestsHandler == nil {
-		api.RequestsGetRequestsHandler = requests.GetRequestsHandlerFunc(func(params requests.GetRequestsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.GetRequests has not yet been implemented")
-		})
-	}
-
-	if api.RequestsPublishReqHandler == nil {
-		api.RequestsPublishReqHandler = requests.PublishReqHandlerFunc(func(params requests.PublishReqParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.PublishReq has not yet been implemented")
-		})
-	}
-
-	if api.RequestsSignContractHandler == nil {
-		api.RequestsSignContractHandler = requests.SignContractHandlerFunc(func(params requests.SignContractParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation requests.SignContract has not yet been implemented")
-		})
-	}
 
 	api.PreServerShutdown = func() {}
 

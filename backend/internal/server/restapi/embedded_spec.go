@@ -644,6 +644,12 @@ func init() {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "422": {
             "description": "Invalid params",
             "schema": {
@@ -689,6 +695,12 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
+          "400": {
+            "description": "Params logic error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "401": {
             "description": "Auth error",
             "schema": {
@@ -697,6 +709,18 @@ func init() {
           },
           "403": {
             "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such release",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -811,13 +835,19 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "description": "Invalid user type",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
           "404": {
             "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -870,13 +900,19 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "description": "Invalid user type",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
           "404": {
             "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -2152,6 +2188,12 @@ func init() {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "422": {
             "description": "Invalid params",
             "schema": {
@@ -2197,6 +2239,12 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
+          "400": {
+            "description": "Params logic error",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "401": {
             "description": "Auth error",
             "schema": {
@@ -2205,6 +2253,18 @@ func init() {
           },
           "403": {
             "description": "Invalid user type",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "404": {
+            "description": "No such release",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -2319,13 +2379,19 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "description": "Invalid user type",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
           "404": {
             "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
@@ -2378,13 +2444,19 @@ func init() {
             }
           },
           "403": {
-            "description": "Invalid user type (or this manager is not maintainer of the request)",
+            "description": "Invalid user type",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }
           },
           "404": {
             "description": "No such request",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "schema": {
               "$ref": "#/definitions/LeErrorMessage"
             }

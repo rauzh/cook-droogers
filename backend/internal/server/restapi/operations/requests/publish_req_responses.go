@@ -38,6 +38,51 @@ func (o *PublishReqCreated) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(201)
 }
 
+// PublishReqBadRequestCode is the HTTP code returned for type PublishReqBadRequest
+const PublishReqBadRequestCode int = 400
+
+/*
+PublishReqBadRequest Params logic error
+
+swagger:response publishReqBadRequest
+*/
+type PublishReqBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewPublishReqBadRequest creates PublishReqBadRequest with default headers values
+func NewPublishReqBadRequest() *PublishReqBadRequest {
+
+	return &PublishReqBadRequest{}
+}
+
+// WithPayload adds the payload to the publish req bad request response
+func (o *PublishReqBadRequest) WithPayload(payload *models.LeErrorMessage) *PublishReqBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the publish req bad request response
+func (o *PublishReqBadRequest) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PublishReqBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PublishReqUnauthorizedCode is the HTTP code returned for type PublishReqUnauthorized
 const PublishReqUnauthorizedCode int = 401
 
@@ -120,6 +165,96 @@ func (o *PublishReqForbidden) SetPayload(payload *models.LeErrorMessage) {
 func (o *PublishReqForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PublishReqNotFoundCode is the HTTP code returned for type PublishReqNotFound
+const PublishReqNotFoundCode int = 404
+
+/*
+PublishReqNotFound No such release
+
+swagger:response publishReqNotFound
+*/
+type PublishReqNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewPublishReqNotFound creates PublishReqNotFound with default headers values
+func NewPublishReqNotFound() *PublishReqNotFound {
+
+	return &PublishReqNotFound{}
+}
+
+// WithPayload adds the payload to the publish req not found response
+func (o *PublishReqNotFound) WithPayload(payload *models.LeErrorMessage) *PublishReqNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the publish req not found response
+func (o *PublishReqNotFound) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PublishReqNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PublishReqConflictCode is the HTTP code returned for type PublishReqConflict
+const PublishReqConflictCode int = 409
+
+/*
+PublishReqConflict Conflict
+
+swagger:response publishReqConflict
+*/
+type PublishReqConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewPublishReqConflict creates PublishReqConflict with default headers values
+func NewPublishReqConflict() *PublishReqConflict {
+
+	return &PublishReqConflict{}
+}
+
+// WithPayload adds the payload to the publish req conflict response
+func (o *PublishReqConflict) WithPayload(payload *models.LeErrorMessage) *PublishReqConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the publish req conflict response
+func (o *PublishReqConflict) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PublishReqConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

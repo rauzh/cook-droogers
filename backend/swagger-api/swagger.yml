@@ -159,12 +159,24 @@ paths:
       responses:
         201:
           description: Request successfully created
+        400:
+          description: Params logic error
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         401:
           description: Auth error
           schema:
             $ref: '#/definitions/LeErrorMessage'
         403:
           description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        404:
+          description: No such release
           schema:
             $ref: '#/definitions/LeErrorMessage'
         422:
@@ -395,11 +407,15 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
         403:
-          description: Invalid user type (or this manager is not maintainer of the request)
+          description: Invalid user type
           schema:
             $ref: '#/definitions/LeErrorMessage'
         404:
           description: No such request
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        409:
+          description: Conflict
           schema:
             $ref: '#/definitions/LeErrorMessage'
         422:
@@ -434,11 +450,15 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
         403:
-          description: Invalid user type (or this manager is not maintainer of the request)
+          description: Invalid user type
           schema:
             $ref: '#/definitions/LeErrorMessage'
         404:
           description: No such request
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        409:
+          description: Conflict
           schema:
             $ref: '#/definitions/LeErrorMessage'
         422:
@@ -519,6 +539,10 @@ paths:
             $ref: '#/definitions/LeErrorMessage'
         403:
           description: Invalid user type
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
+        409:
+          description: Conflict
           schema:
             $ref: '#/definitions/LeErrorMessage'
         422:

@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	serviceErrors "cookdroogers/internal/errors"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/base/repo"
+	"database/sql"
 	"github.com/pkg/errors"
 	"log/slog"
+	"strings"
 )
 
 var DBerr error = errors.New("can't get reqs with err")
@@ -51,7 +54,9 @@ func (reqSvc *RequestService) GetAllByUserID(id uint64) ([]base.Request, error) 
 func (reqSvc *RequestService) GetByID(id uint64) (*base.Request, error) {
 
 	req, err := reqSvc.repo.GetByID(context.Background(), id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, serviceErrors.ErrNoSuchInstance
+	}
 	if err != nil {
 		reqSvc.logger.Error("REQ SVC: GetByID", "error", err.Error())
 		return nil, errors.Wrap(DBerr, err.Error())

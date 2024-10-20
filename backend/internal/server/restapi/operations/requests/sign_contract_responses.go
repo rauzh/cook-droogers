@@ -128,6 +128,51 @@ func (o *SignContractForbidden) WriteResponse(rw http.ResponseWriter, producer r
 	}
 }
 
+// SignContractConflictCode is the HTTP code returned for type SignContractConflict
+const SignContractConflictCode int = 409
+
+/*
+SignContractConflict Conflict
+
+swagger:response signContractConflict
+*/
+type SignContractConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewSignContractConflict creates SignContractConflict with default headers values
+func NewSignContractConflict() *SignContractConflict {
+
+	return &SignContractConflict{}
+}
+
+// WithPayload adds the payload to the sign contract conflict response
+func (o *SignContractConflict) WithPayload(payload *models.LeErrorMessage) *SignContractConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the sign contract conflict response
+func (o *SignContractConflict) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *SignContractConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // SignContractUnprocessableEntityCode is the HTTP code returned for type SignContractUnprocessableEntity
 const SignContractUnprocessableEntityCode int = 422
 

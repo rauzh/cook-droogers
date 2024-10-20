@@ -87,7 +87,7 @@ func (o *DeclineRequestUnauthorized) WriteResponse(rw http.ResponseWriter, produ
 const DeclineRequestForbiddenCode int = 403
 
 /*
-DeclineRequestForbidden Invalid user type (or this manager is not maintainer of the request)
+DeclineRequestForbidden Invalid user type
 
 swagger:response declineRequestForbidden
 */
@@ -165,6 +165,51 @@ func (o *DeclineRequestNotFound) SetPayload(payload *models.LeErrorMessage) {
 func (o *DeclineRequestNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// DeclineRequestConflictCode is the HTTP code returned for type DeclineRequestConflict
+const DeclineRequestConflictCode int = 409
+
+/*
+DeclineRequestConflict Conflict
+
+swagger:response declineRequestConflict
+*/
+type DeclineRequestConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewDeclineRequestConflict creates DeclineRequestConflict with default headers values
+func NewDeclineRequestConflict() *DeclineRequestConflict {
+
+	return &DeclineRequestConflict{}
+}
+
+// WithPayload adds the payload to the decline request conflict response
+func (o *DeclineRequestConflict) WithPayload(payload *models.LeErrorMessage) *DeclineRequestConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the decline request conflict response
+func (o *DeclineRequestConflict) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeclineRequestConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

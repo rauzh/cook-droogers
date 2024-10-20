@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"cookdroogers/internal/errors"
 	repo "cookdroogers/internal/repo"
 	"cookdroogers/internal/requests/base"
 	"cookdroogers/internal/requests/broker"
@@ -12,8 +13,10 @@ import (
 	"cookdroogers/internal/transactor"
 	"cookdroogers/models"
 	cdtime "cookdroogers/pkg/time"
+	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 )
 
 type SignContractRequestUseCase struct {
@@ -50,10 +53,10 @@ func NewSignContractRequestUseCase(
 
 func (sctUseCase *SignContractRequestUseCase) Apply(ctx context.Context, request base.IRequest) error {
 
-	if err := request.Validate(sign_contract.SignRequest); err != nil {
+	signReq := request.(*sign_contract.SignContractRequest)
+	if err := signReq.Validate(sign_contract.SignRequest); err != nil {
 		return err
 	}
-	signReq := request.(*sign_contract.SignContractRequest)
 
 	base.InitDateStatus(&signReq.Request)
 
@@ -117,6 +120,9 @@ func (sctUseCase *SignContractRequestUseCase) Decline(ctx context.Context, reque
 func (sctUseCase *SignContractRequestUseCase) Get(ctx context.Context, id uint64) (*sign_contract.SignContractRequest, error) {
 
 	req, err := sctUseCase.repo.Get(ctx, id)
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, errors.ErrNoSuchInstance
+	}
 	if err != nil {
 		return nil, fmt.Errorf("can't get sign contract request with err %w", err)
 	}
