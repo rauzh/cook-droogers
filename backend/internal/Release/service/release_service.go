@@ -6,9 +6,12 @@ import (
 	"cookdroogers/internal/repo"
 	trackService "cookdroogers/internal/track/service"
 	"cookdroogers/internal/transactor"
+	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
+	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 )
 
 type IReleaseService interface {
@@ -85,7 +88,9 @@ func (rlsSvc *ReleaseService) uploadTracks(ctx context.Context, release *models.
 
 func (rlsSvc *ReleaseService) Get(ctx context.Context, releaseID uint64) (*models.Release, error) {
 	release, err := rlsSvc.repo.Get(ctx, releaseID)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrNoUser
+	}
 	if err != nil {
 		return nil, fmt.Errorf("can't get release with err %w", err)
 	}

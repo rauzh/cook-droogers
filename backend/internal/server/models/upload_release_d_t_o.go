@@ -31,7 +31,7 @@ type UploadReleaseDTO struct {
 
 	// Треки данного релиза
 	// Required: true
-	Tracks []*TrackDTO `json:"tracks"`
+	Tracks []*UploadTrackDTO `json:"tracks"`
 }
 
 // Validate validates this upload release d t o

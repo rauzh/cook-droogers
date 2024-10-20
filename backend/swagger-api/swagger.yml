@@ -226,6 +226,10 @@ paths:
       responses:
         201:
           description: Request successfully created
+        400:
+          description: Invalid params form
+          schema:
+            $ref: '#/definitions/LeErrorMessage'
         401:
           description: Auth error
           schema:
@@ -839,6 +843,24 @@ definitions:
           type: integer
           format: uint64
 
+  UploadTrackDTO:
+    type: object
+    required:
+      - title
+      - duration
+      - genre
+      - type
+    properties:
+      title:
+        type: string
+      duration:
+        type: integer
+        format: uint64
+      genre:
+        type: string
+      type:
+        type: string
+
   ReleaseDTO:
     type: object
     properties:
@@ -932,7 +954,7 @@ definitions:
         type: array
         description: "Треки данного релиза"
         items:
-          $ref: '#/definitions/TrackDTO'
+          $ref: '#/definitions/UploadTrackDTO'
     required:
       - title
       - date

@@ -473,6 +473,12 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
+          "400": {
+            "description": "Invalid params form",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "401": {
             "description": "Auth error",
             "schema": {
@@ -1420,8 +1426,32 @@ func init() {
           "description": "Треки данного релиза",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/TrackDTO"
+            "$ref": "#/definitions/UploadTrackDTO"
           }
+        }
+      }
+    },
+    "UploadTrackDTO": {
+      "type": "object",
+      "required": [
+        "title",
+        "duration",
+        "genre",
+        "type"
+      ],
+      "properties": {
+        "duration": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "genre": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
       }
     },
@@ -1951,6 +1981,12 @@ func init() {
           "201": {
             "description": "Request successfully created"
           },
+          "400": {
+            "description": "Invalid params form",
+            "schema": {
+              "$ref": "#/definitions/LeErrorMessage"
+            }
+          },
           "401": {
             "description": "Auth error",
             "schema": {
@@ -2898,8 +2934,32 @@ func init() {
           "description": "Треки данного релиза",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/TrackDTO"
+            "$ref": "#/definitions/UploadTrackDTO"
           }
+        }
+      }
+    },
+    "UploadTrackDTO": {
+      "type": "object",
+      "required": [
+        "title",
+        "duration",
+        "genre",
+        "type"
+      ],
+      "properties": {
+        "duration": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "genre": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
       }
     },

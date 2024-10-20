@@ -38,6 +38,51 @@ func (o *AddReleaseCreated) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(201)
 }
 
+// AddReleaseBadRequestCode is the HTTP code returned for type AddReleaseBadRequest
+const AddReleaseBadRequestCode int = 400
+
+/*
+AddReleaseBadRequest Invalid params form
+
+swagger:response addReleaseBadRequest
+*/
+type AddReleaseBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.LeErrorMessage `json:"body,omitempty"`
+}
+
+// NewAddReleaseBadRequest creates AddReleaseBadRequest with default headers values
+func NewAddReleaseBadRequest() *AddReleaseBadRequest {
+
+	return &AddReleaseBadRequest{}
+}
+
+// WithPayload adds the payload to the add release bad request response
+func (o *AddReleaseBadRequest) WithPayload(payload *models.LeErrorMessage) *AddReleaseBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the add release bad request response
+func (o *AddReleaseBadRequest) SetPayload(payload *models.LeErrorMessage) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *AddReleaseBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // AddReleaseUnauthorizedCode is the HTTP code returned for type AddReleaseUnauthorized
 const AddReleaseUnauthorizedCode int = 401
 

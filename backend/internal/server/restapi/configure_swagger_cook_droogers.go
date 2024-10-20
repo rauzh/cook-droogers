@@ -18,7 +18,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"cookdroogers/internal/server/restapi/operations"
-	"cookdroogers/internal/server/restapi/operations/releases"
 	"cookdroogers/internal/server/restapi/operations/requests"
 )
 
@@ -68,6 +67,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 	handlers.ConfigureTracksHandlers(&cdApp, api)
 	handlers.ConfigureArtistsHandlers(&cdApp, api)
 	handlers.ConfigureManagerHandlers(&cdApp, api)
+	handlers.ConfigureReleasesHandlers(&cdApp, api)
 
 	api.GetHeartbeatHandler = operations.GetHeartbeatHandlerFunc(func(params operations.GetHeartbeatParams) middleware.Responder {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
@@ -83,24 +83,9 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			return middleware.NotImplemented("operation requests.AcceptRequest has not yet been implemented")
 		})
 	}
-	if api.ReleasesAddReleaseHandler == nil {
-		api.ReleasesAddReleaseHandler = releases.AddReleaseHandlerFunc(func(params releases.AddReleaseParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation releases.AddRelease has not yet been implemented")
-		})
-	}
 	if api.RequestsDeclineRequestHandler == nil {
 		api.RequestsDeclineRequestHandler = requests.DeclineRequestHandlerFunc(func(params requests.DeclineRequestParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation requests.DeclineRequest has not yet been implemented")
-		})
-	}
-	if api.ReleasesGetReleaseHandler == nil {
-		api.ReleasesGetReleaseHandler = releases.GetReleaseHandlerFunc(func(params releases.GetReleaseParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation releases.GetRelease has not yet been implemented")
-		})
-	}
-	if api.ReleasesGetReleaseByIDHandler == nil {
-		api.ReleasesGetReleaseByIDHandler = releases.GetReleaseByIDHandlerFunc(func(params releases.GetReleaseByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation releases.GetReleaseByID has not yet been implemented")
 		})
 	}
 	if api.RequestsGetRequestHandler == nil {
