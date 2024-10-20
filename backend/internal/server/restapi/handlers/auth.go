@@ -58,7 +58,7 @@ func registerHandlerFunc(params auth.RegisterParams, cdApp *app.App) middleware.
 	}
 
 	return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
-		rw.WriteHeader(http.StatusOK)
+		rw.WriteHeader(http.StatusCreated)
 		_ = p.Produce(rw, models2.AccessTokenDTO{
 			AccessKey: tokenString,
 		})

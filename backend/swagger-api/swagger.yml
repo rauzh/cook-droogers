@@ -6,7 +6,7 @@ host: 0.0.0.0:13337
 basePath: /api
 tags:
   - name: artists
-  - name: manager
+  - name: managers
   - name: users
   - name: requests
   - name: tracks
@@ -331,7 +331,7 @@ paths:
     get:
       summary: Get manager data
       tags:
-        - manager
+        - managers
       security:
         - JWTAuth: [ ]
       operationId: getManagerByID
@@ -532,7 +532,7 @@ paths:
     get:
       summary: Get list of managers
       tags:
-        - manager
+        - managers
       operationId: getManagers
       security:
         - JWTAuth: []
@@ -560,10 +560,10 @@ paths:
           schema:
             $ref: '#/definitions/LeErrorMessage'
     post:
-      summary: Create manager
+      summary: Create managers
       tags:
-        - manager
-      operationId: addManager
+        - managers
+      operationId: addManagers
       security:
         - JWTAuth: [ ]
       consumes:
@@ -572,8 +572,8 @@ paths:
         - application/json
       parameters:
         - in: body
-          name: managerData
-          description: "Данные для создания менеджера"
+          name: managersData
+          description: "Данные для создания менеджеров"
           required: true
           schema:
             $ref: '#/definitions/CreateManagerDTO'

@@ -180,7 +180,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
         "summary": "Get list of managers",
         "operationId": "getManagers",
@@ -227,14 +227,14 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
-        "summary": "Create manager",
-        "operationId": "addManager",
+        "summary": "Create managers",
+        "operationId": "addManagers",
         "parameters": [
           {
-            "description": "Данные для создания менеджера",
-            "name": "managerData",
+            "description": "Данные для создания менеджеров",
+            "name": "managersData",
             "in": "body",
             "required": true,
             "schema": {
@@ -293,7 +293,7 @@ func init() {
           }
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
         "summary": "Get manager data",
         "operationId": "getManagerByID",
@@ -1476,7 +1476,7 @@ func init() {
       "name": "artists"
     },
     {
-      "name": "manager"
+      "name": "managers"
     },
     {
       "name": "users"
@@ -1658,7 +1658,7 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
         "summary": "Get list of managers",
         "operationId": "getManagers",
@@ -1705,14 +1705,14 @@ func init() {
           "application/json"
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
-        "summary": "Create manager",
-        "operationId": "addManager",
+        "summary": "Create managers",
+        "operationId": "addManagers",
         "parameters": [
           {
-            "description": "Данные для создания менеджера",
-            "name": "managerData",
+            "description": "Данные для создания менеджеров",
+            "name": "managersData",
             "in": "body",
             "required": true,
             "schema": {
@@ -1771,7 +1771,7 @@ func init() {
           }
         ],
         "tags": [
-          "manager"
+          "managers"
         ],
         "summary": "Get manager data",
         "operationId": "getManagerByID",
@@ -2954,7 +2954,7 @@ func init() {
       "name": "artists"
     },
     {
-      "name": "manager"
+      "name": "managers"
     },
     {
       "name": "users"

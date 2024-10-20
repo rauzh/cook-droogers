@@ -21,7 +21,7 @@ import (
 
 	"cookdroogers/internal/server/restapi/operations/artists"
 	"cookdroogers/internal/server/restapi/operations/auth"
-	"cookdroogers/internal/server/restapi/operations/manager"
+	"cookdroogers/internal/server/restapi/operations/managers"
 	"cookdroogers/internal/server/restapi/operations/releases"
 	"cookdroogers/internal/server/restapi/operations/requests"
 	"cookdroogers/internal/server/restapi/operations/tracks"
@@ -56,8 +56,8 @@ func NewSwaggerCookDroogersAPI(spec *loads.Document) *SwaggerCookDroogersAPI {
 		RequestsAcceptRequestHandler: requests.AcceptRequestHandlerFunc(func(params requests.AcceptRequestParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation requests.AcceptRequest has not yet been implemented")
 		}),
-		ManagerAddManagerHandler: manager.AddManagerHandlerFunc(func(params manager.AddManagerParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.AddManager has not yet been implemented")
+		ManagersAddManagersHandler: managers.AddManagersHandlerFunc(func(params managers.AddManagersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation managers.AddManagers has not yet been implemented")
 		}),
 		ReleasesAddReleaseHandler: releases.AddReleaseHandlerFunc(func(params releases.AddReleaseParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation releases.AddRelease has not yet been implemented")
@@ -68,11 +68,11 @@ func NewSwaggerCookDroogersAPI(spec *loads.Document) *SwaggerCookDroogersAPI {
 		ArtistsGetArtistByIDHandler: artists.GetArtistByIDHandlerFunc(func(params artists.GetArtistByIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation artists.GetArtistByID has not yet been implemented")
 		}),
-		ManagerGetManagerByIDHandler: manager.GetManagerByIDHandlerFunc(func(params manager.GetManagerByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.GetManagerByID has not yet been implemented")
+		ManagersGetManagerByIDHandler: managers.GetManagerByIDHandlerFunc(func(params managers.GetManagerByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation managers.GetManagerByID has not yet been implemented")
 		}),
-		ManagerGetManagersHandler: manager.GetManagersHandlerFunc(func(params manager.GetManagersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation manager.GetManagers has not yet been implemented")
+		ManagersGetManagersHandler: managers.GetManagersHandlerFunc(func(params managers.GetManagersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation managers.GetManagers has not yet been implemented")
 		}),
 		ReleasesGetReleaseHandler: releases.GetReleaseHandlerFunc(func(params releases.GetReleaseParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation releases.GetRelease has not yet been implemented")
@@ -161,18 +161,18 @@ type SwaggerCookDroogersAPI struct {
 	GetHeartbeatHandler GetHeartbeatHandler
 	// RequestsAcceptRequestHandler sets the operation handler for the accept request operation
 	RequestsAcceptRequestHandler requests.AcceptRequestHandler
-	// ManagerAddManagerHandler sets the operation handler for the add manager operation
-	ManagerAddManagerHandler manager.AddManagerHandler
+	// ManagersAddManagersHandler sets the operation handler for the add managers operation
+	ManagersAddManagersHandler managers.AddManagersHandler
 	// ReleasesAddReleaseHandler sets the operation handler for the add release operation
 	ReleasesAddReleaseHandler releases.AddReleaseHandler
 	// RequestsDeclineRequestHandler sets the operation handler for the decline request operation
 	RequestsDeclineRequestHandler requests.DeclineRequestHandler
 	// ArtistsGetArtistByIDHandler sets the operation handler for the get artist by ID operation
 	ArtistsGetArtistByIDHandler artists.GetArtistByIDHandler
-	// ManagerGetManagerByIDHandler sets the operation handler for the get manager by ID operation
-	ManagerGetManagerByIDHandler manager.GetManagerByIDHandler
-	// ManagerGetManagersHandler sets the operation handler for the get managers operation
-	ManagerGetManagersHandler manager.GetManagersHandler
+	// ManagersGetManagerByIDHandler sets the operation handler for the get manager by ID operation
+	ManagersGetManagerByIDHandler managers.GetManagerByIDHandler
+	// ManagersGetManagersHandler sets the operation handler for the get managers operation
+	ManagersGetManagersHandler managers.GetManagersHandler
 	// ReleasesGetReleaseHandler sets the operation handler for the get release operation
 	ReleasesGetReleaseHandler releases.GetReleaseHandler
 	// ReleasesGetReleaseByIDHandler sets the operation handler for the get release by ID operation
@@ -282,8 +282,8 @@ func (o *SwaggerCookDroogersAPI) Validate() error {
 	if o.RequestsAcceptRequestHandler == nil {
 		unregistered = append(unregistered, "requests.AcceptRequestHandler")
 	}
-	if o.ManagerAddManagerHandler == nil {
-		unregistered = append(unregistered, "manager.AddManagerHandler")
+	if o.ManagersAddManagersHandler == nil {
+		unregistered = append(unregistered, "managers.AddManagersHandler")
 	}
 	if o.ReleasesAddReleaseHandler == nil {
 		unregistered = append(unregistered, "releases.AddReleaseHandler")
@@ -294,11 +294,11 @@ func (o *SwaggerCookDroogersAPI) Validate() error {
 	if o.ArtistsGetArtistByIDHandler == nil {
 		unregistered = append(unregistered, "artists.GetArtistByIDHandler")
 	}
-	if o.ManagerGetManagerByIDHandler == nil {
-		unregistered = append(unregistered, "manager.GetManagerByIDHandler")
+	if o.ManagersGetManagerByIDHandler == nil {
+		unregistered = append(unregistered, "managers.GetManagerByIDHandler")
 	}
-	if o.ManagerGetManagersHandler == nil {
-		unregistered = append(unregistered, "manager.GetManagersHandler")
+	if o.ManagersGetManagersHandler == nil {
+		unregistered = append(unregistered, "managers.GetManagersHandler")
 	}
 	if o.ReleasesGetReleaseHandler == nil {
 		unregistered = append(unregistered, "releases.GetReleaseHandler")
@@ -441,7 +441,7 @@ func (o *SwaggerCookDroogersAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/managers"] = manager.NewAddManager(o.context, o.ManagerAddManagerHandler)
+	o.handlers["POST"]["/managers"] = managers.NewAddManagers(o.context, o.ManagersAddManagersHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
@@ -457,11 +457,11 @@ func (o *SwaggerCookDroogersAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/managers/{manager_id}"] = manager.NewGetManagerByID(o.context, o.ManagerGetManagerByIDHandler)
+	o.handlers["GET"]["/managers/{manager_id}"] = managers.NewGetManagerByID(o.context, o.ManagersGetManagerByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/managers"] = manager.NewGetManagers(o.context, o.ManagerGetManagersHandler)
+	o.handlers["GET"]["/managers"] = managers.NewGetManagers(o.context, o.ManagersGetManagersHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

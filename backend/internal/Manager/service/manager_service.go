@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"cookdroogers/internal/repo"
+	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
+	"database/sql"
 	"github.com/pkg/errors"
 	"log/slog"
+	"strings"
 )
 
 type IManagerService interface {
@@ -38,7 +41,9 @@ func (mngSvc *ManagerService) Create(ctx context.Context, manager *models.Manage
 
 func (mngSvc *ManagerService) Get(ctx context.Context, id uint64) (*models.Manager, error) {
 	manager, err := mngSvc.repo.Get(ctx, id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrNoUser
+	}
 	if err != nil {
 		mngSvc.logger.Error("MANAGER SERVICE: Get", "error", err.Error())
 		return nil, errors.Wrap(GetDbError, err.Error())
