@@ -5,7 +5,7 @@ info:
 host: 0.0.0.0:13337
 basePath: /api
 tags:
-  - name: artist
+  - name: artists
   - name: manager
   - name: users
   - name: requests
@@ -90,21 +90,27 @@ paths:
 
   # =================== ARTIST ====================
 
-  /artists/{artist_id}:
+  /artists/{id}:
     get:
       summary: Get artist data
       tags:
-        - artist
+        - artists
       security:
         - JWTAuth: [ ]
       operationId: getArtistByID
       parameters:
         - in: path
-          name: artist_id
+          name: id
           required: true
           type: integer
           format: uint64
-          description: "ID артиста"
+          description: "ID"
+        - in: query
+          name: by_user_id
+          type: boolean
+          default: false
+          description: "Использовать ли user_id вместо artist_id"
+
       responses:
         200:
           description: Success
@@ -130,6 +136,8 @@ paths:
           description: Internal error
           schema:
             $ref: '#/definitions/LeErrorMessage'
+
+  # =================== REQUESTS ====================
 
   /requests/publications:
     post:
@@ -442,7 +450,7 @@ paths:
 
   /users/{user_id}:
     get:
-      summary: Get user data
+      summary: Get user data by id
       tags:
         - users
       security:

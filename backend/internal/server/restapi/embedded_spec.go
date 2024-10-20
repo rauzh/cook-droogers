@@ -29,7 +29,7 @@ func init() {
   "host": "0.0.0.0:13337",
   "basePath": "/api",
   "paths": {
-    "/artists/{artist_id}": {
+    "/artists/{id}": {
       "get": {
         "security": [
           {
@@ -37,7 +37,7 @@ func init() {
           }
         ],
         "tags": [
-          "artist"
+          "artists"
         ],
         "summary": "Get artist data",
         "operationId": "getArtistByID",
@@ -45,10 +45,17 @@ func init() {
           {
             "type": "integer",
             "format": "uint64",
-            "description": "ID артиста",
-            "name": "artist_id",
+            "description": "ID",
+            "name": "id",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Использовать ли user_id вместо artist_id",
+            "name": "by_user_id",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1004,7 +1011,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get user data",
+        "summary": "Get user data by id",
         "operationId": "getUserByID",
         "parameters": [
           {
@@ -1466,7 +1473,7 @@ func init() {
   },
   "tags": [
     {
-      "name": "artist"
+      "name": "artists"
     },
     {
       "name": "manager"
@@ -1500,7 +1507,7 @@ func init() {
   "host": "0.0.0.0:13337",
   "basePath": "/api",
   "paths": {
-    "/artists/{artist_id}": {
+    "/artists/{id}": {
       "get": {
         "security": [
           {
@@ -1508,7 +1515,7 @@ func init() {
           }
         ],
         "tags": [
-          "artist"
+          "artists"
         ],
         "summary": "Get artist data",
         "operationId": "getArtistByID",
@@ -1516,10 +1523,17 @@ func init() {
           {
             "type": "integer",
             "format": "uint64",
-            "description": "ID артиста",
-            "name": "artist_id",
+            "description": "ID",
+            "name": "id",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Использовать ли user_id вместо artist_id",
+            "name": "by_user_id",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2475,7 +2489,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get user data",
+        "summary": "Get user data by id",
         "operationId": "getUserByID",
         "parameters": [
           {
@@ -2937,7 +2951,7 @@ func init() {
   },
   "tags": [
     {
-      "name": "artist"
+      "name": "artists"
     },
     {
       "name": "manager"

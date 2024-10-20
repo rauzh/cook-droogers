@@ -16,7 +16,7 @@ import (
 )
 
 func getTrackByIDHandlerFunc(params tracks.GetTrackByIDParams, app *app.App) middleware.Responder {
-	email, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
+	authUserID, _, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
 	if err != nil {
 		return middleware.Error(http.StatusUnauthorized, "Auth error")
 	}
@@ -51,12 +51,8 @@ func getTrackByIDHandlerFunc(params tracks.GetTrackByIDParams, app *app.App) mid
 		return middleware.Error(http.StatusForbidden, "Forbidden")
 	}
 
-	user, err := app.Services.UserService.GetByEmail(ctx, email)
-	if err != nil {
-		return middleware.Error(http.StatusInternalServerError, "Can't get track")
-	}
 	if role == models.ArtistUserStr {
-		artist, err := app.Services.ArtistService.GetByUserID(ctx, user.UserID)
+		artist, err := app.Services.ArtistService.GetByUserID(ctx, authUserID)
 		if err != nil {
 			return middleware.Error(http.StatusInternalServerError, "Can't get track")
 		}
@@ -72,7 +68,7 @@ func getTrackByIDHandlerFunc(params tracks.GetTrackByIDParams, app *app.App) mid
 		}
 	}
 	if role == models.ManagerUserStr {
-		manager, err := app.Services.ManagerService.GetByUserID(ctx, user.UserID)
+		manager, err := app.Services.ManagerService.GetByUserID(ctx, authUserID)
 		if err != nil {
 			return middleware.Error(http.StatusInternalServerError, "Can't get track")
 		}

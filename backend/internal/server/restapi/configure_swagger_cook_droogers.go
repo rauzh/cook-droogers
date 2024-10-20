@@ -18,7 +18,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"cookdroogers/internal/server/restapi/operations"
-	"cookdroogers/internal/server/restapi/operations/artist"
 	"cookdroogers/internal/server/restapi/operations/manager"
 	"cookdroogers/internal/server/restapi/operations/releases"
 	"cookdroogers/internal/server/restapi/operations/requests"
@@ -58,7 +57,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 
 	// Applies when the "access_token" header is set
 	api.JWTAuthAuth = func(token string) (interface{}, error) {
-		_, role, err := session.VerifyToken(token)
+		_, _, role, err := session.VerifyToken(token)
 		if err != nil {
 			return nil, errors.Unauthenticated("invalid token")
 		}
@@ -68,6 +67,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 	handlers.ConfigureAuthHandlers(&cdApp, api)
 	handlers.ConfigureUserHandlers(&cdApp, api)
 	handlers.ConfigureTracksHandlers(&cdApp, api)
+	handlers.ConfigureArtistsHandlers(&cdApp, api)
 
 	api.GetHeartbeatHandler = operations.GetHeartbeatHandlerFunc(func(params operations.GetHeartbeatParams) middleware.Responder {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
@@ -98,11 +98,7 @@ func configureAPI(api *operations.SwaggerCookDroogersAPI) http.Handler {
 			return middleware.NotImplemented("operation requests.DeclineRequest has not yet been implemented")
 		})
 	}
-	if api.ArtistGetArtistByIDHandler == nil {
-		api.ArtistGetArtistByIDHandler = artist.GetArtistByIDHandlerFunc(func(params artist.GetArtistByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.GetArtistByID has not yet been implemented")
-		})
-	}
+
 	if api.ManagerGetManagerByIDHandler == nil {
 		api.ManagerGetManagerByIDHandler = manager.GetManagerByIDHandlerFunc(func(params manager.GetManagerByIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation manager.GetManagerByID has not yet been implemented")

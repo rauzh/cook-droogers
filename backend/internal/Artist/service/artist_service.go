@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"cookdroogers/internal/repo"
+	userErrors "cookdroogers/internal/user/errors"
 	"cookdroogers/models"
+	"database/sql"
 	"github.com/pkg/errors"
 	"log/slog"
+	"strings"
 )
 
 type IArtistService interface {
@@ -37,7 +40,9 @@ func (ars *ArtistService) Create(ctx context.Context, artist *models.Artist) err
 
 func (ars *ArtistService) Get(ctx context.Context, id uint64) (*models.Artist, error) {
 	artist, err := ars.repo.Get(ctx, id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrNoUser
+	}
 	if err != nil {
 		return nil, errors.Wrap(GetDbError, err.Error())
 	}
@@ -46,7 +51,9 @@ func (ars *ArtistService) Get(ctx context.Context, id uint64) (*models.Artist, e
 
 func (ars *ArtistService) GetByUserID(ctx context.Context, id uint64) (*models.Artist, error) {
 	artist, err := ars.repo.GetByUserID(ctx, id)
-
+	if err != nil && strings.Contains(err.Error(), sql.ErrNoRows.Error()) {
+		return nil, userErrors.ErrNoUser
+	}
 	if err != nil {
 		return nil, errors.Wrap(GetDbError, err.Error())
 	}

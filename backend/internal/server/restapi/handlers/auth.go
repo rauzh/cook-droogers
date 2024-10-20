@@ -52,7 +52,7 @@ func registerHandlerFunc(params auth.RegisterParams, cdApp *app.App) middleware.
 		}
 	}
 
-	tokenString, err := session.CreateToken(email.String(), "client")
+	tokenString, err := session.CreateToken(user.UserID, user.Email, models.NonMemberUserStr)
 	if err != nil {
 		return middleware.Error(http.StatusInternalServerError, "Could not create token")
 	}
@@ -76,7 +76,7 @@ func loginHandlerFunc(params auth.LoginParams, cdApp *app.App) middleware.Respon
 		if err != nil {
 			return middleware.Error(http.StatusInternalServerError, "Can't authorize")
 		}
-		tokenString, err := session.CreateToken(email, models.AdminUserStr)
+		tokenString, err := session.CreateToken(0, email, models.AdminUserStr)
 		if err != nil {
 			return middleware.Error(http.StatusInternalServerError, "Could not create token")
 		}
@@ -117,7 +117,7 @@ func loginHandlerFunc(params auth.LoginParams, cdApp *app.App) middleware.Respon
 		role = models.AdminUserStr
 	}
 
-	tokenString, err := session.CreateToken(email, role)
+	tokenString, err := session.CreateToken(user.UserID, email, role)
 	if err != nil {
 		return middleware.Error(http.StatusInternalServerError, "Could not create token")
 	}

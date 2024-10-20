@@ -17,7 +17,7 @@ import (
 )
 
 func getByUserIDHandlerFunc(params users.GetUserByIDParams, app *app.App) middleware.Responder {
-	email, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
+	authUserID, _, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
 	if err != nil {
 		return middleware.Error(http.StatusUnauthorized, "Auth error")
 	}
@@ -45,7 +45,7 @@ func getByUserIDHandlerFunc(params users.GetUserByIDParams, app *app.App) middle
 		}
 	}
 
-	if user.Email != email {
+	if user.UserID != authUserID {
 		return middleware.Error(http.StatusForbidden, "Forbidden")
 	}
 
@@ -63,7 +63,7 @@ func getByUserIDHandlerFunc(params users.GetUserByIDParams, app *app.App) middle
 }
 
 func getUsersHandlerFunc(params users.GetUsersParams, app *app.App) middleware.Responder {
-	_, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
+	_, _, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
 	if err != nil {
 		return middleware.Error(http.StatusUnauthorized, "Auth error")
 	}

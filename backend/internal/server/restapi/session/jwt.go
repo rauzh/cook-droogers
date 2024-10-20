@@ -4,6 +4,7 @@ import (
 	cdtime "cookdroogers/pkg/time"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -11,10 +12,10 @@ import (
 
 var secretKey = []byte("ultra-secret-key")
 
-func GetAuthenticatedUser(r *http.Request) (string, string, error) {
+func GetAuthenticatedUser(r *http.Request) (uint64, string, string, error) {
 	authHeader := r.Header.Get("access_token")
 	if authHeader == "" {
-		return "", "", fmt.Errorf("missing Authorization header")
+		return 0, "", "", fmt.Errorf("missing Authorization header")
 	}
 
 	token, err := jwt.Parse(authHeader, func(token *jwt.Token) (interface{}, error) {
@@ -24,20 +25,27 @@ func GetAuthenticatedUser(r *http.Request) (string, string, error) {
 		return secretKey, nil
 	})
 	if err != nil || !token.Valid {
-		return "", "", fmt.Errorf("invalid token")
+		return 0, "", "", fmt.Errorf("invalid token")
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		idStr := claims["id"].(string)
+		idInt, err := strconv.Atoi(idStr)
+		if err != nil {
+			return 0, "", "", fmt.Errorf("invalid token")
+		}
+
+		id := uint64(idInt)
 		email := claims["email"].(string)
 		role := claims["role"].(string)
-		return email, role, nil
-	} else {
-		return "", "", fmt.Errorf("invalid token claims")
+		return id, email, role, nil
 	}
+	return 0, "", "", fmt.Errorf("invalid token claims")
 }
 
-func CreateToken(email, role string) (string, error) {
+func CreateToken(id uint64, email, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    strconv.FormatUint(id, 10),
 		"email": email,
 		"role":  role,
 		"exp":   time.Now().Add(cdtime.Week).Unix(),
@@ -51,20 +59,27 @@ func CreateToken(email, role string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (string, string, error) {
+func VerifyToken(tokenString string) (uint64, string, string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
 	if err != nil {
-		return "", "", err
+		return 0, "", "", err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		idStr := claims["id"].(string)
+		idInt, err := strconv.Atoi(idStr)
+		if err != nil {
+			return 0, "", "", fmt.Errorf("invalid token")
+		}
+
+		id := uint64(idInt)
 		email := claims["email"].(string)
 		role := claims["role"].(string)
-		return email, role, nil
+		return id, email, role, nil
 	}
 
-	return "", "", fmt.Errorf("invalid token")
+	return 0, "", "", fmt.Errorf("invalid token")
 }

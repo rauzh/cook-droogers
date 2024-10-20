@@ -19,7 +19,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"cookdroogers/internal/server/restapi/operations/artist"
+	"cookdroogers/internal/server/restapi/operations/artists"
 	"cookdroogers/internal/server/restapi/operations/auth"
 	"cookdroogers/internal/server/restapi/operations/manager"
 	"cookdroogers/internal/server/restapi/operations/releases"
@@ -65,8 +65,8 @@ func NewSwaggerCookDroogersAPI(spec *loads.Document) *SwaggerCookDroogersAPI {
 		RequestsDeclineRequestHandler: requests.DeclineRequestHandlerFunc(func(params requests.DeclineRequestParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation requests.DeclineRequest has not yet been implemented")
 		}),
-		ArtistGetArtistByIDHandler: artist.GetArtistByIDHandlerFunc(func(params artist.GetArtistByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation artist.GetArtistByID has not yet been implemented")
+		ArtistsGetArtistByIDHandler: artists.GetArtistByIDHandlerFunc(func(params artists.GetArtistByIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation artists.GetArtistByID has not yet been implemented")
 		}),
 		ManagerGetManagerByIDHandler: manager.GetManagerByIDHandlerFunc(func(params manager.GetManagerByIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation manager.GetManagerByID has not yet been implemented")
@@ -167,8 +167,8 @@ type SwaggerCookDroogersAPI struct {
 	ReleasesAddReleaseHandler releases.AddReleaseHandler
 	// RequestsDeclineRequestHandler sets the operation handler for the decline request operation
 	RequestsDeclineRequestHandler requests.DeclineRequestHandler
-	// ArtistGetArtistByIDHandler sets the operation handler for the get artist by ID operation
-	ArtistGetArtistByIDHandler artist.GetArtistByIDHandler
+	// ArtistsGetArtistByIDHandler sets the operation handler for the get artist by ID operation
+	ArtistsGetArtistByIDHandler artists.GetArtistByIDHandler
 	// ManagerGetManagerByIDHandler sets the operation handler for the get manager by ID operation
 	ManagerGetManagerByIDHandler manager.GetManagerByIDHandler
 	// ManagerGetManagersHandler sets the operation handler for the get managers operation
@@ -291,8 +291,8 @@ func (o *SwaggerCookDroogersAPI) Validate() error {
 	if o.RequestsDeclineRequestHandler == nil {
 		unregistered = append(unregistered, "requests.DeclineRequestHandler")
 	}
-	if o.ArtistGetArtistByIDHandler == nil {
-		unregistered = append(unregistered, "artist.GetArtistByIDHandler")
+	if o.ArtistsGetArtistByIDHandler == nil {
+		unregistered = append(unregistered, "artists.GetArtistByIDHandler")
 	}
 	if o.ManagerGetManagerByIDHandler == nil {
 		unregistered = append(unregistered, "manager.GetManagerByIDHandler")
@@ -453,7 +453,7 @@ func (o *SwaggerCookDroogersAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/artists/{artist_id}"] = artist.NewGetArtistByID(o.context, o.ArtistGetArtistByIDHandler)
+	o.handlers["GET"]["/artists/{id}"] = artists.NewGetArtistByID(o.context, o.ArtistsGetArtistByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
