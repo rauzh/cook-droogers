@@ -28,6 +28,31 @@
             display: block;
         }
     </style>
+
+    <!-- Preload for Server Push -->
+    <link rel="preload" href="figma-imgs/Cook Droogers'.png" as="image">
+    <link rel="preload" href="figma-imgs/Авторизация.png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Артист).png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Менеджер)-1.png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Менеджер). Тип_ publish.png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Менеджер). Тип_ sign.png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Менеджер).png" as="image">
+    <link rel="preload" href="figma-imgs/Заявки (Пользователь).png" as="image">
+    <link rel="preload" href="figma-imgs/Подача заявки (Артист).png" as="image">
+    <link rel="preload" href="figma-imgs/Подача заявки (Пользователь).png" as="image">
+    <link rel="preload" href="figma-imgs/Подробное отображение_ release.png" as="image">
+    <link rel="preload" href="figma-imgs/Подробное отображение_ track.png" as="image">
+    <link rel="preload" href="figma-imgs/Просмотр заявки (Артист).png" as="image">
+    <link rel="preload" href="figma-imgs/Просмотр заявки (Пользователь).png" as="image">
+    <link rel="preload" href="figma-imgs/Профиль (Админ).png" as="image">
+    <link rel="preload" href="figma-imgs/Профиль (Артист).png" as="image">
+    <link rel="preload" href="figma-imgs/Профиль (Менеджер).png" as="image">
+    <link rel="preload" href="figma-imgs/Профиль (Пользователь).png" as="image">
+    <link rel="preload" href="figma-imgs/Регистрация.png" as="image">
+    <link rel="preload" href="figma-imgs/Релизы (Артист).png" as="image">
+    <link rel="preload" href="figma-imgs/Создание релиза (Артист)-1.png" as="image">
+    <link rel="preload" href="figma-imgs/Создание релиза (Артист).png" as="image">
+
 </head>
 <body>
 
@@ -67,11 +92,11 @@
         const img = document.createElement('img');
         img.src = folderPath + '/' + image;
         img.alt = image;
-        
+
         const galleryItem = document.createElement('div');
         galleryItem.className = 'gallery-item';
         galleryItem.appendChild(img);
-        
+
         body.appendChild(galleryItem);
     });
 </script>

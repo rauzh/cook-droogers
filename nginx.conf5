@@ -18,6 +18,23 @@ http {
         listen 8080;
         server_name  cook-droogers;
 
+        listen 8443 quic reuseport;
+        listen [::]:8443 quic reuseport;
+        listen 8443 ssl;
+        listen [::]:8443 ssl;
+
+        http2 on;
+        http3 on;
+
+        quic_gso on;
+        quic_retry on;
+        ssl_protocols TLSv1.2 TLSv1.3;
+
+        ssl_certificate /opt/homebrew/etc/nginx/localhost.crt;
+        ssl_certificate_key /opt/homebrew/etc/nginx/localhost.key;
+
+        add_header Alt-Svc 'h3=":8443"; ma=864000';
+
         gzip_types text/plain text/css image/svg image/jpeg image/svg+xml application/json;
         gzip on;
 
@@ -36,6 +53,9 @@ http {
 
         location / {
             alias  /Users/rauzh/Desktop/cook_droogers/PPO_DB/cook-droogers/static/;
+            add_header Link "<figma-imgs/Cook Droogers'.png>; rel=preload; as=image";
+            add_header Link "<figma-imgs/Авторизация.png>; rel=preload; as=image";
+            add_header Link "<figma-imgs/Заявки (Артист).png>; rel=preload; as=image";
             index index.html;
         }
 
