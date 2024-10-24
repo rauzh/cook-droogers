@@ -1,0 +1,89 @@
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+
+    proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=all:64m inactive=2h max_size=2g;
+
+    upstream balanced_backend {
+        server localhost:8081 weight=2;
+        server localhost:8082;
+        server localhost:8083;
+    }
+
+    server {
+        listen 8080;
+        server_name  cook-droogers;
+
+        gzip_types text/plain text/css image/svg image/jpeg image/svg+xml application/json;
+        gzip on;
+
+        proxy_cache all;
+        proxy_cache_methods GET;
+        add_header X-Cache-Status $upstream_cache_status;
+        proxy_cache_valid 200 1m;
+
+        server_tokens off;
+        add_header X-Server "$server_name";
+
+        add_header Access-Control-Allow-Origin *;
+
+        proxy_pass_request_headers on;
+        underscores_in_headers on;
+
+        location / {
+            alias  /Users/rauzh/Desktop/cook_droogers/PPO_DB/cook-droogers/static/;
+            index index.html;
+        }
+
+        location /swagger.json {
+            proxy_pass http://localhost:8081/swagger.json;
+        }
+
+        location ~* /mirror1/(.*) {
+            proxy_pass http://localhost:8084/$1;
+        }
+
+        location = /api/v1/ {
+          proxy_pass http://localhost:8081/api/v1/docs;
+        }
+
+        location /api/v1/ {
+
+          # Проксирование для PATCH и POST
+          if ($request_method ~ ^(PATCH|POST)$) {
+            proxy_pass http://localhost:8081;
+          }
+
+          # Проксирование для GET (и остальных методов)
+          if ($request_method ~ ^(GET|PUT|DELETE|OPTIONS|HEAD|CONNECT|TRACE)$) {
+            proxy_pass http://balanced_backend;
+          }
+        }
+
+        location /test {
+            alias  /Users/rauzh/Desktop/cook_droogers/PPO_DB/cook-droogers/static/;
+            index index.html;
+        }
+
+        location /legacy {
+            return 301 https://github.com/rauzh/cook-droogers;
+        }
+
+        location /documentation {
+            alias /Users/rauzh/Desktop/cook_droogers/PPO_DB/cook-droogers/static/;
+            index README.html;
+        }
+
+        location /admin {
+            return 301 http://localhost:5435;
+        }
+
+        location /status {
+            stub_status on;
+        }
+    }
+}

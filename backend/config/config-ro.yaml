@@ -3,7 +3,7 @@
 mode: "techUI"
 
 postgres:
-  host: "postgres-master"
+  host: "postgres-slave"
   port: 5432
   user: "postgres"
   password: "1337"

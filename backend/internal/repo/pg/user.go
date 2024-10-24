@@ -100,6 +100,8 @@ func (usr *UserPgRepo) UpdateType(ctx context.Context, userID uint64, typ models
 
 func (usr *UserPgRepo) SetRole(ctx context.Context, role models.UserType) error {
 
+	return nil
+
 	var roleStr string
 
 	switch role {

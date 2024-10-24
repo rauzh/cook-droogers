@@ -23,6 +23,8 @@ import (
 func getRequestsHandlerFunc(params requests.GetRequestsParams, app *app.App) middleware.Responder {
 	var err error
 
+	app.Logger.Info("GET", "handler", "getRequests")
+
 	authUserID, _, role, err := session.GetAuthenticatedUser(params.HTTPRequest)
 	if err != nil {
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {

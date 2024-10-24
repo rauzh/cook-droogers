@@ -1,14 +1,14 @@
 version: '3.8'
 
 services:
-  cook_droogers:
-    image: cook-droogers-cook_droogers
+  cd-backend:
+    container_name: cd-backend
     build:
       context: .
       dockerfile: Dockerfile
     command: /app/rest-api --host 0.0.0.0 --port 8080
     ports:
-      - "13337:8080"
+      - "8081:8080"
     volumes:
       - ./cook_droogers.log:/app/cook_droogers.log
       - ./backend/config/config.yaml:/app/config.yaml
@@ -16,7 +16,64 @@ services:
       - kafka
       - kafka2
       - kafka3
-      - postgres
+      - postgres-master
+    networks:
+      - cookdroognet
+
+  cd-backend-ro1:
+    container_name: cd-backend-ro1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /app/rest-api --host 0.0.0.0 --port 8080
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./cook_droogers-ro1.log:/app/cook_droogers.log
+      - ./backend/config/config-ro.yaml:/app/config.yaml
+    depends_on:
+      - kafka
+      - kafka2
+      - kafka3
+      - postgres-slave
+    networks:
+      - cookdroognet
+
+  cd-backend-ro2:
+    container_name: cd-backend-ro2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /app/rest-api --host 0.0.0.0 --port 8080
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./cook_droogers-ro2.log:/app/cook_droogers.log
+      - ./backend/config/config-ro.yaml:/app/config.yaml
+    depends_on:
+      - kafka
+      - kafka2
+      - kafka3
+      - postgres-slave
+    networks:
+      - cookdroognet
+
+  cd-backend-mirror:
+    container_name: cd-backend-mirror
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /app/rest-api --host 0.0.0.0 --port 8080
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./cook_droogers-mirror.log:/app/cook_droogers.log
+      - ./backend/config/config.yaml:/app/config.yaml
+    depends_on:
+      - kafka
+      - kafka2
+      - kafka3
+      - postgres-master
     networks:
       - cookdroognet
 
@@ -68,16 +125,52 @@ services:
     depends_on:
       - zookeeper
 
-  postgres:
+  postgres-master:
+    container_name: postgres-master
     image: postgres:13.3
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
-      POSTGRES_USER: "rauzh"
+      POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "1337"
       POSTGRES_DB: "cook_droogers"
+      POSTGRESQL_REPLICATION_MODE: "master"
+      POSTGRESQL_REPLICATION_USER: "repl_user"
+      POSTGRESQL_REPLICATION_PASSWORD: "1337"
+    ports:
+      - "15432:5432"
     volumes:
       - ./db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - cookdroognet
+
+  postgres-slave:
+    container_name: postgres-slave
+    image: postgres:13.3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d admin -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRESQL_REPLICATION_MODE: "slave"
+      POSTGRESQL_REPLICATION_USER: "repl_user"
+      POSTGRESQL_REPLICATION_PASSWORD: "1337"
+      POSTGRESQL_MASTER_HOST: "postgres-master"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "1337"
+      POSTGRES_DB: "cook_droogers"
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+    ports:
+      - "15433:5432"
+    volumes:
+      - ./data/slave:/var/lib/postgresql/data
     networks:
       - cookdroognet
 
@@ -102,7 +195,7 @@ services:
     environment:
       TZ: "Europe/Moscow"
     depends_on:
-      - postgres
+      - postgres-master
     networks:
       - cookdroognet
 

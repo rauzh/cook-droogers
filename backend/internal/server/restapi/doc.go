@@ -4,8 +4,8 @@
 //
 //	Schemes:
 //	  http
-//	Host: 0.0.0.0:13337
-//	BasePath: /api
+//	Host: 0.0.0.0:8081
+//	BasePath: /api/v1
 //	Version: 1.0.0
 //
 //	Consumes:

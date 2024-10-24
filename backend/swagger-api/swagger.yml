@@ -2,8 +2,8 @@ swagger: '2.0'
 info:
   version: 1.0.0
   title: Swagger-Cook-Droogers
-host: 0.0.0.0:13337
-basePath: /api
+host: 0.0.0.0:8081
+basePath: /api/v1
 tags:
   - name: artists
   - name: managers

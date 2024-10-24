@@ -26,8 +26,8 @@ func init() {
     "title": "Swagger-Cook-Droogers",
     "version": "1.0.0"
   },
-  "host": "0.0.0.0:13337",
-  "basePath": "/api",
+  "host": "0.0.0.0:8081",
+  "basePath": "/api/v1",
   "paths": {
     "/artists/{id}": {
       "get": {
@@ -1570,8 +1570,8 @@ func init() {
     "title": "Swagger-Cook-Droogers",
     "version": "1.0.0"
   },
-  "host": "0.0.0.0:13337",
-  "basePath": "/api",
+  "host": "0.0.0.0:8081",
+  "basePath": "/api/v1",
   "paths": {
     "/artists/{id}": {
       "get": {
