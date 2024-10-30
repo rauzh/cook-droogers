@@ -127,7 +127,7 @@ services:
 
   postgres-master:
     container_name: postgres-master
-    image: postgres:13.3
+    image: bitnami/postgresql:16
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -150,7 +150,7 @@ services:
 
   postgres-slave:
     container_name: postgres-slave
-    image: postgres:13.3
+    image: bitnami/postgresql:16
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d admin -U postgres"]
       interval: 10s
